@@ -12,5 +12,5 @@ do
 done
 
 pushd ./MobileLighting_Mac/SerialTools
-swift package update
+# swift package update
 popd

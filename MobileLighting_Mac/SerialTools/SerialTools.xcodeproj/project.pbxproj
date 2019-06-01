@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		OBJ_28 /* SwiftSerial.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* SwiftSerial.swift */; };
+		AA3FB603227B7F54001DB4D6 /* SwiftSerial.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3FB602227B7F54001DB4D6 /* SwiftSerial.swift */; };
 		OBJ_35 /* SwitcherCtrl.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* SwitcherCtrl.swift */; };
 		OBJ_37 /* SwiftSerial.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* SwiftSerial.framework */; };
 		OBJ_38 /* SerialUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = OBJ_21 /* SerialUtils.framework */; };
@@ -57,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		AA3FB602227B7F54001DB4D6 /* SwiftSerial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SwiftSerial.swift; path = Sources/SwiftSerial.swift; sourceTree = "<group>"; };
 		OBJ_11 /* SerialUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerialUtils.swift; sourceTree = "<group>"; };
 		OBJ_13 /* VXMCtrl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VXMCtrl.swift; sourceTree = "<group>"; };
 		OBJ_17 /* SwiftSerial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftSerial.swift; sourceTree = "<group>"; };
@@ -161,6 +162,7 @@
 		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
+				AA3FB602227B7F54001DB4D6 /* SwiftSerial.swift */,
 				OBJ_6 /* Package.swift */,
 				OBJ_7 /* Sources */,
 				OBJ_14 /* Tests */,
@@ -269,7 +271,7 @@
 				LastUpgradeCheck = 9999;
 				TargetAttributes = {
 					OBJ_23 = {
-						DevelopmentTeam = P4K2URYK54;
+						DevelopmentTeam = NKAB92297U;
 						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
@@ -286,7 +288,7 @@
 			};
 			buildConfigurationList = OBJ_2 /* Build configuration list for PBXProject "SerialTools" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -309,7 +311,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_28 /* SwiftSerial.swift in Sources */,
+				AA3FB603227B7F54001DB4D6 /* SwiftSerial.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,7 +375,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = P4K2URYK54;
+				DEVELOPMENT_TEAM = NKAB92297U;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -400,7 +402,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = P4K2URYK54;
+				DEVELOPMENT_TEAM = NKAB92297U;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
