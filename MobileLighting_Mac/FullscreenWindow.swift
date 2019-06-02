@@ -66,11 +66,14 @@ class FullscreenWindow: NSView {
         super.draw(dirtyRect)
         
         // make sure correct graphics context has been set
+//        let graphicsContext = NSGraphicsContext(window: self.fullscreenWindow)
         NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
         guard let graphicsContext = NSGraphicsContext.current else {
             Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
             return
         }
+        
+//        print("graphicsContext=",graphicsContext)
         
         let context: CGContext = graphicsContext.cgContext
         
@@ -199,7 +202,9 @@ class FullscreenWindow: NSView {
     
     func displayCheckerboard(squareSize: Int = 2) {
         self.displayContent = .Checkerboard(squareSize)
-        self.display()
+        DispatchQueue.main.sync {
+            self.display()
+        }
     }
     
     func displayBlack() {

@@ -12,7 +12,7 @@ import AVFoundation
 //MARK: COMMAND-LINE INPUT
 
 // Enum for all commands
-enum Command: String, EnumCollection {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
+enum Command: String, EnumCollection, CaseIterable {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
     case unrecognized
     case quit
@@ -62,7 +62,6 @@ enum Command: String, EnumCollection {      // rawValues are automatically the n
     
     // for scripting
     case sleep
-    
 }
 
 // Return usage message for appropriate command
@@ -143,28 +142,29 @@ func processCommand(_ input: String) -> Bool {
     nextToken += 1
     cmdSwitch: switch command {
     case .unrecognized:
-        if let unknown = tokens.first {
+        /* The following portion could be implemented to suggest close commands, but is buggy:
+          if let unknown = tokens.first {
             let bestMatch = Command(closeTo: unknown)
             print("did you mean: \(bestMatch.rawValue)")
-        } else {
+          } else { */
             print(usage)
-        }
         break
         
     case .help:
         switch tokens.count {
         case 1:
-            let commands = Command.cases()
             // print all commands & usage
-            for command in commands {
+            for command in Command.allCases {
                 print("\(command):\t\(getUsage(command))")
             }
         case 2:
             if let command = Command(rawValue: tokens[1]) {
                 print("\(command):\n\(getUsage(command))")
             } else {
-                let command = Command(closeTo: tokens[1])
-                print("command \(tokens[1]) unrecognized. Did you mean: \(command.rawValue)")
+                // The following two lines could be used to suggest similar commands on unrecognized command
+                // let command = Command(closeTo: tokens[1])
+                // print("command \(tokens[1]) unrecognized. Did you mean: \(command.rawValue)")
+                print("Command \(tokens[1]) unrecognized. Enter 'help' for a list of commands")
             }
         default:
             print(usage)
@@ -1524,6 +1524,8 @@ func waitForEstablishedCommunications() {
 }
 
 
+/* The following extension could be implemented to suggest similar commands on unrecognized input,
+ but is buggy:
 extension Command {
     init(closeTo unknown: String) {
         if let known = Command(rawValue: unknown) {
@@ -1566,9 +1568,10 @@ extension Command {
                 }
                 return cache[unknown.count][command.count]
             }
-            let mincost = costs.min()!
+            let mincost = costs.min() ?? 0
             let bestMatch = cases[costs.index(of: mincost)!]
             self = Command(rawValue: bestMatch)!
         }
     }
 }
+*/

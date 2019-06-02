@@ -166,6 +166,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         
         let handleInstructionQueue = DispatchQueue(label: "com.CameraService.handleInstructionQueue")
         handleInstructionQueue.async {
+            // Don't continue until focus is set
             while (cameraController.captureDevice.isAdjustingFocus) {}
         
             let resolution: String = packet.resolution
