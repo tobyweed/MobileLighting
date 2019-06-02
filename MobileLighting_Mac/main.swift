@@ -57,16 +57,25 @@ guard CommandLine.argc >= 2 else {
     exit(0)
 }
 
+
+/* =========================================================================================
+ * Based on provided command line arguments, set the necessary settings
+ ==========================================================================================*/
+
 switch CommandLine.arguments[1] {
 case "init":
-    // initialize settings files, then quit
+    // Initialize settings files, then quit
     print("MobileLighting: entering init mode...")
+    
+    // If no path is provided, ask for one
     if CommandLine.argc == 2 {
         print("location of scenes folder: ", terminator: "")
         scenesDirectory = readLine() ?? ""
     } else {
         scenesDirectory = CommandLine.arguments[2]
     }
+    
+    //If a scene name is provided, use it. Otherwise, ask for one
     if CommandLine.argc == 4 {
         sceneName = CommandLine.arguments[3]
     } else {
@@ -104,16 +113,6 @@ default:
     exit(0)
 }
 
-
-// load init settings
-//do {
-//    sceneSettings = try SceneSettings(sceneSettingsPath)
-//    print("Successfully loaded initial settings.")
-//} catch {
-//    print("Fatal error: could not load init settings")
-//    exit(0)
-//}
-
 // save required settings
 scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
@@ -140,6 +139,11 @@ do {
 }
 
 
+/* =========================================================================================
+ * Establishes connection with/configures the iPhone and structured lighting displays
+ ==========================================================================================*/
+
+// Establish connection with the iPhone and set the instruction packet
 initializeIPhoneCommunications()
 
 // focus iPhone if focus provided
@@ -150,17 +154,22 @@ if focus != nil {
     photoReceiver.dataReceivers.insertFirst(receiver)
 }
 
+// Configure the structured lighting displays
 if configureDisplays() {
     print("main: Successfully configured display.")
 } else {
     print("main: WARNING - failed to configure display.")
 }
 
+
+/* =========================================================================================
+ * Run the main loop
+ ==========================================================================================*/
+
 let mainQueue = DispatchQueue(label: "mainQueue")
 //let mainQueue = DispatchQueue.main    // for some reason this causes the NSSharedApp (which manages the windwos for displaying binary codes, etc) to block! But the camera calibration functions must be run from the DisplatchQueue.main, so async them whenever they are called
 
 mainQueue.async {
-    
     while nextCommand() {}
     
     NSApp.terminate(nil)    // terminates shared application

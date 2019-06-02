@@ -11,6 +11,7 @@ import AVFoundation
 
 //MARK: COMMAND-LINE INPUT
 
+// Enum for all commands
 enum Command: String, EnumCollection {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
     case unrecognized
@@ -64,6 +65,7 @@ enum Command: String, EnumCollection {      // rawValues are automatically the n
     
 }
 
+// Return usage message for appropriate command
 func getUsage(_ command: Command) -> String {
     switch command {
     case .unrecognized: return "Command unrecognized. Type \"help\" for a list of commands."
@@ -109,31 +111,6 @@ func getUsage(_ command: Command) -> String {
     case .clearpackets: return "clearpackets"
     }
 }
-/*
-let commandUsage: [Command : String] = [
-    .unrecognized: "Command unrecognized. Type \"help\" for a list of commands.",
-    .help: "",
-    .quit: "",
-    .reloadsettings: "",
-    .connect: "connect (switcher|vxm) [port dev directory]",
-    .disconnect: "disconnect (switcher|vxm)",
-    .calibrate: "calibrate [# of photos]",
-    .calibrate2pos: "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?",
-    .struclight: "struclight [projector #] [position #] [code system]?",
-    .takeamb: "takeamb still (-f|-t)? [nPhotos]\n        video (-f|-t)?",
-    .setfocus: "setfocus [lensPosition]",
-    .focuspoint: "focuspoint [x_coord] [y_coord]",
-    .cb: "cb [squareSize=4]",
-    .diagonal: "diagonal [stripe width]",
-    .verticalbars: "verticalbars [width]",
-    .movearm: "movearm [pose_string | pose_number\n        (x|y|z) [dist]",
-    .proj: "proj [projector#|all] [on|off]",
-    .refine: "refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]",
-    .disparity: "disparity (-r)? (-a | [projector #]) [left pos #] [right pos #]",
-    .rectify: "rectify [proj #] [leftpos] [rightpos]\n       rectify -a [leftpos] [rightpos]\n       rectify -a -a",
-    .getintrinsics: "getintrinsics [board_type = ARUCO_SINGLE]",
-    .getextrinsics: "getextrinsics [leftpos] [rightpos] [board_type = ARUCO_SINGLE]"
-] */
 
 
 var processingCommand: Bool = false
@@ -166,7 +143,6 @@ func processCommand(_ input: String) -> Bool {
     nextToken += 1
     cmdSwitch: switch command {
     case .unrecognized:
-//        print(usage)
         if let unknown = tokens.first {
             let bestMatch = Command(closeTo: unknown)
             print("did you mean: \(bestMatch.rawValue)")
