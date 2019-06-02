@@ -2,3 +2,4 @@ xcuserdata
 .DS_Store
 sceneSettings.yml
 trajectory.yml
+opencv2.framework/
