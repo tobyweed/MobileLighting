@@ -58,6 +58,7 @@ class FullscreenWindow: NSView {
         self.codeDrawer = BinaryCodeDrawer(context: self.fullscreenWindow.graphicsContext!, frame: screen.frame)
     }
     
+    // Required for subclasses of NSView
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
@@ -66,14 +67,10 @@ class FullscreenWindow: NSView {
         super.draw(dirtyRect)
         
         // make sure correct graphics context has been set
-//        let graphicsContext = NSGraphicsContext(window: self.fullscreenWindow)
-        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
         guard let graphicsContext = NSGraphicsContext.current else {
             Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
             return
         }
-        
-//        print("graphicsContext=",graphicsContext)
         
         let context: CGContext = graphicsContext.cgContext
         
@@ -93,6 +90,7 @@ class FullscreenWindow: NSView {
             }
             break
             
+        // Draw a checkerboard pattern with squares of size squaresize all through the view
         case .Checkerboard(let squareSize):
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
@@ -171,15 +169,16 @@ class FullscreenWindow: NSView {
             break
         }
     }
-    
-    func drawImage(_ image: CGImage) {
-        self.displayContent = .Image
-        self.image = image
-        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
-        let context = self.fullscreenWindow.graphicsContext!.cgContext
-        context.draw(image, in: self.frame)
-        self.setNeedsDisplay(self.frame)
-    }
+  
+// Is this used?
+//    func drawImage(_ image: CGImage) {
+//        self.displayContent = .Image
+//        self.image = image
+//        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
+//        let context = self.fullscreenWindow.graphicsContext!.cgContext
+//        context.draw(image, in: self.frame)
+//        self.setNeedsDisplay(self.frame)
+//    }
     
     func configureDisplaySettings(horizontal: Bool = false, inverted: Bool = false) {
         guard let codeDrawer = codeDrawer else {
