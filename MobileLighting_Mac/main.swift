@@ -1,13 +1,9 @@
-// Mobile Lighting control software
+// MOBILELIGHTING DATASET ACQUISITION CONTROL SOFTWARE
 //
-// DESCRIPTION:
-// main script for the Mac control program
+// main.swift
+// MobileLighting_Mac
 //
-//  main.swift
-//  demo_mac
-//
-//  Created by Nicholas Mosier on 6/2/17.
-//  Last modified 7/14/17
+// The entrypoint and main program for MobileLighting_Mac
 //
 
 import Foundation

@@ -1,5 +1,9 @@
+//
 // StructuredLight.swift
-// contains functions for managing the display of structured lighting on secondary displays
+// MobileLighting_Mac
+//
+// Contains functions for managing the display of structured lighting on secondary displays
+//
 
 import Foundation
 import Yaml
@@ -10,7 +14,7 @@ import Cocoa
 //   - system: BinaryCodeSystem - either GrayCode or MinStripeWidthCode
 //   - projector: Int - should be in range [1, 8] (if using Kramer switcher box). Currently does
 //       not turn on projector; the value is used for only creating/saving to the proper directory
-//   - position: Int - should be >= 0, less than total # of positions (currently only 2)
+//   - position: Int - should be >= 0, less than total # of positions (currently only 2 <- is this still true? )
 //       Doesn't move to the position; simply uses value for saving to proper directory
 //  NOTE: before calling this function, be sure that the correct projector is on and properly configured.
 //      (Sometimes the ViewSonic projectors will take a while to display video input after being switched
@@ -127,7 +131,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     
     packet = CameraInstructionPacket(cameraInstruction: .StartStructuredLightingCaptureFull, resolution: resolution, binaryCodeDirection: !horizontal, binaryCodeSystem: system)
     cameraServiceBrowser.sendPacket(packet)
-    while !cameraServiceBrowser.readyToSendPacket {}
+    while !cameraServiceBrowser.readyToSendPacket {} // Don't proceed unless the cameraServiceBrowser is ready
     
     captureNextBinaryCode()
     while currentCodeBit < codeBitCount || !done {}  // wait til finished

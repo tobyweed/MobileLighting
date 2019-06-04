@@ -1,8 +1,9 @@
 //
-//  DataReceiver.swift
+// PhotoReciever.swift
+// MobileLighting_Mac
 //
-//  Created by Nicholas Mosier on 5/30/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Contains a class to publish a socket for the MobileLighting_iPhone browser to find, connect to,
+//  and send photos to.
 //
 
 import Foundation

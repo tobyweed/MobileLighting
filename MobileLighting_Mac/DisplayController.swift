@@ -1,9 +1,8 @@
 //
-//  DisplayController.swift
-//  demo_mac
+// DisplayController.swift
+// MobileLighting_Mac
 //
-//  Created by Nicholas Mosier on 6/1/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Contains the DisplayController class, which is used to manage the displays
 //
 
 import Cocoa

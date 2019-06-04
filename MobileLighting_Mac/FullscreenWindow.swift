@@ -1,9 +1,8 @@
 //
-//  FullscreenWindowView.swift
-//  demo_mac
+// FullscreenWindow.swift
+// MobileLighting_Mac
 //
-//  Created by Nicholas Mosier on 6/1/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Contains the FullscreenWindow class, which is used to manage and draw on individual displays
 //
 
 import Cocoa
@@ -55,7 +54,7 @@ class FullscreenWindow: NSView {
         
         self.fullscreenWindow = window
         self.screen = screen
-        self.codeDrawer = BinaryCodeDrawer(context: self.fullscreenWindow.graphicsContext!, frame: screen.frame)
+        self.codeDrawer = BinaryCodeDrawer(frame: screen.frame)
     }
     
     // Required for subclasses of NSView
@@ -63,6 +62,7 @@ class FullscreenWindow: NSView {
         super.init(coder: coder)
     }
 
+    // Draw a pattern on the display based on the value of DisplayContent
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
@@ -190,39 +190,48 @@ class FullscreenWindow: NSView {
     }
     
     func displayBinaryCode(forBit bit: Int, system: BinaryCodeSystem) {
-        NSGraphicsContext.current = self.fullscreenWindow.graphicsContext
-        
         currentCodeBit = bit
         currentSystem = system
         
         self.displayContent = .BinaryCode
-        self.display()
+//        self.displayContent = .Checkerboard(20)
+        DispatchQueue.main.async(execute: {
+            self.display()
+        })
     }
     
     func displayCheckerboard(squareSize: Int = 2) {
         self.displayContent = .Checkerboard(squareSize)
-        DispatchQueue.main.sync {
+        DispatchQueue.main.async {
             self.display()
         }
     }
     
     func displayBlack() {
         self.displayContent = .Black
-        self.display()
+        DispatchQueue.main.async {
+            self.display()
+        }
     }
     
     func displayWhite() {
         self.displayContent = .White
-        self.display()
+        DispatchQueue.main.async {
+            self.display()
+        }
     }
     
     func displayDiagonal(width: Int) {
         self.displayContent = .DiagonalStripes(width)
-        self.display()
+        DispatchQueue.main.async {
+            self.display()
+        }
     }
     
     func displayVertical(width: Int) {
         self.displayContent = .VerticalStripes(width)
-        self.display()
+        DispatchQueue.main.async {
+            self.display()
+        }
     }
 }

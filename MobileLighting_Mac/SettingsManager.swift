@@ -1,9 +1,8 @@
 //
-//  SettingsManager.swift
-//  demo
+// SettingsManager.swift
+// MobileLighting_Mac
 //
-//  Created by Nicholas Mosier on 7/5/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Insert description
 //
 
 import Foundation

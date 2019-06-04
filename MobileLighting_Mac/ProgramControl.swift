@@ -1,5 +1,10 @@
-// PROGRAM CONTROL
-// contains central functions to the program, i.e. setting the camera focus, etc
+//
+// ProgramControl.swift
+// MobileLighting_Mac
+//
+// Contains central functions to the program, i.e. setting the camera focus, etc.. Manages these via
+// the Command enum for use in CLT format.
+//
 
 import Foundation
 import Cocoa
@@ -455,10 +460,11 @@ func processCommand(_ input: String) -> Bool {
         displayController.switcher?.turnOn(projID)
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
-        
-        var pose = *positions[armPos]
-        MovePose(&pose, robotVelocity, robotAcceleration)
-        usleep(UInt32(robotDelay * 1.0e6))
+
+//        Commented out to allow struclight w/out robot connection
+//        var pose = *positions[armPos]
+//        MovePose(&pose, robotVelocity, robotAcceleration)
+//        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
         break

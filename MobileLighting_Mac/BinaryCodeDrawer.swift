@@ -1,3 +1,11 @@
+//
+// BinaryCodes.swift
+// MobileLighting_Mac
+//
+// Contains the BinaryCodeDrawer class, which is used to display horizontal and vertical stripes
+//  for structured lighting based on binary codes from BinaryCodes.swift.
+//
+
 import Foundation
 import Cocoa
 import CoreGraphics
@@ -14,7 +22,6 @@ let blackPixel = Pixel(r: 0, g: 0, b: 0, a: 255)
 let whitePixel = Pixel(r: 255, g: 255, b: 255, a: 255)
 
 class BinaryCodeDrawer {    
-    let context: NSGraphicsContext
     let frame: CGRect
     let width: Int
     let height: Int
@@ -28,8 +35,7 @@ class BinaryCodeDrawer {
     
     let blackHorizontalBar: Array<Pixel>
     let whiteHorizontalBar: Array<Pixel>
-    init(context: NSGraphicsContext, frame: CGRect) {
-        self.context = context
+    init(frame: CGRect) {
         self.frame = frame
         self.width = Int(frame.width)
         self.height = Int(frame.height)
@@ -40,8 +46,11 @@ class BinaryCodeDrawer {
     }
     
     func drawCode(forBit bit: Int, system: BinaryCodeSystem, horizontally: Bool? = nil, inverted: Bool? = nil, positionLimit: Int? = nil) {
-        NSGraphicsContext.current = self.context
-        let context = self.context.cgContext
+        guard let graphicsContext = NSGraphicsContext.current else {
+            Swift.print("Cannot draw fullscreen window content: current graphics context is nil.")
+            return
+        }
+        let context = graphicsContext.cgContext
         let horizontally = horizontally ?? self.drawHorizontally
         let inverted = inverted ?? self.drawInverted       // temporarily use this configuration; does not change instance's settings
         
@@ -58,7 +67,7 @@ class BinaryCodeDrawer {
         case .MinStripeWidthCode:
             if minSWcodeBitDisplayArrays == nil {
                 do {
-                    try loadMinStripeWidthCodesForDisplay(filepath: minSWfilepath)
+                    try loadMinStripeWidthCodesForDisplay(filepath: minSWfilepath) // Try populating minSWcodeBitDisplayArrays with array of bit arrays
                 } catch {
                     print("BinaryCodeDrawer: unable to load min strip width codes from data file.")
                     return
@@ -68,7 +77,9 @@ class BinaryCodeDrawer {
                 print("BinaryCodeDrawer: ERROR — specified bit for code too large.")
                 return
             }
-            let fullBitArray = minSWcodeBitDisplayArrays![bit]
+            
+            let fullBitArray = minSWcodeBitDisplayArrays![bit] // Array of bits representing min stripe width code
+            
             bitArray = Array<Bool>(fullBitArray.prefix(Int(horizontally ? height : width)))
             guard nPositions <= bitArray.count else {
                 print("BinaryCodeDrawer: ERROR — cannot display min stripe width code, number of stripes too large.")
@@ -80,21 +91,22 @@ class BinaryCodeDrawer {
         var horizontalBar: Array<Pixel> = (inverted ? whiteHorizontalBar : blackHorizontalBar)
         let max: Int
         
-        if !horizontally {
-            // vertically
+        if !horizontally { // Display vertical bars
             max = nPositions
             var barVal: Bool
+            
             for index in 0..<max {
                 barVal = bitArray[index]
                 horizontalBar[index] = (barVal == inverted) ? blackPixel : whitePixel
             }
+            
             let data = Data(bytes: &horizontalBar, count: width*4)
             for row in 0..<height {
                 data.copyBytes(to: bitmap.advanced(by: row*width*4), count: width*4)
             }
-        } else {
-            // horizontally
+        } else { // Display horizontal bars
             max = width
+            
             for row in 0..<height {
                 let bar = (row < Int(nPositions)) ? ((bitArray[row] == inverted) ? blackHorizontalBar : whiteHorizontalBar) : (inverted ? whiteHorizontalBar : blackHorizontalBar)
                 let data = Data(bytes: bar, count: width*4)
@@ -108,6 +120,7 @@ class BinaryCodeDrawer {
         let image = CGImage(width: width, height: height,
                             bitsPerComponent: 8, bitsPerPixel: 4*8, bytesPerRow: 4*width, space: colorspace, bitmapInfo: info, provider: provider!,
                             decode: nil, shouldInterpolate: true, intent: CGColorRenderingIntent.defaultIntent)
+        
         context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))        
     }
     

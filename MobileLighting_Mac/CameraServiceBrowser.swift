@@ -1,11 +1,11 @@
+//
 // CameraServiceBrowser.swift
+// MobileLighting_Mac
 //
-// CameraServiceBrowser class
-//
-// This class is in charge of communicating with the iPhone's CameraService.
-// It is used for finding and connecting to the iPhone's CameraService as well
-//    as sending directives to the camera in the form of instruction packets
-//    (defined in the .swift file "CameraInstructionPackets.swift").
+// Contains the CameraServicBrowser class, which communicates with the iPhone's CameraService.
+//  It is used for finding and connecting to the iPhone's CameraService as well as sending
+//  directives to the camera in the form of instruction packets (defined in the .swift file
+//  "CameraInstructionPackets.swift").
 //
 
 
