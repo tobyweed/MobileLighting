@@ -461,10 +461,9 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
 
-//        Commented out to allow struclight w/out robot connection
-//        var pose = *positions[armPos]
-//        MovePose(&pose, robotVelocity, robotAcceleration)
-//        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
+        var pose = *positions[armPos]
+        MovePose(&pose, robotVelocity, robotAcceleration)
+        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
         break
@@ -510,15 +509,16 @@ func processCommand(_ input: String) -> Bool {
                     print("takeamb still: flag \(flag) not recognized.")
                 }
             }
-            
+                        
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
+            // Move the robot to the correct position and prompt photo capture
             for pos in 0..<positions.count {
                 var posStr = *positions[pos]
                 MovePose(&posStr, robotAcceleration, robotVelocity)
                 print("Hit enter when camera in position.")
                 _ = readLine()
-                
+            
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
                 
@@ -1384,6 +1384,7 @@ func processCommand(_ input: String) -> Bool {
         }
         generateIntrinsicsImageList()
         let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+        
         calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
         calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
         calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))

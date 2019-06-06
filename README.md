@@ -100,6 +100,7 @@ There are numerous steps to dataset acquisition:
 1. Ambient data capture
     1. Ambient images at multiple exposures
     1. Ambient video with IMU data
+    
 All these steps are executed/controlled at the MobileLighting Mac command-line interface.
 
 The "waypoints" along the trajectory, all specified in the `trajectory.yml` file, are the positions at which all still images will be taken, including structured light, calibration, and ambient stills.
