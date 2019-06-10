@@ -461,8 +461,8 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
 
-        var pose = *positions[armPos]
-        MovePose(&pose, robotVelocity, robotAcceleration)
+        var posStr = *positions[armPos]
+        GotoView(&posStr)
         usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
@@ -515,7 +515,7 @@ func processCommand(_ input: String) -> Bool {
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<positions.count {
                 var posStr = *positions[pos]
-                MovePose(&posStr, robotAcceleration, robotVelocity)
+                GotoView(&posStr)
                 print("Hit enter when camera in position.")
                 _ = readLine()
             
@@ -806,7 +806,7 @@ func processCommand(_ input: String) -> Bool {
             print("Moving arm to position \(posStr)")
             var cStr = posStr.cString(using: .ascii)!
             DispatchQueue.main.async {
-                MovePose(&cStr, robotAcceleration, robotVelocity)  // use default acceleration & velocities
+                GotoView(&cStr)  // use default acceleration & velocities
                 print("Moved arm to position \(posStr)")
             }
         case 3:
@@ -817,15 +817,15 @@ func processCommand(_ input: String) -> Bool {
             switch tokens[1] {
             case "x":
                 DispatchQueue.main.async {
-                    MoveLinearX(ds, 0, 0)
+//                    MoveLinearX(ds, 0, 0)
                 }
             case "y":
                 DispatchQueue.main.async {
-                    MoveLinearY(ds, 0, 0)
+//                    MoveLinearY(ds, 0, 0)
                 }
             case "z":
                 DispatchQueue.main.async {
-                    MoveLinearZ(ds, 0, 0)
+//                    MoveLinearZ(ds, 0, 0)
                 }
             default:
                 print("moevarm: \(tokens[1]) is not a recognized direction.")

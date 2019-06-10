@@ -1,44 +1,34 @@
 //
-//  RobotControl.cpp
-//  RobotControl
+// RobotControl.cpp
+// RobotControl
 //
-//  Created by Nicholas Mosier on 6/7/18.
-//  Copyright © 2018 Nicholas Mosier. All rights reserved.
+// Guanghan Pan
 //
 
 #include <iostream>
-//#include "RobotControl.h"
-#include "MovementControl.h"
+#include "LoadPath_client.h"
 
 extern "C" int Client() {
-    return client();
-}
-extern "C" int Restore() {
-    return restore();
+  return client();
 }
 
-extern "C" int Next() {
-    return next();
+extern "C" int SendCommand(char *script) {
+  return sendCommand(script);
 }
-extern "C" int PowerdownRobot() {
-    return powerdown();
+
+extern "C" int GotoView(char *num){
+  return gotoView(std::string(num));
 }
-extern "C" int MovePose(char *pose, float a, float v) {
-    if (a == 0 || v == 0) return move_pose(std::string(pose));
-    else return move_pose(std::string(pose), a, v);
+
+extern "C" int LoadPath(char *pathName){
+  return loadPath(std::string(pathName));
 }
-extern "C" int MoveJoints(char *pose, float a, float v) {
-    return move_joints(std::string(pose), a, v);
+
+extern "C" int ExecutePath(){
+  return executePath();
 }
-extern "C" int MoveLinearX(float d, float a, float v) {
-    if (a == 0 || v == 0) return linear_x(d);
-    else return linear_x(d, a, v);
+
+extern "C" int SetVelocity(float v){
+  return setVelocity(v);
 }
-extern "C" int MoveLinearY(float d, float a, float v) {
-    if (a == 0 || v == 0) return linear_y(d);
-    else return linear_y(d, a, v);
-}
-extern "C" int MoveLinearZ(float d, float a, float v) {
-    if (a == 0 || v == 0) return linear_z(d);
-    else return linear_z(d, a, v);
-}
+

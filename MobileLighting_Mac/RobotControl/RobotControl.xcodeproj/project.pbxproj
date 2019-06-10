@@ -7,18 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		E19CC8AE20D3F457009DA6FC /* MovementControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E19CC8AD20D3F456009DA6FC /* MovementControl.cpp */; };
-		E1A2171720C9B50F0016DFC6 /* RobotControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E1A2171620C9B50F0016DFC6 /* RobotControl.h */; };
-		E1A2171B20C9B50F0016DFC6 /* RobotControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E1A2171A20C9B50F0016DFC6 /* RobotControl.cpp */; };
-		E1A2172420C9B5D40016DFC6 /* MovementControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E1A2172320C9B5D40016DFC6 /* MovementControl.h */; };
+		AAA0AA1A22AEB76A00002E78 /* RobotControl.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0AA1622AEB76900002E78 /* RobotControl.h */; };
+		AAA0AA1B22AEB76A00002E78 /* LoadPath_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0AA1722AEB76900002E78 /* LoadPath_client.cpp */; };
+		AAA0AA1C22AEB76A00002E78 /* LoadPath_client.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0AA1822AEB76A00002E78 /* LoadPath_client.h */; };
+		AAA0AA1D22AEB76A00002E78 /* RobotControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0AA1922AEB76A00002E78 /* RobotControl.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		E19CC8AD20D3F456009DA6FC /* MovementControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MovementControl.cpp; sourceTree = "<group>"; };
+		AAA0AA1622AEB76900002E78 /* RobotControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RobotControl.h; sourceTree = "<group>"; };
+		AAA0AA1722AEB76900002E78 /* LoadPath_client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadPath_client.cpp; sourceTree = "<group>"; };
+		AAA0AA1822AEB76A00002E78 /* LoadPath_client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoadPath_client.h; sourceTree = "<group>"; };
+		AAA0AA1922AEB76A00002E78 /* RobotControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RobotControl.cpp; sourceTree = "<group>"; };
 		E1A2171320C9B50F0016DFC6 /* libRobotControl.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRobotControl.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		E1A2171620C9B50F0016DFC6 /* RobotControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RobotControl.h; sourceTree = "<group>"; };
-		E1A2171A20C9B50F0016DFC6 /* RobotControl.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RobotControl.cpp; sourceTree = "<group>"; };
-		E1A2172320C9B5D40016DFC6 /* MovementControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MovementControl.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,10 +51,10 @@
 		E1A2171520C9B50F0016DFC6 /* RobotControl */ = {
 			isa = PBXGroup;
 			children = (
-				E19CC8AD20D3F456009DA6FC /* MovementControl.cpp */,
-				E1A2172320C9B5D40016DFC6 /* MovementControl.h */,
-				E1A2171620C9B50F0016DFC6 /* RobotControl.h */,
-				E1A2171A20C9B50F0016DFC6 /* RobotControl.cpp */,
+				AAA0AA1722AEB76900002E78 /* LoadPath_client.cpp */,
+				AAA0AA1822AEB76A00002E78 /* LoadPath_client.h */,
+				AAA0AA1922AEB76A00002E78 /* RobotControl.cpp */,
+				AAA0AA1622AEB76900002E78 /* RobotControl.h */,
 			);
 			path = RobotControl;
 			sourceTree = "<group>";
@@ -66,8 +66,8 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1A2171720C9B50F0016DFC6 /* RobotControl.h in Headers */,
-				E1A2172420C9B5D40016DFC6 /* MovementControl.h in Headers */,
+				AAA0AA1C22AEB76A00002E78 /* LoadPath_client.h in Headers */,
+				AAA0AA1A22AEB76A00002E78 /* RobotControl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,8 +127,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E19CC8AE20D3F457009DA6FC /* MovementControl.cpp in Sources */,
-				E1A2171B20C9B50F0016DFC6 /* RobotControl.cpp in Sources */,
+				AAA0AA1D22AEB76A00002E78 /* RobotControl.cpp in Sources */,
+				AAA0AA1B22AEB76A00002E78 /* LoadPath_client.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

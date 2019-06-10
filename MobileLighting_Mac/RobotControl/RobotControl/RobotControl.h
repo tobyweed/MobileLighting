@@ -1,32 +1,21 @@
 //
-//  RobotControl.hpp
-//  RobotControl
+// RobotControl.h
+// RobotControl
+// Guanghan Pan
 //
-//  Created by Nicholas Mosier on 6/7/18.
-//  Copyright © 2018 Nicholas Mosier. All rights reserved.
-//
-
 
 
 #ifndef RobotControl_
 #define RobotControl_
 
-/* The classes below are exported */
 #pragma GCC visibility push(default)
 
-int Client();
-int Restore();
-int Next();
-int PowerdownRobot();
-int MovePose(char *, float, float);
-int MoveJoints(char *, float, float);
-int MoveLinearX(float, float, float);
-int MoveLinearY(float, float, float);
-int MoveLinearZ(float, float, float);
-
-//int waitrobot();
-//int server();
-void sendscript(char *script);
+int Clinet();
+int SendCommand(char *);
+int GotoView(char *);
+int LoadPath(char *);
+int ExecutePath();
+int SetVelocity(float);
 
 #pragma GCC visibility pop
 #endif

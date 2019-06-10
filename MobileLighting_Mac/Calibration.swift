@@ -44,7 +44,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
     var index: Int = 0
     while index < nPhotos {
         var posStr = positions[pos0].cString(using: .ascii)!
-        MovePose(&posStr, robotAcceleration, robotVelocity)
+        GotoView(&posStr)
         print(msgBoard)
         guard calibration_wait(currentPos: pos0) else {
             return
@@ -59,7 +59,7 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         while !receivedCalibrationImage {}
         
         posStr = positions[pos1].cString(using: .ascii)!
-        MovePose(&posStr, robotAcceleration, robotVelocity)
+        GotoView(&posStr)
         print(msgMove)
         guard calibration_wait(currentPos: pos1) else {
             return
@@ -158,7 +158,7 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
         while i < posIDs.count {
             let posID = posIDs[i]
             var posStr = *positions[posID]
-            MovePose(&posStr, robotAcceleration, robotVelocity)
+            GotoView(&posStr)
             print(msgMove)
             guard calibration_wait(currentPos: posID) else {
                 return
@@ -219,8 +219,8 @@ func calibration_wait(currentPos: Int) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
             _ = photoReceiver.receiveLensPositionSync()
         } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
-            var pose = *positions[pos]
-            MovePose(&pose, robotAcceleration, robotVelocity)
+            var posStr = *positions[pos]
+            GotoView(&posStr)
             print("Hit enter when ready to return to original position.")
         } else {
             return true
