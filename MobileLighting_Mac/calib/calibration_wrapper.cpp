@@ -16,6 +16,7 @@ extern "C" int CalibrateWithSettings(const char *inputSettingsFile) {   // this 
 }
 
 std::vector<int> detectionCheck(char *inputSettingsFilepath, char *imleftpath, char *imrightpath);
+
 extern "C" int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright) {
     printf("inputsettings=%s, imleft=%s, imright=%s", inputSettingsFile, imleft, imright);
     std::vector<int> result = detectionCheck(inputSettingsFile, imleft, imright);
