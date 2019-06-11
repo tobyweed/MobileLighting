@@ -1,9 +1,8 @@
 //
-//  Utils.swift
-//  MobileLighting
+// Utils.swift
+// MobileLighting
 //
-//  Created by Nicholas Mosier on 7/18/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Utility functions
 //
 
 import Foundation
@@ -200,8 +199,9 @@ extension Dictionary where Key == Yaml, Value == Yaml {
 
 
 
-
-
+/*=====================================================================================
+ Setup/capture routines and utility functions
+ ======================================================================================*/
 
 // setLensPosition
 // -Parameters
