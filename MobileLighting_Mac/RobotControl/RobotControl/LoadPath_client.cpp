@@ -30,7 +30,7 @@ int client()
     serv_addr.sin_port = htons(PORT); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, "140.233.20.218", &serv_addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
@@ -38,7 +38,7 @@ int client()
    
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     { 
-        printf("\nConnection Failed \n"); 
+        printf("\nConnection to robot server failed \n"); 
         return -1; 
     } 
     return sock; 
@@ -63,8 +63,7 @@ int sendCommand(char *script){
 }
 
 int gotoView(string num){
-  int number = std::stoi(num);
-  string script = std::to_string(number);
+  string script = num;
   int n = script.length();
   char command[n+1];
   strcpy(command, script.c_str());

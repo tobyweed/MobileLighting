@@ -461,8 +461,13 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
 
-        var posStr = *positions[armPos]
-        GotoView(&posStr)
+        var test: String = "test"
+        var path = *test // get pointer to the string
+        LoadPath(&path) // load the path named "test" on Rosvita server
+        
+        var posStr = *positions[armPos] // get pointer to pose string
+        GotoView(&posStr) // pass address of pointer
+        
         usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
@@ -1489,47 +1494,6 @@ func processCommand(_ input: String) -> Bool {
     
     return true
 }
-
-
-
-//MARK: SETUP/CAPTURE ROUTINES + UTILITY FUNCTIONS
-
-// setLensPosition
-// -Parameters
-//      - lensPosition: Float -> what to set the camera's lens position to
-// -Return value: Float -> camera's lens position directly after done adjusting focus
-// NOTE: return value seems to be inaccurate - just ignore it for now
-func setLensPosition(_ lensPosition: Float) -> Float {
-    let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
-    cameraServiceBrowser.sendPacket(packet)
-    let lensPos = photoReceiver.receiveLensPositionSync()
-    return lensPos
-}
-
-
-
-
-
-// creates the camera service browser (for sending instructions to iPhone) and
-//    the photo receiver (for receiving photos, updates, etc from iPhone)
-// NOTE: returns immediately; doens't wait for connection with iPhone to be established.
-func initializeIPhoneCommunications() {
-    cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver(scenesDirectory)
-    
-    photoReceiver.startBroadcast()
-    cameraServiceBrowser.startBrowsing()
-}
-
-// waits for both photo receiver & camera service browser communications
-// to be established (synchronous)
-// NOTE: only call if you're sure it won't seize control of the program / cause it to hang
-//    e.g. it should be executed within a DispatchQueue
-func waitForEstablishedCommunications() {
-    while !cameraServiceBrowser.readyToSendPacket {}
-    while !photoReceiver.readyToReceive {}
-}
-
 
 /* The following extension could be implemented to suggest similar commands on unrecognized input,
  but is buggy:

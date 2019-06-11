@@ -17,6 +17,7 @@
 		AA3FB618227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB610227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib */; };
 		AA3FB61A227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB619227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib */; };
 		AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */; };
+		AAA0AA2222AFF94000002E78 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAA0AA2122AFF94000002E78 /* Utils.swift */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
@@ -260,6 +261,8 @@
 		AA3FB610227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videoio.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_videoio.3.4.6.dylib; sourceTree = "<group>"; };
 		AA3FB619227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_features2d.3.4.6.dylib; sourceTree = "<group>"; };
 		AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
+		AAA0AA1E22AEE5CB00002E78 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
+		AAA0AA2122AFF94000002E78 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -465,6 +468,7 @@
 				E1A2165620C841000016DFC6 /* DirectoryStructure.swift */,
 				E1682DA020F9322200DF0FD4 /* Trajectory.swift */,
 				E17AC73F20FE29B40007EF77 /* CocoaAsyncSocket.framework */,
+				AAA0AA2122AFF94000002E78 /* Utils.swift */,
 			);
 			path = MobileLighting_Mac;
 			sourceTree = "<group>";
@@ -510,6 +514,7 @@
 		E19CC8AF20D41B0F009DA6FC /* calib */ = {
 			isa = PBXGroup;
 			children = (
+				AAA0AA1E22AEE5CB00002E78 /* calibration.h */,
 				E19CC8B020D41B0F009DA6FC /* calibration.cpp */,
 				E19CC8B220D41B0F009DA6FC /* Makefile */,
 				E19CC8BF20D41C00009DA6FC /* libcalib.i386.a */,
@@ -790,6 +795,7 @@
 				E1682DD120F94B7300DF0FD4 /* minStripeWidthCodes.dat in Sources */,
 				E1682DD220F94B7300DF0FD4 /* CameraServiceBrowser.swift in Sources */,
 				E1C0F41D2107A50F0088B609 /* Calibration.swift in Sources */,
+				AAA0AA2222AFF94000002E78 /* Utils.swift in Sources */,
 				E1682DD320F94B7300DF0FD4 /* PhotoReceiver.swift in Sources */,
 				E1682DD420F94B7300DF0FD4 /* DisplayController.swift in Sources */,
 				E1682DD520F94B7300DF0FD4 /* FullscreenWindow.swift in Sources */,
@@ -1075,6 +1081,7 @@
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 					"$(PROJECT_DIR)/MobileLighting_Mac/calib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
 					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
 				);
@@ -1117,6 +1124,7 @@
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 					"$(PROJECT_DIR)/MobileLighting_Mac/calib",
+					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
 					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
 				);
