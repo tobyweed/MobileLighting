@@ -174,6 +174,8 @@ public:
         node["First_Marker"] >> type;
         node["Num_of_Boards"] >> numberOfBoards;
         
+        node["ImageList_Filename"] >> imageListFilename;
+        
         node["DetectedImages_Path"] >> detectedPath;
         
         
@@ -265,6 +267,20 @@ public:
                 cout << "Invalid number of boards used: " << numberOfBoards << ". Fall back to default: 1" << endl;
                 numberOfBoards= 1;
             }
+            
+            if (readImageList(imageListFilename))
+            {
+                nImages = (int)imageList.size();
+                if (mode == STEREO)
+                    if (nImages % 2 != 0) {
+                        cout << "Image list must have even # of elements for stereo calibration" << endl;
+                        goodInput = false;
+                    }
+            }
+            else {
+                cout << "Invalid image list: " << imageListFilename << endl;
+                goodInput = false;
+            }
         }
     }
     
@@ -284,25 +300,25 @@ public:
         return img;
     }
     
-    /*
-     // Reads the image list from a file
-     bool readImageList( const string& filename )
-     {
-     imageList.clear();
-     FileStorage fs(filename, FileStorage::READ);
-     if( !fs.isOpened() )
-     return false;
-     FileNode n = fs.getFirstTopLevelNode();
-     if( n.type() != FileNode::SEQ )
-     return false;
-     FileNodeIterator it = n.begin(), it_end = n.end();
-     for( ; it != it_end; ++it )
-     imageList.push_back((string)*it);
-     return true;
-     }
-     */
+    
+    // Reads the image list from a file
+    bool readImageList( const string& filename )
+    {
+        imageList.clear();
+        FileStorage fs(filename, FileStorage::READ);
+        if( !fs.isOpened() )
+            return false;
+        FileNode n = fs.getFirstTopLevelNode();
+        if( n.type() != FileNode::SEQ )
+            return false;
+        FileNodeIterator it = n.begin(), it_end = n.end();
+        for( ; it != it_end; ++it )
+            imageList.push_back((string)*it);
+        return true;
+    }
     
     
+
     
 public:
     //--------------------------Calibration configuration-------------------------//
@@ -368,6 +384,8 @@ public:
     
     
     bool goodInput;         //Tracks input validity
+    
+    
 private:
     // Input variables only needed to set up settings
     string modeInput;
@@ -835,10 +853,6 @@ void  arucoDetect_(Settings_ s, Mat &img, intrinsicCalibration_ &InCal, Ptr<Ches
 
 //-----------------------------------------------------------------------------
 
-void test() {
-    printf("Here:=%s", "3");
-}
-
 // Main function. Detects patterns on images, runs calibration and saves results
 vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1  ) {
     string inputSettingsFile = settingsFile;
@@ -855,6 +869,8 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         cout << "Could not open the settings file: \"" << inputSettingsFile << "\"" << endl;
         return returnVector;
     }
+    
+//    printf("fs[\"Settings\"].nImages: %d", fs["Settings"].nImages);
     fs["Settings"] >> s;
     fs.release(); // close Settings file
     
@@ -869,11 +885,14 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     intrinsicCalibration_ inCal, inCal2;
     intrinsicCalibration_ *currentInCal = &inCal;
     
-
+    
     // size for stereo calibration
     printf("s.nImages: %d", s.nImages);
+    if(s.nImages < 0 ) {
+        printf("No image list provided%s", ".");
+    }
     int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
-    
+
     char imgSave[1000];
     bool save = false;
     if(s.detectedPath != "0")
@@ -913,19 +932,16 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             printf("Size: %d", size);
             printf("Max size=%lu", inCalAruCo.imagePoints.max_size());
             inCalAruCo.imagePoints.resize(size);
-            printf("Here=%s", "2");
             inCalAruCo.objectPoints.resize(size);
-            printf("Here=%s", "3");
             inCalAruCo2.imagePoints.resize(size);
-            printf("Here=%s", "4");
             inCalAruCo2.objectPoints.resize(size);
-
+            
             // make a list of lists of the newly created intrinsicCalibration structs
             tempList.push_back(inCalAruCo);
             tempList.push_back(inCalAruCo2);
             inCalList.push_back(tempList);
         }
-                
+        
         // variable used to facilitate the alternation
         //  between intrinsic calibration structs for stereo mode.
         int value;
@@ -988,4 +1004,3 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     
     return returnVector;
 }
-
