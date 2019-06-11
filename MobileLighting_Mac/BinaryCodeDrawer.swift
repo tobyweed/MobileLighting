@@ -1,5 +1,5 @@
 //
-// BinaryCodes.swift
+// BinaryCodesDrawer.swift
 // MobileLighting_Mac
 //
 // Contains the BinaryCodeDrawer class, which is used to display horizontal and vertical stripes

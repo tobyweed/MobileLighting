@@ -91,13 +91,13 @@ class Trajectory {
             return
         }
         var command = *"movej(\(startpos), 2.0, 0.3)\n"//, \(timedelay))\n"
-        sendscript(&command)
+        SendCommand(&command)
 //        usleep(UInt32(timedelay * 1e6))
     }
     
     func executeScript() {
         var cScript = *script
-        sendscript(&cScript)
+        SendCommand(&cScript)
 //        usleep(UInt32(self.duration * 1e6))
     }
     

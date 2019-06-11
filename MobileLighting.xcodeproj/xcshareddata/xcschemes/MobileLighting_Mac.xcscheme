@@ -66,6 +66,10 @@
             argument = "/Users/tobyweed/workspace/rsrch19/MobileLighting/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "init"
+            isEnabled = "NO">
+         </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
