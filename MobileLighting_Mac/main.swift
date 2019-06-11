@@ -139,6 +139,7 @@ do {
  * Establishes connection with/configures the iPhone and structured lighting displays
  ==========================================================================================*/
 
+
 // Establish connection with the iPhone and set the instruction packet
 initializeIPhoneCommunications()
 
