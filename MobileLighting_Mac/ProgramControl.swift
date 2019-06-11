@@ -147,12 +147,7 @@ func processCommand(_ input: String) -> Bool {
     nextToken += 1
     cmdSwitch: switch command {
     case .unrecognized:
-        /* The following portion could be implemented to suggest close commands, but is buggy:
-          if let unknown = tokens.first {
-            let bestMatch = Command(closeTo: unknown)
-            print("did you mean: \(bestMatch.rawValue)")
-          } else { */
-            print(usage)
+        print(usage)
         break
         
     case .help:
@@ -166,9 +161,6 @@ func processCommand(_ input: String) -> Bool {
             if let command = Command(rawValue: tokens[1]) {
                 print("\(command):\n\(getUsage(command))")
             } else {
-                // The following two lines could be used to suggest similar commands on unrecognized command
-                // let command = Command(closeTo: tokens[1])
-                // print("command \(tokens[1]) unrecognized. Did you mean: \(command.rawValue)")
                 print("Command \(tokens[1]) unrecognized. Enter 'help' for a list of commands")
             }
         default:
@@ -180,7 +172,6 @@ func processCommand(_ input: String) -> Bool {
         
     case .reloadsettings:
         // rereads init settings file and reloads attributes
-//        let usage: String = "usage: reloadsettings"
         guard tokens.count == 1 else {
             print(usage)
             break
@@ -198,7 +189,7 @@ func processCommand(_ input: String) -> Bool {
             print("Fatal error: could not load init settings, \(error.localizedDescription)")
             break
         }
-    
+        
     // connect: use to connect external devices
     case .connect:
         guard tokens.count >= 2 else {
@@ -225,7 +216,7 @@ func processCommand(_ input: String) -> Bool {
             }
             vxmController = VXMController(portName: tokens[2])
             _ = vxmController.startVXM()
-        
+            
         case "display":
             guard tokens.count == 2 else {
                 print("connect display takes no additional arguments.")
@@ -243,7 +234,6 @@ func processCommand(_ input: String) -> Bool {
     // disconnect: use to disconnect vxm or switcher (generally not necessary)
     case .disconnect:
         guard tokens.count == 2 else {
-//            print("usage: disconnect [vxm|switcher]")
             print(usage)
             break
         }
@@ -259,17 +249,15 @@ func processCommand(_ input: String) -> Bool {
             print("connect: invalid device \(tokens[1])")
             break
         }
-      
+        
     // disconnects both switcher and vxm box
     case .disconnectall:
         vxmController.stop()
         displayController.switcher?.endConnection()
         
-    
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .calibrate:
         guard tokens.count == 2 || tokens.count == 3 else {
-//            print("usage: calibrate [-d|-a]? [# of photos]\n       -d -- delete existing photos\n       -a -- append to existing photos")
             print(usage)
             break
         }
@@ -326,33 +314,32 @@ func processCommand(_ input: String) -> Bool {
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         let subpath = dirStruc.intrinsicsPhotos
-            for i in startIndex..<(nPhotos+startIndex) {
-                print("Hit enter to take photo.")
-                guard let input = readLine() else {
-                    fatalError("Unexpected error in reading stdin.")
-                }
-                if ["exit", "quit", "stop"].contains(input) {
-                    break
-                }
-                
-                // take calibration photo
-                var receivedCalibrationImage = false
-                cameraServiceBrowser.sendPacket(packet)
-                let completionHandler = { receivedCalibrationImage = true }
-                photoReceiver.dataReceivers.insertFirst(
-                    CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
-                )
-                while !receivedCalibrationImage {}
+        for i in startIndex..<(nPhotos+startIndex) {
+            print("Hit enter to take photo.")
+            guard let input = readLine() else {
+                fatalError("Unexpected error in reading stdin.")
             }
+            if ["exit", "quit", "stop"].contains(input) {
+                break
+            }
+            
+            // take calibration photo
+            var receivedCalibrationImage = false
+            cameraServiceBrowser.sendPacket(packet)
+            let completionHandler = { receivedCalibrationImage = true }
+            photoReceiver.dataReceivers.insertFirst(
+                CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+            )
+            while !receivedCalibrationImage {}
+        }
         break
-       
-    // captures calibration images from two viewpoints
-    // viewpoints specified as integers corresponding to the position along the linear
-    //    robot arm's axis
-    // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
+        
+        // captures calibration images from two viewpoints
+        // viewpoints specified as integers corresponding to the position along the linear
+        //    robot arm's axis
+        // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
     //     proper location
     case .calibrate2pos:
-//        let usage = "usage: calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution]?"
         guard tokens.count >= 4 && tokens.count <= 5 else {
             print(usage)
             break
@@ -361,8 +348,8 @@ func processCommand(_ input: String) -> Bool {
             let right = Int(tokens[2]),
             let nPhotos = Int(tokens[3]),
             nPhotos > 0 else {
-            print("calibrate2pos: invalid argument(s).")
-            break
+                print("calibrate2pos: invalid argument(s).")
+                break
         }
         
         if calibrationExposure != (0, 0) {
@@ -375,8 +362,6 @@ func processCommand(_ input: String) -> Bool {
         break
         
     case .stereocalib:
-//        let usage = "usage: stereocalib [nPhotos: Int] [resolution]?"
-        
         let (params, flags) = partitionTokens([String](tokens[1...]))
         guard params.count >= 1, let nPhotos = Int(tokens[1]) else {
             print(usage)
@@ -408,17 +393,13 @@ func processCommand(_ input: String) -> Bool {
         let posIDs = [Int](0..<positions.count)
         captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: resolution, appending: appending)
         break
-    
-    // captures scene using structured lighting from specified projector and position number
-    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
-    //  NOTE: this command does not move the arm; it must already be in the correct positions
+        
+        // captures scene using structured lighting from specified projector and position number
+        // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
+        //  NOTE: this command does not move the arm; it must already be in the correct positions
     //      BUT it does configure the projectors
     case .struclight:
-//        let parameters = ["struclight", "projector", "position"]
-//        let usage = "usage: struclight [id] [projector #] [position #] [resolution]?"
-        // for now, simply tells prog where to save files
         let system: BinaryCodeSystem
-//        let systems: [String : BinaryCodeSystem] = ["gray" : .GrayCode, "minSW" : .MinStripeWidthCode]
         
         guard tokens.count >= 4 else {
             print(usage)
@@ -441,12 +422,11 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         
-//        currentPos = armPos       // update current position
-        
-//        currentProj = projPos     // update current projector
+        // currentPos = armPos       // update current position
+        // currentProj = projPos     // update current projector
         
         system = .MinStripeWidthCode
-
+        
         let resolution: String
         if tokens.count == 5 {
             resolution = tokens[4]
@@ -460,18 +440,17 @@ func processCommand(_ input: String) -> Bool {
         displayController.switcher?.turnOn(projID)
         print("Hit enter when selected projector ready.")
         _ = readLine()  // wait until user hits enter
-
-//        Commented out to allow struclight w/out robot connection
-//        var pose = *positions[armPos]
-//        MovePose(&pose, robotVelocity, robotAcceleration)
-//        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
+        
+        //        Commented out to allow struclight w/out robot connection
+        //        var pose = *positions[armPos]
+        //        MovePose(&pose, robotVelocity, robotAcceleration)
+        //        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
         break
-    
+        
         
     case .takeamb:
-//        let usage = "usage: takeamb still (-f|-t)? [resolution=high]\n       video (-f|-t)? [exposureID=1]"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         guard params.count >= 1 else {
@@ -626,10 +605,7 @@ func processCommand(_ input: String) -> Bool {
     case .readfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
-//        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
-//            print("Lens position:\t\(pos)")
-//            processingCommand = false
-//        })
+        
         photoReceiver.dataReceivers.insertFirst(
             LensPositionReceiver { (pos: Float) in
                 print("Lens position:\t\(pos)")
@@ -641,23 +617,17 @@ func processCommand(_ input: String) -> Bool {
     case .autofocus:
         _ = setLensPosition(-1.0)
         processingCommand = false
-    
+        
     // tells the iPhone to lock the focus at the current position
     case .lockfocus:
         let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
         cameraServiceBrowser.sendPacket(packet)
-//        photoReceiver.receiveLensPosition(completionHandler: { (pos: Float) in
-//            print("Lens position:\t\(pos)")
-//            processingCommand = false
-//        })
-//        var done = false
         _ = photoReceiver.receiveLensPositionSync()
-//        while !done {}
         
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
         guard nextToken < tokens.count else {
-//            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
+            //            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
             print(usage)
             break
         }
@@ -667,13 +637,13 @@ func processCommand(_ input: String) -> Bool {
         }
         _ = setLensPosition(pos)
         processingCommand = false
-    
-    // autofocus on point, given in normalized x and y coordinates
+        
+        // autofocus on point, given in normalized x and y coordinates
     // NOTE: top left corner of image frame when iPhone is held in landscape with home button on the right corresponds to (0.0, 0.0).
     case .focuspoint:
         // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
         guard tokens.count >= 3 else {
-//            print("usage: focuspoint [x_coord] [y_coord]")
+            //            print("usage: focuspoint [x_coord] [y_coord]")
             print(usage)
             break
         }
@@ -684,9 +654,6 @@ func processCommand(_ input: String) -> Bool {
         let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
         let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
         cameraServiceBrowser.sendPacket(packet)
-//        photoReceiver.receiveLensPosition(completionHandler: { (_: Float) in
-//                processingCommand = false
-//        })
         _ = photoReceiver.receiveLensPositionSync()
         break
         
@@ -695,14 +662,13 @@ func processCommand(_ input: String) -> Bool {
         let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
         cameraServiceBrowser.sendPacket(packet)
         var receivedUpdate = false
-//        photoReceiver.receiveStatusUpdate(completionHandler: {(update: CameraStatusUpdate) in receivedUpdate = true})
         photoReceiver.dataReceivers.insertFirst(
             StatusUpdateReceiver { (update: CameraStatusUpdate) in
                 receivedUpdate = true
             }
         )
         while !receivedUpdate {}
-    
+        
     // tells iphone to send current exposure duration & ISO
     case .readexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .ReadExposure)
@@ -716,16 +682,14 @@ func processCommand(_ input: String) -> Bool {
     case .autoexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .AutoExposure)
         cameraServiceBrowser.sendPacket(packet)
-    
-    // tells iPhone to use locked exposure mode (does not change exposure settings, even when lighting
-    //   changes)
+        
+        // tells iPhone to use locked exposure mode (does not change exposure settings, even when lighting changes)
     case .lockexposure:
         let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
         cameraServiceBrowser.sendPacket(packet)
         
     case .setexposure:
         guard tokens.count == 3 else {
-//            print("usage: setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)")
             print(usage)
             break
         }
@@ -735,11 +699,11 @@ func processCommand(_ input: String) -> Bool {
         }
         let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [exposureDuration], photoBracketExposureISOs: [Double(exposureISO)])
         cameraServiceBrowser.sendPacket(packet)
-    
-    // displays checkerboard pattern
+        
+        // displays checkerboard pattern
     // optional parameter: side length of squares, in pixels
     case .cb:
-//        let usage = "usage: cb [squareSize]?"
+        //        let usage = "usage: cb [squareSize]?"
         let size: Int
         guard tokens.count >= 1 && tokens.count <= 2 else {
             print(usage)
@@ -751,45 +715,40 @@ func processCommand(_ input: String) -> Bool {
             size = 2
         }
         displayController.currentWindow?.displayCheckerboard(squareSize: size)
-        //displayController.windows.first!.displayCheckerboard(squareSize: size)
         break
-    
+        
     // paints entire window black
     case .black:
         displayController.currentWindow?.displayBlack()
-        //displayController.windows.first!.displayBlack()
         break
-       
+        
     // paints entire window white
     case .white:
         displayController.currentWindow?.displayWhite()
-        //displayController.windows.first!.displayWhite()
         break
-    
-    // displays diagonal stripes (at 45°) of specified width (measured horizontally)
+        
+        // displays diagonal stripes (at 45°) of specified width (measured horizontally)
     // (tool for testing pico projector and its diagonal pixel grid)
     case .diagonal:
-//        let usage = "usage: diagonal [stripe width]"    // width measured horizontally
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
         }
         displayController.currentWindow?.displayDiagonal(width: stripeWidth)
         break
-    
-    // displays vertical bars of specified width
+        
+        // displays vertical bars of specified width
     // (tool originaly made for testing pico projector)
     case .verticalbars:
-//        let usage = "usage: verticalbars [width]"
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
         }
         displayController.currentWindow?.displayVertical(width: stripeWidth)
         break
-       
-    // moves linear robot arm to specified position using VXM controller box
-    //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
+        
+        // moves linear robot arm to specified position using VXM controller box
+        //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
         switch tokens.count {
@@ -832,20 +791,18 @@ func processCommand(_ input: String) -> Bool {
             }
             
         default:
-//            print("usage: \(commandUsage[.movearm]!)")
             print(usage)
             break
         }
         
         break
-    
-    // used to turn projectors on or off
-    //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
-    //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+        
+        // used to turn projectors on or off
+        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
-//            print("usage: proj [projector_#|all] [on|off]|[1|0]")
             print(usage)
             break
         }
@@ -853,15 +810,12 @@ func processCommand(_ input: String) -> Bool {
             switch tokens[2] {
             case "on", "1":
                 displayController.switcher?.turnOn(projector)
-//                currentProj = projector
             case "off", "0":
                 displayController.switcher?.turnOff(projector)
-//                currentProj = -1
             default:
                 print("Unrecognized argument: \(tokens[2])")
             }
         } else if tokens[1] == "all" {
-//            currentProj = -1
             switch tokens[2] {
             case "on", "1":
                 displayController.switcher?.turnOn(0)
@@ -875,13 +829,12 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-    // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
-    //  and saves intermediate and final results to refined subdirectory
-    //    -direction argument specifies which axis to refine in, where 0 <-> x-axis
-    // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
+        // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
+        //  and saves intermediate and final results to refined subdirectory
+        //    -direction argument specifies which axis to refine in, where 0 <-> x-axis
+        // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine:
-//        let usage = "usage: refine [proj] [pos]\n       refine -a [pos]\n       refine -r [proj] [leftpos] [rightpos]\n       refine -a -r [leftpos] [rightpos]"
         guard tokens.count > 1 else {
             print(usage)
             break cmdSwitch
@@ -924,7 +877,7 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-
+        
         var projs = [Int]()
         if allproj {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
@@ -937,10 +890,7 @@ func processCommand(_ input: String) -> Bool {
             projs = [proj]
             curParam += 1
         }
-//            guard let proj = Int(params[0]) else {
-//                print("refine: invalid projector \(params[0])")
-//                break
-//            }
+
         let singlePositions: [Int]?
         if !allpos {
             if !rectified {
@@ -959,7 +909,7 @@ func processCommand(_ input: String) -> Bool {
         } else {
             singlePositions = nil
         }
-
+        
         for proj in projs {
             let positions: [Int]
             if !allpos {
@@ -971,10 +921,6 @@ func processCommand(_ input: String) -> Bool {
             
             if !rectified {
                 for pos in positions {
-//                guard let pos = Int(params[curParam]) else {
-//                    print("refine: invalid position \(params[curParam])")
-//                    break
-//                }
                     for direction: Int32 in [0, 1] {
                         var imgpath = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm"
                         var outdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: false)
@@ -993,10 +939,6 @@ func processCommand(_ input: String) -> Bool {
                 }
             } else {
                 let positionPairs = zip(positions, positions[1...])
-//                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
-//                    print("refine: invalid stereo positions \(params[curParam]), \(params[curParam+1])")
-//                    break
-//                }
                 for (leftpos, rightpos) in positionPairs {
                     for direction: Int in [0, 1] {
                         for pos in [leftpos, rightpos] {
@@ -1021,15 +963,13 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-    
-    // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
-    // usage options:
-    //  -'disparity': computes disparities for all projectors & all consecutive positions
-    //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
+        
+        // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
+        // usage options:
+        //  -'disparity': computes disparities for all projectors & all consecutive positions
+        //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
     case .disparity:
-//        let usage = "usage: disparity [-r]? [-a | projector #] [left pos #] [right pos #]\n"
-//        let flags = ["-r"]
         let (params, flags) = partitionTokens([String](tokens[1...]))
         var curParam = 0
         
@@ -1098,7 +1038,7 @@ func processCommand(_ input: String) -> Bool {
                 disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: rectified)
             }
         }
-
+        
     case .rectify:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
@@ -1169,8 +1109,6 @@ func processCommand(_ input: String) -> Bool {
         }
         
     case .merge:
-//        let usage = "usage: merge [flags...] [leftpos] [rightpos]\n       -r = rectified"
-        
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var rectified = false, allpos = false
@@ -1222,23 +1160,8 @@ func processCommand(_ input: String) -> Bool {
         for (left, right) in zip(positions, positions[1...]) {
             merge(left: left, right: right, rectified: rectified)
         }
-//        var curTok = 1
-//        let rectified: Bool
-//        if tokens[1] == "-r" {
-//            rectified = true
-//            curTok += 1
-//        } else {
-//            rectified = false
-//        }
-//        guard tokens.count == curTok + 2, let left = Int(tokens[curTok]), let right = Int(tokens[curTok+1]) else {
-//            print("merge: invalid stereo position pair provided.\n\(usage)")
-//            break
-//        }
-//        merge(left: left, right: right, rectified: rectified)
         
     case .reproject:
-//        let usage = "usage: reproject [leftpos] [rightpos]"
-        
         // implement -a functionality
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
@@ -1293,14 +1216,7 @@ func processCommand(_ input: String) -> Bool {
             reproject(left: left, right: right)
         }
         
-//        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
-//            print("reproject: invalid stereo position pair provided.")
-//            break
-//        }
-//        reproject(left: left, right: right)
-        
     case .merge2:
-//        let usage = "usage: merge2 [leftpos] [rightpos]"
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var allpos = false
@@ -1352,22 +1268,12 @@ func processCommand(_ input: String) -> Bool {
             mergeReprojected(left: left, right: right)
         }
         
-//        guard tokens.count == 3 else {
-//            print(usage)
-//            break
-//        }
-//        guard let left = Int(tokens[1]), let right = Int(tokens[2]) else {
-//            print("reproject: invalid stereo position pair provided.")
-//            break
-//        }
-//        mergeReprojected(left: left, right: right)
-        
-    // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
-    // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
-        // ABSOLUTE PATHS NOT REQUIRED
+        // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
+        // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
+    // ABSOLUTE PATHS NOT REQUIRED
     case .getintrinsics:
         guard tokens.count <= 2 else {
-//            print("usage: \(commandUsage[command]!)")
+            //            print("usage: \(commandUsage[command]!)")
             print(usage)
             break
         }
@@ -1395,10 +1301,9 @@ func processCommand(_ input: String) -> Bool {
             CalibrateWithSettings(&path)
         }
         break
-    
+        
     // do stereo calibration
     case .getextrinsics:
-//        let usage = commandUsage[.getextrinsics]!
         let (params, flags) = partitionTokens(tokens)
         
         var all = false
@@ -1452,26 +1357,23 @@ func processCommand(_ input: String) -> Bool {
             calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
             calib.save()
             
-            //        DispatchQueue.main.sync {
             var path = *dirStruc.calibrationSettingsFile
             CalibrateWithSettings(&path)
-            //        }
         }
-    
-    // displays current resolution being used for external display
+        
+        // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues
     case .dispres:
         let screen = displayController.currentWindow!
         print("Screen resolution: \(screen.width)x\(screen.height)")
-    
-    // displays a min stripe width binary code pattern
+        
+        // displays a min stripe width binary code pattern
     //  useful for verifying the minSW.dat file loaded properly
     case .dispcode:
         displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
-    
+        
     // scripting
     case .sleep:
-//        let usage = "usage: sleep [secs: Float]"
         guard tokens.count == 2 else {
             print(usage)
             break
@@ -1532,52 +1434,52 @@ func waitForEstablishedCommunications() {
 
 /* The following extension could be implemented to suggest similar commands on unrecognized input,
  but is buggy:
-extension Command {
-    init(closeTo unknown: String) {
-        if let known = Command(rawValue: unknown) {
-            self = known
-        } else {
-            // if command unrecognized, find closest match
-            var cases: [String] = Command.cases().map { return $0.rawValue }
-            // now D.P. solution
-            let costs: [Int] = cases.map { (command: String) in
-                var cache = [[Int]](repeating: [Int](repeating: 0, count: command.count+1), count: unknown.count+1)
-                var runs = [[Int]](repeating: [Int](repeating:0, count: command.count+1), count: unknown.count+1)
-                for i in 0..<command.count+1 {
-                    cache[0][i] = i
-                }
-                for j in 0..<unknown.count+1 {
-                    cache[j][0] = j
-                }
-                for j in 1..<unknown.count+1 {
-                    for i in 1..<command.count+1 {
-                        let cost = min(min(cache[j][i-1] + 1, cache[j-1][i] + 1), cache[j-1][i-1] + ((command[i-1] == unknown[j-1]) ? -runs[j-1][i-1] : 1) )
-                        cache[j][i] = cost
-                        switch cost {
-                        case cache[j][i-1] + 1:
-                            // zero out run
-                            runs[j][i] = 0
-                        case cache[j-1][i] + 1:
-                            // zero out run
-                            runs[j][i] = 0
-                        case cache[j-1][i-1] - runs[j-1][i-1]:
-                            // increase run
-                            runs[j][i] = runs[j-1][i-1] + 1
-                        case cache[j-1][i-1] + 1:
-                            runs[j][i] = 0
-                        default:
-                            // impossible
-                            break
-                        }
-//                        print("\(cost) ", separator: " ", terminator: "")
-                    }
-                }
-                return cache[unknown.count][command.count]
-            }
-            let mincost = costs.min() ?? 0
-            let bestMatch = cases[costs.index(of: mincost)!]
-            self = Command(rawValue: bestMatch)!
-        }
-    }
-}
-*/
+ extension Command {
+ init(closeTo unknown: String) {
+ if let known = Command(rawValue: unknown) {
+ self = known
+ } else {
+ // if command unrecognized, find closest match
+ var cases: [String] = Command.cases().map { return $0.rawValue }
+ // now D.P. solution
+ let costs: [Int] = cases.map { (command: String) in
+ var cache = [[Int]](repeating: [Int](repeating: 0, count: command.count+1), count: unknown.count+1)
+ var runs = [[Int]](repeating: [Int](repeating:0, count: command.count+1), count: unknown.count+1)
+ for i in 0..<command.count+1 {
+ cache[0][i] = i
+ }
+ for j in 0..<unknown.count+1 {
+ cache[j][0] = j
+ }
+ for j in 1..<unknown.count+1 {
+ for i in 1..<command.count+1 {
+ let cost = min(min(cache[j][i-1] + 1, cache[j-1][i] + 1), cache[j-1][i-1] + ((command[i-1] == unknown[j-1]) ? -runs[j-1][i-1] : 1) )
+ cache[j][i] = cost
+ switch cost {
+ case cache[j][i-1] + 1:
+ // zero out run
+ runs[j][i] = 0
+ case cache[j-1][i] + 1:
+ // zero out run
+ runs[j][i] = 0
+ case cache[j-1][i-1] - runs[j-1][i-1]:
+ // increase run
+ runs[j][i] = runs[j-1][i-1] + 1
+ case cache[j-1][i-1] + 1:
+ runs[j][i] = 0
+ default:
+ // impossible
+ break
+ }
+ //                        print("\(cost) ", separator: " ", terminator: "")
+ }
+ }
+ return cache[unknown.count][command.count]
+ }
+ let mincost = costs.min() ?? 0
+ let bestMatch = cases[costs.index(of: mincost)!]
+ self = Command(rawValue: bestMatch)!
+ }
+ }
+ }
+ */
