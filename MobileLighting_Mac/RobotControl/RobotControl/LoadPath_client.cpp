@@ -101,14 +101,3 @@ int setVelocity(float v){
     return -1;    
   return 0;
 }
-
-
-//int main(int argc, char const *argv[]){
-//  loadPath("test");
-//  gotoView(1);
-//  setVelocity(0.3);
-//  gotoView(2);
-//  setVelocity(0.6);
-//  executePath();
-//  return 0;
-//}

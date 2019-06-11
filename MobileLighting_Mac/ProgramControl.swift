@@ -41,6 +41,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case proj
     
     // robot control
+    case loadpath
     case movearm
     
     // image processing
@@ -99,6 +100,7 @@ func getUsage(_ command: Command) -> String {
     case .white: return "white"
     case .diagonal: return "diagonal [stripe width]"
     case .verticalbars: return "verticalbars [width]"
+    case .loadpath: return "loadpath [pathname]"
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
@@ -394,9 +396,9 @@ func processCommand(_ input: String) -> Bool {
         captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: resolution, appending: appending)
         break
         
-        // captures scene using structured lighting from specified projector and position number
-        // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
-        //  NOTE: this command does not move the arm; it must already be in the correct positions
+    // captures scene using structured lighting from specified projector and position number
+    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
+    //  NOTE: this command does not move the arm; it must already be in the correct positions
     //      BUT it does configure the projectors
     case .struclight:
         let system: BinaryCodeSystem
@@ -438,16 +440,12 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when all projectors off.")
         _ = readLine()  // wait until user hits enter
         displayController.switcher?.turnOn(projID)
-        print("Hit enter when selected projector ready.")
+        print("Hit enter when selected projector ready.") // Turn on the selected projector
         _ = readLine()  // wait until user hits enter
-
-        var test: String = "test"
-        var path = *test // get pointer to the string
-        LoadPath(&path) // load the path named "test" on Rosvita server
         
+        // Tell the Rosvita server to move the arm to the selected position
         var posStr = *positions[armPos] // get pointer to pose string
         GotoView(&posStr) // pass address of pointer
-        
         usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
@@ -752,8 +750,23 @@ func processCommand(_ input: String) -> Bool {
         displayController.currentWindow?.displayVertical(width: stripeWidth)
         break
         
-        // moves linear robot arm to specified position using VXM controller box
-        //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
+    // Select the appropriate robot arm path for the Rosvita server to load
+    case .loadpath:
+        guard tokens.count == 2 else {
+            print(usage)
+            break
+        }
+        
+        let path: String = tokens[1]
+        var pathPointer = *path // get pointer to the string
+        var status = LoadPath(&pathPointer) // load the path named "test" on Rosvita server
+        if status != 0 { // print a message if the LoadPath doesn't return 0
+            print("Could not load path \"\(path)\"")
+        }
+        break
+        
+    // moves linear robot arm to specified position using VXM controller box
+    //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
         switch tokens.count {
