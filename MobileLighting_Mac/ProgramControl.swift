@@ -54,7 +54,6 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     
     // camera calibration
     case calibrate  // 'x'
-    case calibrate2pos
     case stereocalib
     case getintrinsics
     case getextrinsics
@@ -81,8 +80,7 @@ func getUsage(_ command: Command) -> String {
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
-    case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
+    case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
     case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
     case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     case .readfocus: return "readfocus"
@@ -330,33 +328,6 @@ func processCommand(_ input: String) -> Bool {
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
-        break
-        
-        // captures calibration images from two viewpoints
-        // viewpoints specified as integers corresponding to the position along the linear
-        //    robot arm's axis
-        // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
-    //     proper location
-    case .calibrate2pos:
-        guard tokens.count >= 4 && tokens.count <= 5 else {
-            print(usage)
-            break
-        }
-        guard let left = Int(tokens[1]),
-            let right = Int(tokens[2]),
-            let nPhotos = Int(tokens[3]),
-            nPhotos > 0 else {
-                print("calibrate2pos: invalid argument(s).")
-                break
-        }
-        
-        if calibrationExposure != (0, 0) {
-            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
-            cameraServiceBrowser.sendPacket(packet)
-        }
-        
-        let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
-        captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
         
     case .stereocalib:
