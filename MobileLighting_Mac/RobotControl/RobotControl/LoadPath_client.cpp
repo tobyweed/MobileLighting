@@ -3,6 +3,8 @@
 // 2019 Middlebury College Summer Research with professor Scharstein
 // Guanghan Pan
 //
+// Communicates with the Rosvita server which controls the robot arm.
+//
 
 #include <unistd.h>
 #include <stdio.h> 
@@ -22,7 +24,7 @@ int client()
     char buffer[1024] = {0}; 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
     { 
-        printf("\n Socket creation error \n"); 
+        printf("Socket creation error \n");
         return -1; 
     } 
    
@@ -32,13 +34,13 @@ int client()
     // Convert IPv4 and IPv6 addresses from text to binary form 
     if(inet_pton(AF_INET, "140.233.20.218", &serv_addr.sin_addr)<=0)  
     { 
-        printf("\nInvalid address/ Address not supported \n"); 
+        printf("Invalid address/ Address not supported \n");
         return -1; 
     } 
    
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     { 
-        printf("\nConnection to robot server failed \n"); 
+        printf("Connection to robot server failed. \n");
         return -1; 
     } 
     return sock; 
@@ -51,7 +53,7 @@ int sendCommand(char *script){
     return -1;
   send(client_sock, script,strlen(script),0);
   if (result<0){
-    printf("\nSending Failed\n");
+    printf("Sending Failed\n");
     return -1;
   }
   read(client_sock, buffer, 1024);

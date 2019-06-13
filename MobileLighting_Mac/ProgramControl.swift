@@ -444,7 +444,7 @@ func processCommand(_ input: String) -> Bool {
         _ = readLine()  // wait until user hits enter
         
         // Tell the Rosvita server to move the arm to the selected position
-        var posStr = *positions[armPos] // get pointer to pose string
+        var posStr = *String(armPos) // get pointer to pose string
         GotoView(&posStr) // pass address of pointer
         usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
@@ -496,7 +496,7 @@ func processCommand(_ input: String) -> Bool {
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<positions.count {
-                var posStr = *positions[pos]
+                var posStr = *String(pos)
                 GotoView(&posStr)
                 print("Hit enter when camera in position.")
                 _ = readLine()
@@ -757,9 +757,9 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         
-        let path: String = tokens[1]
+        let path: String = tokens[1] // the first argument should specify a pathname
         var pathPointer = *path // get pointer to the string
-        var status = LoadPath(&pathPointer) // load the path named "test" on Rosvita server
+        var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
         if status != 0 { // print a message if the LoadPath doesn't return 0
             print("Could not load path \"\(path)\"")
         }
@@ -783,7 +783,8 @@ func processCommand(_ input: String) -> Bool {
             print("Moving arm to position \(posStr)")
             var cStr = posStr.cString(using: .ascii)!
             DispatchQueue.main.async {
-                GotoView(&cStr)  // use default acceleration & velocities
+                // Tell the Rosvita server to move the arm to the selected position
+                GotoView(&cStr)
                 print("Moved arm to position \(posStr)")
             }
         case 3:

@@ -156,10 +156,12 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
         print(msgBoard)
         var i = 0
         while i < posIDs.count {
+            
             let posID = posIDs[i]
-            var posStr = *positions[posID]
+            var posStr = *String(posID)
             GotoView(&posStr)
             print(msgMove)
+            
             guard calibration_wait(currentPos: posID) else {
                 return
             }

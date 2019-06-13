@@ -3,6 +3,8 @@
 // RobotControl
 // Guanghan Pan
 //
+// Header file to export functions
+//
 
 int client();
 int sendCommand(char *script);

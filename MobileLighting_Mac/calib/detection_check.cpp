@@ -814,7 +814,7 @@ void  arucoDetect_(Settings_ s, Mat &img, intrinsicCalibration_ &InCal, Ptr<Ches
     detectorParams->  minMarkerPerimeterRate = 0.01;
     detectorParams->  maxMarkerPerimeterRate = 4 ;
     detectorParams-> cornerRefinementMinAccuracy = 0.05;
-    
+
     
     Mat imgCopy;
     
@@ -846,14 +846,13 @@ void  arucoDetect_(Settings_ s, Mat &img, intrinsicCalibration_ &InCal, Ptr<Ches
         InCal.allIds.push_back(currentBoard->ids);
         
     }
-    
 }
 
 
 
 //-----------------------------------------------------------------------------
 
-// Main function. Detects patterns on images, runs calibration and saves results
+// Main function. Detects patterns on images
 vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1  ) {
     string inputSettingsFile = settingsFile;
     
@@ -870,7 +869,6 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         return returnVector;
     }
     
-//    printf("fs[\"Settings\"].nImages: %d", fs["Settings"].nImages);
     fs["Settings"] >> s;
     fs.release(); // close Settings file
     
@@ -880,18 +878,9 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         return returnVector;
     }
     
-    
     // struct to store calibration parameters
     intrinsicCalibration_ inCal, inCal2;
     intrinsicCalibration_ *currentInCal = &inCal;
-    
-    
-    // size for stereo calibration
-    printf("s.nImages: %d", s.nImages);
-    if(s.nImages < 0 ) {
-        printf("No image list provided%s", ".");
-    }
-    int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
 
     char imgSave[1000];
     bool save = false;
@@ -903,6 +892,11 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             printf("\nDetected images could not be saved. Invalid path: %s\n", s.detectedPath.c_str());
     }
     
+    // size of vectors for stereo calibration
+    int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
+    if(s.nImages < 0 ) {
+        printf("Failed to initialize number of image paths in stereo image list from: %s", inputSettingsFile);
+    }
     
     /*-----------Calibration using AruCo patterns--------------*/
     if (s.calibrationPattern != Settings_::CHESSBOARD) {
@@ -929,8 +923,6 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             intrinsicCalibration_ inCalAruCo2;
             
             // require correctly sized vectors
-            printf("Size: %d", size);
-            printf("Max size=%lu", inCalAruCo.imagePoints.max_size());
             inCalAruCo.imagePoints.resize(size);
             inCalAruCo.objectPoints.resize(size);
             inCalAruCo2.imagePoints.resize(size);
@@ -947,8 +939,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         int value;
         
         
-        for(int i = 0;;i++){
-            
+        for(int i = 0;;i++) {
             // Switches between intrinsic calibration structs for stereo mode
             if (i%2 == 0) {
                 currentInCal = &inCalList[0][0];
@@ -966,26 +957,23 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             else
                 currentImg = Mat();
             
+            // Print the number of detected shared object points, along with warnings if there are not enough
             if(!currentImg.data) {
-                
                 for(int n = 0; n< s.numberOfBoards; n++){
-                    
                     setUpAruco_(s, inCalList[n][0], inCalList[n][1], boardsList[n], n);
                     
                     getSharedPoints_(inCalList[n][0],  inCalList[n][1]);
                     
                     cout << "Number of shared objectPoints for this board is "
                     << inCalList[n][0].objectPoints[0].size() << endl;
+                    
                     if (inCalList[n][0].objectPoints[0].size() < 10)
                         cout << "Not Good!" << endl;
                     
                     returnVector.push_back((int)inCalList[n][0].objectPoints[0].size());
-                    
-                    
                 }
                 
                 break;
-                
             }
             
             s.imageSize = currentImg.size();
