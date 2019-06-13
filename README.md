@@ -124,11 +124,10 @@ ML Mac will ask you to hit enter as soon as you are ready to take the next photo
 
 ### Stereo Calibration
 To capture extrinsics calibration photos, use the following command:
-`stereocalib (-a|-d) [nPhotos]`
+`stereocalib (-a) [nPhotos]`
 Flags:
 * `-a`: append photos to existing ones in <scene>/orig/calibration/stereo/pos*
-* `-d`: delete all photos in <scene>/orig/calibration/stereo/pos* before beginning capture
-* (none): overwrite existing photos
+* (none): delete all photos in <scene>/orig/calibration/stereo/pos* before beginning capture
 
 ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
 

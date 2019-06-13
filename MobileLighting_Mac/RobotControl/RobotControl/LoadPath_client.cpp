@@ -30,15 +30,18 @@ int client()
    
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_port = htons(PORT); 
-       
-    // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "140.233.20.218", &serv_addr.sin_addr)<=0)  
-    { 
+    
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if(inet_pton(AF_INET, "140.233.20.227", &serv_addr.sin_addr)<=0)
+    {
         printf("Invalid address/ Address not supported \n");
         return -1; 
-    } 
-   
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
+    }
+    
+    printf("Trying to connect to robot server... \n");
+    
+    // Try to connect to robot server. If the connection fails, check the IP address above. 
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     { 
         printf("Connection to robot server failed. \n");
         return -1; 

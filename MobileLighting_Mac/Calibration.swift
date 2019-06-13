@@ -46,9 +46,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         var posStr = positions[pos0].cString(using: .ascii)!
         GotoView(&posStr)
         print(msgBoard)
-        guard calibration_wait(currentPos: pos0) else {
-            return
-        }
+//        guard calibration_wait(currentPos: pos0) else {
+//            return
+//        }
         
         // take photo at pos0
         cameraServiceBrowser.sendPacket(packet)
@@ -61,9 +61,9 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
         posStr = positions[pos1].cString(using: .ascii)!
         GotoView(&posStr)
         print(msgMove)
-        guard calibration_wait(currentPos: pos1) else {
-            return
-        }
+//        guard calibration_wait(currentPos: pos1) else {
+//            return
+//        }
         
         // take photo at pos1
         cameraServiceBrowser.sendPacket(packet)
@@ -99,9 +99,11 @@ func captureStereoCalibration(left pos0: Int, right pos1: Int, nPhotos: Int, res
 
 
 // captureNPosCalibration: takes stereo calibration photos for all N positions
-func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "high", appending: Bool = false) {
+func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String) {
+    // Instruction packet to take a photo
     let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
-    var photoID: Int
+    
+    // Receive photo
     func receiveCalibrationImageSync(dir: String, id: Int) {
         var received = false
         let completionHandler = {
@@ -113,9 +115,7 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
         while !received {}
     }
     
-    let msgMove = "Hit enter when camera in position."
-    let msgBoard = "Hit enter when board repositioned."
-    
+    // Get the directories to save photos to
     let stereoDirs = posIDs.map {
         return dirStruc.stereoPhotos($0)
     }
@@ -125,8 +125,11 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
         return dictNew
     }
     
-    if appending {
-        // not yet implemented
+    // Determine whether to delete or append to photos already in directory
+    var photoID: Int // Determines what ID we should write photos with
+    switch mode { // Switch in case we want to add more flags later
+    case "-a":
+        // not yet implemented. TODO: add delete flag support
         let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
             let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
             return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
@@ -136,7 +139,8 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
             }.max() ?? -1
         // maxVal = max(idArray)
         photoID = maxVal + 1
-    } else {
+        break
+    default:
         // erase directories
         for dir in stereoDirs {
             removeFiles(dir: dir)
@@ -152,80 +156,86 @@ func captureNPosCalibration(posIDs: [Int], nPhotos: Int, resolution: String = "h
     settings.save()
     
     // take the photos
-    while photoID < nPhotos {
-        print(msgBoard)
+    while(true) {
         var i = 0
+        
+        print("Hit enter to take a set or write q to finish taking photos");
+        guard let input = readLine() else {
+            fatalError("Unexpected error in reading stdin.")
+        }
+        if ["q", "quit"].contains(input) {
+            break
+        }
+        
+        // Take set of calibration photos, one from each position
         while i < posIDs.count {
-            
-            let posID = posIDs[i]
-            var posStr = *String(posID)
-            GotoView(&posStr)
-            print(msgMove)
-            
-            guard calibration_wait(currentPos: posID) else {
-                return
-            }
-            
-            // take photo at pos0
-            guard let photoDir = stereoDirDict[posID] else {
-                print("stereocalib: ERROR -- could not find directory for position \(posID)")
+            // Move the robot to the right position
+//            var posStr = *String(i)
+//            GotoView(&posStr)
+//            usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
+            print("\nTaking image from position \(i)...")
+
+            // take photo at position i
+            guard let photoDir = stereoDirDict[i] else {
+                print("stereocalib: ERROR -- could not find directory for position \(i)")
                 return
             }
             receiveCalibrationImageSync(dir: photoDir, id: photoID)
             
             if i > 0 {
                 // now perform detection check
-                var leftpath = *"\(stereoDirDict[posID]!)/IMG\(photoID).JPG"
-                var rightpath = *"\(stereoDirDict[posID-1]!)/IMG\(photoID).JPG"
+                print("\nDetecting objectPoints...")
+                var leftpath = *"\(stereoDirDict[i]!)/IMG\(photoID).JPG"
+                var rightpath = *"\(stereoDirDict[i-1]!)/IMG\(photoID).JPG"
                 _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
             }
             i += 1
         }
-        print("continue (c) or skip (s)?")
-        let shouldSkip: Bool
+        print("\nFinished set.")
+            
+        // Ask the user if they'd like to retake the photo from that position
+        print("Continue (c), retake the last set (r), or finish taking photos (q).")
+        var quit = false
         switch readLine() {
-        case "c","k":
-            shouldSkip = false
-        case "s","r","i":
-            shouldSkip = true
+        case "c":
+            photoID += 1
+        case "s":
+            print("Retaking...")
+        case "q":
+            quit = true
         default:
-            shouldSkip = false
-        }
-        if shouldSkip {
-            print("skipping...")
-        } else {
             photoID += 1
         }
-        
+        if(quit){ break }
     }
     
     
 }
 
-
-func calibration_wait(currentPos: Int) -> Bool {
-    var input: String
-    repeat {
-        guard let inputtmp = readLine() else {
-            return false
-        }
-        input = inputtmp
-        let tokens = input.split(separator: " ")
-        if tokens.count == 0 {
-            return true
-        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
-            return false
-        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
-            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
-            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
-            cameraServiceBrowser.sendPacket(packet)
-            _ = photoReceiver.receiveLensPositionSync()
-        } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
-            var posStr = *positions[pos]
-            GotoView(&posStr)
-            print("Hit enter when ready to return to original position.")
-        } else {
-            return true
-        }
-    } while true
-}
+// Old function with added features we don't need right now
+//func calibration_wait(currentPos: Int) -> Bool {
+//    var input: String
+//    repeat {
+//        guard let inputtmp = readLine() else {
+//            return false
+//        }
+//        input = inputtmp
+//        let tokens = input.split(separator: " ")
+//        if tokens.count == 0 {
+//            return true
+//        } else if ["exit", "e", "q", "quit", "stop", "end"].contains(tokens[0]) {
+//            return false
+//        } else if tokens.count == 2, let x = Float(tokens[0]), let y = Float(tokens[1]) {
+//            let point = CGPoint(x: CGFloat(x), y: CGFloat(y))
+//            let packet = CameraInstructionPacket(cameraInstruction: .SetPointOfFocus, pointOfFocus: point)
+//            cameraServiceBrowser.sendPacket(packet)
+//            _ = photoReceiver.receiveLensPositionSync()
+//        } else if tokens.count == 1, let pos = Int(tokens[0]), pos >= 0 && pos < positions.count {
+//            var posStr = *positions[pos]
+//            GotoView(&posStr)
+//            print("Hit enter when ready to return to original position.")
+//        } else {
+//            return true
+//        }
+//    } while true
+//}

@@ -784,12 +784,12 @@ void setUpAruco_( Settings_ s, intrinsicCalibration_ &inCal, intrinsicCalibratio
             detected1 = inCal2.objectPoints[0].size();
         }
         
-        cout << " # of objectPoints for image0"
+        cout << " Number of objectPoints for image0"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
         << " is "
         << detected0 << endl;
-        cout << " # of objectPoints for image1"
+        cout << " Number of objectPoints for image1"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
         << " is "
@@ -895,7 +895,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     // size of vectors for stereo calibration
     int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
     if(s.nImages < 0 ) {
-        printf("Failed to initialize number of image paths in stereo image list from: %s", inputSettingsFile);
+        cout << "Failed to initialize number of image paths in stereo image list from: \"" << inputSettingsFile << "\"" << endl;
     }
     
     /*-----------Calibration using AruCo patterns--------------*/
@@ -968,7 +968,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
                     << inCalList[n][0].objectPoints[0].size() << endl;
                     
                     if (inCalList[n][0].objectPoints[0].size() < 10)
-                        cout << "Not Good!" << endl;
+                        cout << "Not enough object points! This set should be retaken." << endl;
                     
                     returnVector.push_back((int)inCalList[n][0].objectPoints[0].size());
                 }

@@ -80,7 +80,7 @@ func getUsage(_ command: Command) -> String {
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
-    case .calibrate: return "calibrate (-d|-a)? [# of photos]\n       -d: delete existing photos\n       -a: append to existing photos"
+    case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
     case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
     case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
     case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
@@ -259,11 +259,12 @@ func processCommand(_ input: String) -> Bool {
         
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .calibrate:
-        guard tokens.count == 2 || tokens.count == 3 else {
+        guard tokens.count == 1 || tokens.count == 2 else {
             print(usage)
             break
         }
         
+        // Set exposure and ISOs
         if calibrationExposure != (0, 0) {
             let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
             cameraServiceBrowser.sendPacket(packet)
@@ -271,17 +272,12 @@ func processCommand(_ input: String) -> Bool {
         
         let nPhotos: Int
         let startIndex: Int
-        if tokens.count == 3 {
+        if tokens.count == 2 {
             let mode = tokens[1]
             guard ["-d","-a"].contains(mode) else {
                 print("calibrate: unrecognized flag \(mode)")
                 break
             }
-            guard let n = Int(tokens[2]) else {
-                print("calibrate: invalid number of photos \(tokens[2])")
-                break
-            }
-            nPhotos = n
             var photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
                 return "\(dirStruc.intrinsicsPhotos)/\($0)"
             }
@@ -307,21 +303,19 @@ func processCommand(_ input: String) -> Bool {
                 startIndex = 0
             }
         } else {
-            guard let n = Int(tokens[1]) else {
-                print("calibrate: invalid number of photos \(tokens[2])")
-                break
-            }
-            nPhotos = n
             startIndex = 0
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         let subpath = dirStruc.intrinsicsPhotos
-        for i in startIndex..<(nPhotos+startIndex) {
-            print("Hit enter to take photo.")
+        
+        // Insert photos starting at the right index, stopping on user prompt
+        var i: Int = startIndex;
+        while(true) {
+            print("Hit enter to take a photo or write q to finish taking photos.")
             guard let input = readLine() else {
                 fatalError("Unexpected error in reading stdin.")
             }
-            if ["exit", "quit", "stop"].contains(input) {
+            if ["q", "quit"].contains(input) {
                 break
             }
             
@@ -333,6 +327,8 @@ func processCommand(_ input: String) -> Bool {
                 CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
             )
             while !receivedCalibrationImage {}
+            print("\n\(i-startIndex+1) photos recorded.")
+            i += 1
         }
         break
         
@@ -365,15 +361,24 @@ func processCommand(_ input: String) -> Bool {
         
     case .stereocalib:
         let (params, flags) = partitionTokens([String](tokens[1...]))
-        guard params.count >= 1, let nPhotos = Int(tokens[1]) else {
+        // Make sure we have the right number of tokens
+        guard params.count <= 1, flags.count <= 1 else {
             print(usage)
             break
         }
+        
+        // Get resolution
         let resolution: String
-        if params.count == 2 {
-            resolution = tokens[1]
+        if params.count == 1 {
+            resolution = params[0]
         } else {
             resolution = defaultResolution
+        }
+        
+        var mode: String = "default"; // Arbitrary initialization
+        // Get optional flag
+        if flags.count == 1 {
+            mode = flags[0]
         }
         
         var appending = false
@@ -393,7 +398,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         let posIDs = [Int](0..<positions.count)
-        captureNPosCalibration(posIDs: posIDs, nPhotos: nPhotos, resolution: resolution, appending: appending)
+        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         
     // captures scene using structured lighting from specified projector and position number
@@ -498,8 +503,7 @@ func processCommand(_ input: String) -> Bool {
             for pos in 0..<positions.count {
                 var posStr = *String(pos)
                 GotoView(&posStr)
-                print("Hit enter when camera in position.")
-                _ = readLine()
+                usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
             
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
