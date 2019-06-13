@@ -73,9 +73,8 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         // Take set of calibration photos, one from each position
         while i < posIDs.count {
             // Move the robot to the right position
-//            var posStr = *String(i)
-//            GotoView(&posStr)
-//            usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
+            var posStr = *String(i)
+            GotoView(&posStr)
             print("\nTaking image from position \(i)...")
 
             // take photo at position i
@@ -94,7 +93,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             }
             i += 1
         }
-        print("\nFinished set.")
+        print("\nFinished \(photoID + 1) set.")
             
         // Ask the user if they'd like to retake the photo from that position
         print("Continue (c), retake the last set (r), or finish taking photos (q).")
@@ -102,7 +101,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         switch readLine() {
         case "c":
             photoID += 1
-        case "s":
+        case "r":
             print("Retaking...")
         case "q":
             quit = true

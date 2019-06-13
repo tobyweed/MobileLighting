@@ -368,7 +368,7 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        let posIDs = [Int](0..<positions.count)
+        var posIDs: [Int] = Array(0..<nPositions)
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         
@@ -395,7 +395,7 @@ func processCommand(_ input: String) -> Bool {
             print("struclight: invalid position number \(tokens[2]).")
             break
         }
-        guard armPos >= 0, armPos < positions.count else {
+        guard armPos >= 0, armPos < nPositions else {
             print("struclight: position \(armPos) out of range.")
             break
         }
@@ -422,7 +422,6 @@ func processCommand(_ input: String) -> Bool {
         // Tell the Rosvita server to move the arm to the selected position
         var posStr = *String(armPos) // get pointer to pose string
         GotoView(&posStr) // pass address of pointer
-        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
         
         captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
         break
@@ -471,10 +470,9 @@ func processCommand(_ input: String) -> Bool {
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
             // Move the robot to the correct position and prompt photo capture
-            for pos in 0..<positions.count {
+            for pos in 0..<nPositions {
                 var posStr = *String(pos)
                 GotoView(&posStr)
-                usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
             
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
@@ -744,57 +742,58 @@ func processCommand(_ input: String) -> Bool {
     //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
-        switch tokens.count {
-        case 2:
-            let posStr: String
-            if let posID = Int(tokens[1]) {
-                posStr = positions[posID]
-            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
-                posStr = tokens[1]
-            } else {
-                print("movearm: \(tokens[1]) is not a valid position string or index.")
-                break
-            }
-            print("Moving arm to position \(posStr)")
-            var cStr = posStr.cString(using: .ascii)!
-            DispatchQueue.main.async {
-                // Tell the Rosvita server to move the arm to the selected position
-                GotoView(&cStr)
-                print("Moved arm to position \(posStr)")
-            }
-        case 3:
-            guard let ds = Float(tokens[2]) else {
-                print("movearm: \(tokens[2]) is not a valid distance.")
-                break
-            }
-            switch tokens[1] {
-            case "x":
-                DispatchQueue.main.async {
-//                    MoveLinearX(ds, 0, 0)
-                }
-            case "y":
-                DispatchQueue.main.async {
-//                    MoveLinearY(ds, 0, 0)
-                }
-            case "z":
-                DispatchQueue.main.async {
-//                    MoveLinearZ(ds, 0, 0)
-                }
-            default:
-                print("moevarm: \(tokens[1]) is not a recognized direction.")
-            }
-            
-        default:
-            print(usage)
-            break
-        }
-        
         break
-        
-        // used to turn projectors on or off
-        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
-        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
-    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
+//        switch tokens.count {
+//        case 2:
+//            let posStr: String
+//            if let posID = Int(tokens[1]) {
+//                posStr = positions[posID]
+//            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
+//                posStr = tokens[1]
+//            } else {
+//                print("movearm: \(tokens[1]) is not a valid position string or index.")
+//                break
+//            }
+//            print("Moving arm to position \(posStr)")
+//            var cStr = posStr.cString(using: .ascii)!
+//            DispatchQueue.main.async {
+//                // Tell the Rosvita server to move the arm to the selected position
+//                GotoView(&cStr)
+//                print("Moved arm to position \(posStr)")
+//            }
+//        case 3:
+//            guard let ds = Float(tokens[2]) else {
+//                print("movearm: \(tokens[2]) is not a valid distance.")
+//                break
+//            }
+//            switch tokens[1] {
+//            case "x":
+//                DispatchQueue.main.async {
+////                    MoveLinearX(ds, 0, 0)
+//                }
+//            case "y":
+//                DispatchQueue.main.async {
+////                    MoveLinearY(ds, 0, 0)
+//                }
+//            case "z":
+//                DispatchQueue.main.async {
+////                    MoveLinearZ(ds, 0, 0)
+//                }
+//            default:
+//                print("moevarm: \(tokens[1]) is not a recognized direction.")
+//            }
+//
+//        default:
+//            print(usage)
+//            break
+//        }
+//
+//        break
+//
+//        // used to turn projectors on or off
+//        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+//        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+//    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
             print(usage)
@@ -1319,7 +1318,7 @@ func processCommand(_ input: String) -> Bool {
                 print(usage)
                 break
             }
-            let posIDs = [Int](0..<positions.count)
+            let posIDs = [Int](0..<nPositions)
             positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
             curParam = 1
         } else {

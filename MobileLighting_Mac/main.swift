@@ -43,7 +43,7 @@ var dirStruc: DirectoryStructure
 //var projectors: Int?
 //var exposureDurations: [Double]
 //var exposureISOs: [Double]
-var positions: [String]
+var nPositions: Int
 let focus: Double?
 
 let mobileLightingUsage = "MobileLighting [path to sceneSettings.yml]\n       MobileLighting init [path to scenes folder [scene name]?]?"
@@ -113,9 +113,6 @@ scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
 minSWfilepath = sceneSettings.minSWfilepath
 
-// Save the position numbers for the robot
-positions = sceneSettings.trajectory.waypoints
-
 // Save the exposure settings
 var strucExposureDurations = sceneSettings.strucExposureDurations
 var strucExposureISOs = sceneSettings.strucExposureISOs
@@ -151,8 +148,10 @@ if configureDisplays() {
 let path: String = "default"
 var pathPointer = *path
 var status = LoadPath(&pathPointer) // load the path on Rosvita server
-if status != 0 { // print a message if the LoadPath doesn't return 0
-    print("Could not load path \"\(path)\" to robot.")
+if status < 0 { // print a message if the LoadPath doesn't return 0
+    print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
+} else {
+    nPositions = Int(status)
 }
 
 // Establish connection with the iPhone and set the instruction packet
