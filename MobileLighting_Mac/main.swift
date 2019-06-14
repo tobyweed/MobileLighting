@@ -147,6 +147,9 @@ if configureDisplays() {
     print("WARNING - failed to configure display.")
 }
 
+// Establish connection with the iPhone and set the instruction packet
+initializeIPhoneCommunications()
+
 // Attempt to load a default path to the Rosvita server
 let path: String = "default"
 var pathPointer = *path
@@ -154,9 +157,6 @@ var status = LoadPath(&pathPointer) // load the path on Rosvita server
 if status != 0 { // print a message if the LoadPath doesn't return 0
     print("Could not load path \"\(path)\" to robot.")
 }
-
-// Establish connection with the iPhone and set the instruction packet
-initializeIPhoneCommunications()
 
 // focus iPhone if focus provided
 if focus != nil {
