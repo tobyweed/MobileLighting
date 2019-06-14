@@ -81,7 +81,7 @@ func getUsage(_ command: Command) -> String {
     case .disconnectall: return "disconnectall"
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
     case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
-    case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
+    case .struclight: return "struclight [id] [projector #] [resolution=high]"
     case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
@@ -372,14 +372,11 @@ func processCommand(_ input: String) -> Bool {
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         
-    // captures scene using structured lighting from specified projector and position number
-    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
-    //  NOTE: this command does not move the arm; it must already be in the correct positions
-    //      BUT it does configure the projectors
+    // captures scene using structured lighting from specified projector
     case .struclight:
         let system: BinaryCodeSystem
         
-        guard tokens.count >= 4 else {
+        guard tokens.count >= 3 else {
             print(usage)
             break
         }
@@ -391,23 +388,12 @@ func processCommand(_ input: String) -> Bool {
             print("struclight: invalid projector id.")
             break
         }
-        guard let armPos = Int(tokens[3]) else {
-            print("struclight: invalid position number \(tokens[2]).")
-            break
-        }
-        guard armPos >= 0, armPos < nPositions else {
-            print("struclight: position \(armPos) out of range.")
-            break
-        }
-        
-        // currentPos = armPos       // update current position
-        // currentProj = projPos     // update current projector
         
         system = .MinStripeWidthCode
         
         let resolution: String
-        if tokens.count == 5 {
-            resolution = tokens[4]
+        if tokens.count == 4 {
+            resolution = tokens[3]
         } else {
             resolution = defaultResolution
         }
@@ -419,11 +405,13 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.") // Turn on the selected projector
         _ = readLine()  // wait until user hits enter
         
-        // Tell the Rosvita server to move the arm to the selected position
-        var posStr = *String(armPos) // get pointer to pose string
-        GotoView(&posStr) // pass address of pointer
-        
-        captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
+        for i in 0..<nPositions {
+            // Tell the Rosvita server to move the arm to the selected position
+            var posStr = *String(i) // get pointer to pose string
+            GotoView(&posStr) // pass address of pointer
+            
+            captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
+        }
         break
         
         
