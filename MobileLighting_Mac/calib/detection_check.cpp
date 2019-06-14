@@ -174,6 +174,8 @@ public:
         node["First_Marker"] >> type;
         node["Num_of_Boards"] >> numberOfBoards;
         
+        node["ImageList_Filename"] >> imageListFilename;
+        
         node["DetectedImages_Path"] >> detectedPath;
         
         
@@ -265,6 +267,20 @@ public:
                 cout << "Invalid number of boards used: " << numberOfBoards << ". Fall back to default: 1" << endl;
                 numberOfBoards= 1;
             }
+            
+            if (readImageList(imageListFilename))
+            {
+                nImages = (int)imageList.size();
+                if (mode == STEREO)
+                    if (nImages % 2 != 0) {
+                        cout << "Image list must have even # of elements for stereo calibration" << endl;
+                        goodInput = false;
+                    }
+            }
+            else {
+                cout << "Invalid image list: " << imageListFilename << endl;
+                goodInput = false;
+            }
         }
     }
     
@@ -284,25 +300,25 @@ public:
         return img;
     }
     
-    /*
-     // Reads the image list from a file
-     bool readImageList( const string& filename )
-     {
-     imageList.clear();
-     FileStorage fs(filename, FileStorage::READ);
-     if( !fs.isOpened() )
-     return false;
-     FileNode n = fs.getFirstTopLevelNode();
-     if( n.type() != FileNode::SEQ )
-     return false;
-     FileNodeIterator it = n.begin(), it_end = n.end();
-     for( ; it != it_end; ++it )
-     imageList.push_back((string)*it);
-     return true;
-     }
-     */
+    
+    // Reads the image list from a file
+    bool readImageList( const string& filename )
+    {
+        imageList.clear();
+        FileStorage fs(filename, FileStorage::READ);
+        if( !fs.isOpened() )
+            return false;
+        FileNode n = fs.getFirstTopLevelNode();
+        if( n.type() != FileNode::SEQ )
+            return false;
+        FileNodeIterator it = n.begin(), it_end = n.end();
+        for( ; it != it_end; ++it )
+            imageList.push_back((string)*it);
+        return true;
+    }
     
     
+
     
 public:
     //--------------------------Calibration configuration-------------------------//
@@ -368,6 +384,8 @@ public:
     
     
     bool goodInput;         //Tracks input validity
+    
+    
 private:
     // Input variables only needed to set up settings
     string modeInput;
@@ -766,12 +784,12 @@ void setUpAruco_( Settings_ s, intrinsicCalibration_ &inCal, intrinsicCalibratio
             detected1 = inCal2.objectPoints[0].size();
         }
         
-        cout << " # of objectPoints for image0"
+        cout << " Number of objectPoints for image0"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
         << " is "
         << detected0 << endl;
-        cout << " # of objectPoints for image1"
+        cout << " Number of objectPoints for image1"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
         << " is "
@@ -796,7 +814,7 @@ void  arucoDetect_(Settings_ s, Mat &img, intrinsicCalibration_ &InCal, Ptr<Ches
     detectorParams->  minMarkerPerimeterRate = 0.01;
     detectorParams->  maxMarkerPerimeterRate = 4 ;
     detectorParams-> cornerRefinementMinAccuracy = 0.05;
-    
+
     
     Mat imgCopy;
     
@@ -828,18 +846,13 @@ void  arucoDetect_(Settings_ s, Mat &img, intrinsicCalibration_ &InCal, Ptr<Ches
         InCal.allIds.push_back(currentBoard->ids);
         
     }
-    
 }
 
 
 
 //-----------------------------------------------------------------------------
 
-void test() {
-    printf("Here:=%s", "3");
-}
-
-// Main function. Detects patterns on images, runs calibration and saves results
+// Main function. Detects patterns on images
 vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1  ) {
     string inputSettingsFile = settingsFile;
     
@@ -855,6 +868,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         cout << "Could not open the settings file: \"" << inputSettingsFile << "\"" << endl;
         return returnVector;
     }
+    
     fs["Settings"] >> s;
     fs.release(); // close Settings file
     
@@ -864,16 +878,10 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
         return returnVector;
     }
     
-    
     // struct to store calibration parameters
     intrinsicCalibration_ inCal, inCal2;
     intrinsicCalibration_ *currentInCal = &inCal;
-    
 
-    // size for stereo calibration
-    printf("s.nImages: %d", s.nImages);
-    int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
-    
     char imgSave[1000];
     bool save = false;
     if(s.detectedPath != "0")
@@ -884,6 +892,11 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             printf("\nDetected images could not be saved. Invalid path: %s\n", s.detectedPath.c_str());
     }
     
+    // size of vectors for stereo calibration
+    int size = (s.mode == Settings_::STEREO) ? s.nImages/2 : s.nImages;
+    if(s.nImages < 0 ) {
+        cout << "Failed to initialize number of image paths in stereo image list from: \"" << inputSettingsFile << "\"" << endl;
+    }
     
     /*-----------Calibration using AruCo patterns--------------*/
     if (s.calibrationPattern != Settings_::CHESSBOARD) {
@@ -910,29 +923,23 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             intrinsicCalibration_ inCalAruCo2;
             
             // require correctly sized vectors
-            printf("Size: %d", size);
-            printf("Max size=%lu", inCalAruCo.imagePoints.max_size());
             inCalAruCo.imagePoints.resize(size);
-            printf("Here=%s", "2");
             inCalAruCo.objectPoints.resize(size);
-            printf("Here=%s", "3");
             inCalAruCo2.imagePoints.resize(size);
-            printf("Here=%s", "4");
             inCalAruCo2.objectPoints.resize(size);
-
+            
             // make a list of lists of the newly created intrinsicCalibration structs
             tempList.push_back(inCalAruCo);
             tempList.push_back(inCalAruCo2);
             inCalList.push_back(tempList);
         }
-                
+        
         // variable used to facilitate the alternation
         //  between intrinsic calibration structs for stereo mode.
         int value;
         
         
-        for(int i = 0;;i++){
-            
+        for(int i = 0;;i++) {
             // Switches between intrinsic calibration structs for stereo mode
             if (i%2 == 0) {
                 currentInCal = &inCalList[0][0];
@@ -950,26 +957,23 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             else
                 currentImg = Mat();
             
+            // Print the number of detected shared object points, along with warnings if there are not enough
             if(!currentImg.data) {
-                
                 for(int n = 0; n< s.numberOfBoards; n++){
-                    
                     setUpAruco_(s, inCalList[n][0], inCalList[n][1], boardsList[n], n);
                     
                     getSharedPoints_(inCalList[n][0],  inCalList[n][1]);
                     
                     cout << "Number of shared objectPoints for this board is "
                     << inCalList[n][0].objectPoints[0].size() << endl;
+                    
                     if (inCalList[n][0].objectPoints[0].size() < 10)
-                        cout << "Not Good!" << endl;
+                        cout << "Not enough object points! This set should be retaken." << endl;
                     
                     returnVector.push_back((int)inCalList[n][0].objectPoints[0].size());
-                    
-                    
                 }
                 
                 break;
-                
             }
             
             s.imageSize = currentImg.size();
@@ -988,4 +992,3 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     
     return returnVector;
 }
-

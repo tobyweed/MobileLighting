@@ -33,17 +33,17 @@ class DirectoryStructure {
         return [scenesDir, currentScene].joined(separator: "/")
     }
     
-        var orig: String {
-            get {
-                return self.scene + "/" + "orig"
-            }
+    var orig: String {
+        get {
+            return self.scene + "/" + "orig"
         }
+    }
     
-        private var ambient: String {
-            get {
-                return self.orig + "/" + "ambient"
-            }
+    private var ambient: String {
+        get {
+            return self.orig + "/" + "ambient"
         }
+    }
     
     var settings: String {
         return "\(self.scene)/settings"
@@ -67,27 +67,27 @@ class DirectoryStructure {
         }
     }
     
-            func ambientPhotos(_ mode: PhotoMode) -> String {
-                let subdir =  "\(ambientPhotos)/\(mode.rawValue)"
-                try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                return subdir
-            }
+    func ambientPhotos(_ mode: PhotoMode) -> String {
+        let subdir =  "\(ambientPhotos)/\(mode.rawValue)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
-            func ambientPhotos(pos: Int, mode: PhotoMode) -> String {
-                return subdir(self.ambientPhotos(mode), pos: pos)
-            }
+    func ambientPhotos(pos: Int, mode: PhotoMode) -> String {
+        return subdir(self.ambientPhotos(mode), pos: pos)
+    }
     
-            func ambientPhotos(pos: Int, exp: Int, mode: PhotoMode) -> String {
-                let path = ambientPhotos(pos: pos, mode: mode) + "/exp\(exp)"
-                        try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
-                        return path
-                    }
-            
-            var ambientVideos: String {
-                get {
-                    return self.ambient + "/" + "videos"
-                }
-            }
+    func ambientPhotos(pos: Int, exp: Int, mode: PhotoMode) -> String {
+        let path = ambientPhotos(pos: pos, mode: mode) + "/exp\(exp)"
+        try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+        return path
+    }
+    
+    var ambientVideos: String {
+        get {
+            return self.ambient + "/" + "videos"
+        }
+    }
     
     enum VideoMode: String {
         case normal
@@ -102,81 +102,83 @@ class DirectoryStructure {
     
     func ambientVideos(exp: Int, mode: VideoMode) -> String {
         let subdir = "\(self.ambientVideos(mode))/exp\(exp)"
-                try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                return subdir
-            }
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
-        var ambientBall: String {
-            get {
-                return self.orig + "/" + "ambientBall"
-            }
+    var ambientBall: String {
+        get {
+            return self.orig + "/" + "ambientBall"
         }
+    }
     
-        var calibration: String {
-            get {
-                return self.orig + "/" + "calibration"
-            }
+    var calibration: String {
+        get {
+            return self.orig + "/" + "calibration"
         }
-            var intrinsicsPhotos: String {
-                get {
-                    return self.calibration + "/" + "intrinsics"
-                }
-            }
-            var stereoPhotos: String {
-                get {
-                    return self.calibration + "/" + "stereo"
-                }
-            }
+    }
     
-                    func stereoPhotos(_ pos: Int) -> String {
-                        return subdir(stereoPhotos, pos: pos)
-                    }
-    
-            var imageLists: String {
-                get {
-                    return self.calibration + "/" + "imageLists"
-                }
-            }
-    
-                var intrinsicsImageList: String {
-                    get {
-                        return self.imageLists + "/" + "intrinsicsImageList.yml"
-                    }
-                }
-                var stereoImageList: String {
-                    get {
-                        return self.imageLists + "/" + "stereoImageList.yml"
-                    }
-                }
-    
-        var computed: String {
-            get {
-                return self.scene + "/" + "computed"
-            }
+    var intrinsicsPhotos: String {
+        get {
+            return self.calibration + "/" + "intrinsics"
         }
+    }
     
-            var prethresh: String {
-                get {
-                    return self.computed + "/" + "prethresh"
-                }
-            }
+    var stereoPhotos: String {
+        get {
+            return self.calibration + "/" + "stereo"
+        }
+    }
     
-            var thresh: String {
-                get {
-                    return self.computed + "/" + "thresh"
-                }
-            }
+    func stereoPhotos(_ pos: Int) -> String {
+        return subdir(stereoPhotos, pos: pos)
+    }
     
-            var decoded: String {
-                get {
-                    return self.computed + "/" + "decoded"
-                }
-            }
-                func decoded(_ rectified: Bool) -> String {
-                    let subdir = "\(self.decoded)/\(rectified ? "rectified" : "unrectified")"
-                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                    return subdir
-                }
+    var imageLists: String {
+        get {
+            return self.calibration + "/" + "imageLists"
+        }
+    }
+    
+    var intrinsicsImageList: String {
+        get {
+            return self.imageLists + "/" + "intrinsicsImageList.yml"
+        }
+    }
+    var stereoImageList: String {
+        get {
+            return self.imageLists + "/" + "stereoImageList.yml"
+        }
+    }
+    
+    var computed: String {
+        get {
+            return self.scene + "/" + "computed"
+        }
+    }
+    
+    var prethresh: String {
+        get {
+            return self.computed + "/" + "prethresh"
+        }
+    }
+    
+    var thresh: String {
+        get {
+            return self.computed + "/" + "thresh"
+        }
+    }
+    
+    var decoded: String {
+        get {
+            return self.computed + "/" + "decoded"
+        }
+    }
+    func decoded(_ rectified: Bool) -> String {
+        let subdir = "\(self.decoded)/\(rectified ? "rectified" : "unrectified")"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
     func decoded(proj: Int, rectified: Bool) -> String {
         let subdir = "\(self.decoded(rectified))/proj\(proj)"
@@ -184,22 +186,22 @@ class DirectoryStructure {
         return subdir
     }
     
-            func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
-                let subdir = "\(self.decoded(proj: proj, rectified: rectified))/pos\(pos)"
-                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                    return subdir
-                }
+    func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
+        let subdir = "\(self.decoded(proj: proj, rectified: rectified))/pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
-            var disparity: String {
-                get {
-                    return self.computed + "/" + "disparity"
-                }
-            }
-                func disparity(_ rectified: Bool) -> String {
-                    let subdir = "\(self.disparity)/\(rectified ? "rectified" : "unrectified")"
-                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                    return subdir
-                }
+    var disparity: String {
+        get {
+            return self.computed + "/" + "disparity"
+        }
+    }
+    func disparity(_ rectified: Bool) -> String {
+        let subdir = "\(self.disparity)/\(rectified ? "rectified" : "unrectified")"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
     func disparity(proj: Int, rectified: Bool) -> String {
         let subdir = "\(self.disparity(rectified))/proj\(proj)"
@@ -207,25 +209,25 @@ class DirectoryStructure {
         return subdir
     }
     
-                func disparity(proj: Int, pos: Int, rectified: Bool) -> String {
-                    return subdir(self.disparity(rectified), proj: proj, pos: pos)
-                }
+    func disparity(proj: Int, pos: Int, rectified: Bool) -> String {
+        return subdir(self.disparity(rectified), proj: proj, pos: pos)
+    }
     
-            var merged: String {
-                get {
-                    return self.computed + "/" + "merged"
-                }
-            }
-                func merged(_ rectified: Bool) -> String {
-                    let subdir = "\(self.merged)/\(rectified ? "rectified" : "unrectified")"
-                    try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                    return subdir
-                }
-                    func merged(pos: Int, rectified: Bool) -> String {
-                        let subdir = self.merged(rectified) + "/" + "pos\(pos)"
-                        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
-                        return subdir
-                    }
+    var merged: String {
+        get {
+            return self.computed + "/" + "merged"
+        }
+    }
+    func merged(_ rectified: Bool) -> String {
+        let subdir = "\(self.merged)/\(rectified ? "rectified" : "unrectified")"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    func merged(pos: Int, rectified: Bool) -> String {
+        let subdir = self.merged(rectified) + "/" + "pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
     
     var reprojected: String {
         get {
@@ -236,7 +238,7 @@ class DirectoryStructure {
     func reprojected(proj: Int) -> String {
         return subdir(self.reprojected, proj: proj)
     }
-
+    
     func reprojected(proj: Int, pos: Int) -> String {
         return subdir(self.reprojected, proj: proj, pos: pos)
     }
@@ -248,39 +250,39 @@ class DirectoryStructure {
         return subdir(merged2, pos: pos)
     }
     
-
-            var calibComputed: String {
-                get {
-                    return self.computed + "/" + "calibration"
-                }
-            }
     
-            var intrinsicsYML: String {
-                get {
-                    return self.calibComputed + "/" + "intrinsics.yml"
-                }
-            }
+    var calibComputed: String {
+        get {
+            return self.computed + "/" + "calibration"
+        }
+    }
     
-            var extrinsics: String {
-                get {
-                    return self.calibComputed + "/" + "extrinsics"
-                }
-            }
-
-            func extrinsicsYML(left: Int, right: Int) -> String {
-                return self.extrinsics + "/" + "extrinsics\(left)\(right).yml"
-            }
+    var intrinsicsYML: String {
+        get {
+            return self.calibComputed + "/" + "intrinsics.yml"
+        }
+    }
+    
+    var extrinsics: String {
+        get {
+            return self.calibComputed + "/" + "extrinsics"
+        }
+    }
+    
+    func extrinsicsYML(left: Int, right: Int) -> String {
+        return self.extrinsics + "/" + "extrinsics\(left)\(right).yml"
+    }
     
     
     
-            var metadata: String {
-                get {
-                    return self.computed + "/" + "metadata"
-                }
-            }
-                func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
-                    return subdir(metadata, proj: proj, pos: pos) + "/metadata\(direction).yml"
-                }
+    var metadata: String {
+        get {
+            return self.computed + "/" + "metadata"
+        }
+    }
+    func metadataFile(_ direction: Int, proj: Int, pos: Int) -> String {
+        return subdir(metadata, proj: proj, pos: pos) + "/metadata\(direction).yml"
+    }
     
     
     //MARK: utility functions

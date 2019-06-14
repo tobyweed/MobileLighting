@@ -43,7 +43,7 @@ var dirStruc: DirectoryStructure
 //var projectors: Int?
 //var exposureDurations: [Double]
 //var exposureISOs: [Double]
-var positions: [String]
+var nPositions: Int
 let focus: Double?
 
 let mobileLightingUsage = "MobileLighting [path to sceneSettings.yml]\n       MobileLighting init [path to scenes folder [scene name]?]?"
@@ -80,14 +80,13 @@ case "init":
     }
     
     do {
+        // Try to create sceneSettings, trajectory, and calibration Yaml files
         dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
         try SceneSettings.create(dirStruc)
         print("successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
-        print("successfully created trajectory file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+        print("successfully created trajectory file at \(scenesDirectory)/\(sceneName)/settings/trajectory.yml")
         try CalibrationSettings.create(dirStruc)
-        print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
-        try dirStruc.createDirs()
-        print("successfully created directory structure.")
+        print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/calibration.yml")
     } catch let error {
         print(error.localizedDescription)
     }
@@ -109,23 +108,23 @@ default:
     exit(0)
 }
 
-// save required settings
+// Save the paths to the settings files
 scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
 minSWfilepath = sceneSettings.minSWfilepath
 
-positions = sceneSettings.trajectory.waypoints
-
+// Save the exposure settings
 var strucExposureDurations = sceneSettings.strucExposureDurations
 var strucExposureISOs = sceneSettings.strucExposureISOs
 var calibrationExposure = (sceneSettings.calibrationExposureDuration ?? 0, sceneSettings.calibrationExposureISO ?? 0)
 
+// Save the trajectory
 var trajectory = sceneSettings.trajectory
 
-// calibration settings
+// Save the camera focus
 focus = sceneSettings.focus
 
-// setup directory structure
+// Setup directory structure
 dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
 do {
     try dirStruc.createDirs()
@@ -136,9 +135,24 @@ do {
 
 
 /* =========================================================================================
- * Establishes connection with/configures the iPhone and structured lighting displays
+ * Establishes connection with/configures the iPhone, structured lighting displays, and robot
  ==========================================================================================*/
+// Configure the structured lighting displays
+if configureDisplays() {
+    print("Successfully configured display.")
+} else {
+    print("WARNING - failed to configure display.")
+}
 
+// Attempt to load a default path to the Rosvita server
+let path: String = "default"
+var pathPointer = *path
+var status = LoadPath(&pathPointer) // load the path on Rosvita server
+if status < 0 { // print a message if the LoadPath doesn't return 0
+    print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
+} else {
+    nPositions = Int(status)
+}
 
 // Establish connection with the iPhone and set the instruction packet
 initializeIPhoneCommunications()
@@ -149,13 +163,6 @@ if focus != nil {
     cameraServiceBrowser.sendPacket(packet)
     let receiver = LensPositionReceiver { _ in return }
     photoReceiver.dataReceivers.insertFirst(receiver)
-}
-
-// Configure the structured lighting displays
-if configureDisplays() {
-    print("main: Successfully configured display.")
-} else {
-    print("main: WARNING - failed to configure display.")
 }
 
 

@@ -95,7 +95,6 @@ class FullscreenWindow: NSView {
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
                 bitmapPtr.deallocate()
-//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             for row in 0..<height {
@@ -117,7 +116,6 @@ class FullscreenWindow: NSView {
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
                 bitmapPtr.deallocate()
-//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             let pix: UInt32
@@ -143,7 +141,6 @@ class FullscreenWindow: NSView {
             let bitmapPtr = UnsafeMutablePointer<UInt32>.allocate(capacity: width*height)
             defer {
                 bitmapPtr.deallocate()
-//                bitmapPtr.deallocate(capacity: width*height)
             }
             
             let calculation: (Int) -> UInt32
@@ -194,7 +191,6 @@ class FullscreenWindow: NSView {
         currentSystem = system
         
         self.displayContent = .BinaryCode
-//        self.displayContent = .Checkerboard(20)
         DispatchQueue.main.async(execute: {
             self.display()
         })

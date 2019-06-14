@@ -17,7 +17,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
 
 ### Installation
 1. Install Xcode (available through the Mac App Store).
-1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.)
+1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) **Note June 2019:** This step has been causing a lot of trouble--my understanding is that we've been building openCV 3.4.6 from source, and then building linked libraries like ArUco from source separately, but there seem to be a lot of tricky bugs which people run into when following this procedure. A proper guide should be written.
 1. Install the Mac USB-to-Serial driver.
     1. Go to the website <https://www.mac-usb-serial.com/dashboard/>
     1. Download the package called **PL-2303 Driver (V3.1.5)**
@@ -61,8 +61,8 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
 ## General Tips
 Use the `help` command to list all possible commands. If you are unsure how to use the `help` command, type `help help`.
 
-## Communication
-The two apps of the  ML system communicate wirelessly using Bonjour / async sockets. ML Mac issues _CameraInstructions_ to ML iOS via _CameraInstructionPackets_, and ML iOS sends _PhotoDataPackets_ back to ML Mac.
+## Communication Between ML Mac and ML iOS
+The two apps of the ML system communicate wirelessly using Bonjour / async sockets. ML Mac issues _CameraInstructions_ to ML iOS via _CameraInstructionPackets_, and ML iOS sends _PhotoDataPackets_ back to ML Mac.
 
 **Tip**: when _not_ debugging ML iOS, I've found this setup to be the best: host a local WiFi network on the Mac and have the iPhone connect to that.
 
@@ -89,6 +89,20 @@ The two apps of the  ML system communicate wirelessly using Bonjour / async sock
     * Try restarting the ML Mac app / ML iOS app while keeping the other running.
     * Try restarting both apps, but launching ML iOS _before_ ML Mac.
     * Sometimes, the connection between ML Mac and ML iOS drops unexpectedly. The "solution" is to try the same steps listed directly above.
+    
+    **Update:** As of June 2019, the two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
+
+## Communication Between ML Mac and Rosvita server
+The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
+
+They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends  to the server, and that ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp. If it doesn't have the correct IP address, it will try to establish connection for a while before returning a failure message.
+
+The server usually replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath().
+
+**Loading Paths**
+The server stores robot positions in sets called "paths," which are initialized on the server without any input from or output to ML Mac. Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
+
+ML Mac automatically tries to load path "default" on initialization. 
 
 
 ## Dataset Acquisition
@@ -112,27 +126,26 @@ The focus remains fixed for the entire capture session. At the beginning of each
 In order to capture calibration images, the Mac must be connected to the robot arm (and the iPhone).
 #### Intrinsic Calibration
 To capture intrinsics calibration images, use the following command:
-`calibrate (-a|-d) [nPhotos]`
+`calibrate (-a|-d)? [resolution=high]`
 Flags:
 * `-a`: append photos to existing ones in <scene>/orig/calibration/intrinsics
 * `-d`: delete all photos in <scene>/orig/calibration/intrinsics before beginning capture
 * (none): overwrite existing photos
 
-ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
+ML Mac will automatically set the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file. 
 
-ML Mac will ask you to hit enter as soon as you are ready to take the next photo. Each photo is saved at <scene>/orig/calibration/intrinsics with the filename IMG<#>.JPG.
+ML Mac will ask you to hit enter as soon as you are ready to take the next photo. Each photo is saved at <scene>/orig/calibration/intrinsics with the filename IMG<#>.JPG. It will continue to prompt photo capture until the user tells it to stop with "q" or "quit".
 
 ### Stereo Calibration
 To capture extrinsics calibration photos, use the following command:
-`stereocalib (-a|-d) [nPhotos]`
+`stereocalib (-a)? [resolution=high]`
 Flags:
 * `-a`: append photos to existing ones in <scene>/orig/calibration/stereo/pos*
-* `-d`: delete all photos in <scene>/orig/calibration/stereo/pos* before beginning capture
-* (none): overwrite existing photos
+* (none): delete all photos in <scene>/orig/calibration/stereo/pos* before beginning capture
 
 ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
 
-Before each photo, ML Mac will move the robot arm to the correct position and ask you to hit enter once it has reached the position. It then takes the photo, which is saved at <scene>/orig/calibration/stereo/posX, where X is the postion number.
+This command will first prompt the user to hit enter to take a set or to write "q" to quit. If the user hits enter, ML Mac will move the robot arm to the 0th position. It will then take a photo. It will iterate through all positions in the path loaded on the Rosvita server, taking a picture at each one, and saving those pictures at <scene>/orig/calibration/stereo/posX/IMGn.JPG, where X is the postion number and n is the set number. Then it will prompt the user whether they want to continue taking sets, retake the last set (overwriting the IMGn.JPG photos), or stop running the command.
 
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
@@ -159,11 +172,12 @@ To focus the projectors, it is useful to project a fine checkerboard pattern. Do
 Focus each projector such that the checkerboards projected onto the objects in the scene are crisp.
 
 Now, you can begin taking structured lighting. The command is
-`struclight [id] [projector #] [position #]`
+`struclight [id] [projector #] [resolution=high]`
 Parameters:
-* `id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/proj0/pos*`
-* `projector #`: the projector number is the switcher box port to which the projector you want to use is connected. These numbers will be in the range 1–8.
-* `position #`: the waypoint to take structured lighting from.
+* `id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/projid/pos*`.
+* `projector #`: the projector number is the switcher box port to which the projector you want to use is connected. These numbers will be in the range 1–8. This value has no effect on where the images are stored. 
+
+The reason for the distinction between the projector number and id is so that one could capture structured lighting with many different projector positions, but a limited number of projectors. Thus, one could run "struclight 0 1", taking structured light with the projector connected to port 1 and save those photos to the correct robot position directory in `computed/decoded/unrectified/proj0/`, then move the projector and run "struclight 1 1" to save photos in `computed/decoded/unrectified/proj1/`.
 
 Before starting capture, ML Mac will move the arm to the position and ask you to hit "enter" once it reaches that position.
 After that, capture begins. It projects first vertical, then horizontal binary code images. After each direction, the Mac should receive 2 files: a "metadata" file that simply contains the direction of the stripes and the decoded PFM file. It saves the PFM file to "computed/decoded/projX/posA". It then refines the decoded image.
@@ -176,7 +190,7 @@ Multiple exposures can be used for ambient images. These are specified in the `a
 
 #### Ambient Still Images
 To capture ambient still images, use the following command:
-`takeamb still (-f|-t)?`
+`takeamb still (-f|-t)? [resolution=high]`
 Flags:
 `-f`: use flash mode. This is the brightest illumination setting.
 `-t`: use torch mode (i.e. turn on flashlight). This is dimmer than flash.

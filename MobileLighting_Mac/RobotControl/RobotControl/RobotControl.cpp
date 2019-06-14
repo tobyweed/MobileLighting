@@ -1,8 +1,9 @@
 //
 // RobotControl.cpp
 // RobotControl
-//
 // Guanghan Pan
+//
+// Export functions as C functions so they can be bridged to Swift
 //
 
 #include <iostream>
