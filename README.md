@@ -100,7 +100,7 @@ They communicate via a wireless socket. Note that the socket is re-created with 
 The server usually replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath().
 
 **Loading Paths**
-The server stores robot positions in sets called "paths." Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
+The server stores robot positions in sets called "paths," which are initialized on the server without any input from or output to ML Mac. Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
 
 ML Mac automatically tries to load path "default" on initialization. 
 
