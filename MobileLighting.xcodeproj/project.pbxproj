@@ -31,7 +31,6 @@
 		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E1268D7920FD30DF002BB095 /* MotionRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1268D7820FD30DF002BB095 /* MotionRecorder.swift */; };
-		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E15D3BC120BF47880058AD1A /* SceneMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15D3BC020BF47880058AD1A /* SceneMetadata.swift */; };
 		E1682DC820F94B5200DF0FD4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E1682DC920F94B5200DF0FD4 /* Parameters.h in Sources */ = {isa = PBXBuildFile; fileRef = E14CDBD820F4ED5E004AF1B6 /* Parameters.h */; };
@@ -765,7 +764,6 @@
 				E1BBBAD020BC76A100E57123 /* Debug.swift in Sources */,
 				E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
-				E136681E1F1E505800BC561A /* Utils.swift in Sources */,
 				E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */,
 				E1268D7920FD30DF002BB095 /* MotionRecorder.swift in Sources */,
 				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,

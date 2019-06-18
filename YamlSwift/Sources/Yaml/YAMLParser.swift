@@ -568,7 +568,8 @@ private func parseInt (_ string: String, radix: Int) -> Int {
   let ints = radix == 60
       ? toSexints(str)
       : toints(str)
-  return multiplier * ints.reduce(0, { acc, i in acc * radix + i })
+
+    return multiplier * ints.reduce(0, { acc, i in acc * radix + i })
 }
 
 private func toSexints (_ string: String) -> [Int] {
