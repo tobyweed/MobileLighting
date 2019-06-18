@@ -166,7 +166,7 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     }
     
     Mat image2_rotated;
-    rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
+//    rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
     resize(image2_rotated, image2_rotated, image.size());
     WriteFilePFM(image2_rotated, outpath, 1);
 }
