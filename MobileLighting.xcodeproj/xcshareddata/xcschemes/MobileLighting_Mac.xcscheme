@@ -63,7 +63,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/tobyweed/workspace/rsrch19/MobileLighting/sceneSettings.yml"
+            argument = "/Users/tobyweed/Desktop/scenes/test3/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
