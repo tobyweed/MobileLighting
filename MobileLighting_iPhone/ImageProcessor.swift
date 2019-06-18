@@ -226,6 +226,7 @@ func brightnessChange(_ srcBuffer: CVPixelBuffer) -> Double {
     let h = srcBuffer.height
     let bytesPerRow = srcBuffer.bytesPerRow
     
+    let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
     CVPixelBufferLockBaseAddress(srcBuffer, lockFlags)
     let raw_ptr: UnsafeMutableRawPointer = CVPixelBufferGetBaseAddress(srcBuffer)!
     let ptr = raw_ptr.bindMemory(to: UInt8.self, capacity: bytesPerRow*h)

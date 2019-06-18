@@ -271,7 +271,7 @@
 				LastUpgradeCheck = 9999;
 				TargetAttributes = {
 					OBJ_23 = {
-						DevelopmentTeam = NKAB92297U;
+						DevelopmentTeam = N472L36S34;
 						LastSwiftMigration = 0940;
 						ProvisioningStyle = Automatic;
 					};
@@ -375,7 +375,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = NKAB92297U;
+				DEVELOPMENT_TEAM = N472L36S34;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -402,7 +402,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = NKAB92297U;
+				DEVELOPMENT_TEAM = N472L36S34;
 				ENABLE_TESTABILITY = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",

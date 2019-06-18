@@ -433,7 +433,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     do {
                         var exposureSet = false
                         try cameraController.captureDevice.lockForConfiguration()
-                        cameraController.captureDevice.setExposureModeCustom(duration: CMTime(exposureDuration: exposureDuration), iso: Float(exposureISO), completionHandler: {(_) in exposureSet = true })
+                        cameraController.captureDevice.setExposureModeCustom(duration: CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale), iso: Float(exposureISO), completionHandler: {(_) in exposureSet = true })
                         cameraController.captureDevice.unlockForConfiguration()
                         while !exposureSet {}
                     } catch let error { print(error.localizedDescription) }
