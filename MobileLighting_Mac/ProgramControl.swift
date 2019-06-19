@@ -47,6 +47,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // image processing
     case refine
     case rectify
+    case rectifyamb
     case disparity
     case merge
     case reproject
@@ -104,6 +105,7 @@ func getUsage(_ command: Command) -> String {
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .rectifyamb: return "rectifyamb [left] [right]\n       rectify   -a\n"
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
@@ -1085,8 +1087,45 @@ func processCommand(_ input: String) -> Bool {
                 posIDpairs = [singlePosPair!]
             }
             for (left, right) in posIDpairs {
-                rectify(left: left, right: right, proj: proj)
+                rectifyDec(left: left, right: right, proj: proj)
             }
+        }
+        
+    //rectify ambient images
+    case .rectifyamb:
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+
+        //determine whether we are rectifying all position pairs
+        var allpos = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                if !allpos {
+                    allpos = true
+                } else {
+                    print("rectifyamb: extra flag \(flag)")
+                }
+            default:
+                print("rectifyamb: invalid flag \(flag)")
+                break cmdSwitch
+            }
+        }
+        
+        //assign the correct position pairs to posIDpairs
+        let posIDpairs: [(Int,Int)]
+        var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(.normal)), prefix: "pos", suffix: "")
+        guard posIDs.count > 1 else {
+            print("rectifyamb: not enough positions.")
+            break
+        }
+        posIDs.sort()
+        posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
+        
+        //loop through all pos pairs and rectify them (untested for multiple pairs)
+        for (left, right) in posIDpairs {
+            print("\nRectifying position pair: \(left) (left) and \(right) (right)");
+            //rectify ambient images of all exposures
+            rectifyAmb(left: left, right: right)
         }
         
     case .merge:

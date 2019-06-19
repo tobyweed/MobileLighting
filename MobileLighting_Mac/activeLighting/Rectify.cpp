@@ -140,8 +140,6 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     mapx = (camera == 0) ? mapx0 : mapx1;
     mapy = (camera == 0) ? mapy0 : mapy1;
     
-    
-    
     ReadFilePFM(image, string(impath));
     cv::Size ims = image.size() * resizing_factor;
     
@@ -166,7 +164,6 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     }
     
     Mat image2_rotated;
-//    rotate(image2, image2_rotated, ROTATE_180); // for some reason, stereoRectify() rotates the maps by 180°, so need to unrotate them
     resize(image2, image2, image.size());
     WriteFilePFM(image2, outpath, 1);
 }
