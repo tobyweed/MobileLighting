@@ -152,6 +152,7 @@ if status < 0 { // print a message if the LoadPath doesn't return 0
     print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
 } else {
     nPositions = Int(status)
+    print("Succesfully loaded path with \(nPositions) positions")
 }
 
 // Establish connection with the iPhone and set the instruction packet
