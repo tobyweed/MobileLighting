@@ -734,22 +734,23 @@ func processCommand(_ input: String) -> Bool {
     case .movearm:
         switch tokens.count {
         case 2:
-            let posStr: String
-            if let posID = Int(tokens[1]) {
-                posStr = positions[posID]
-            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
-                posStr = tokens[1]
-            } else {
-                print("movearm: \(tokens[1]) is not a valid position string or index.")
-                break
-            }
-            print("Moving arm to position \(posStr)")
-            var cStr = posStr.cString(using: .ascii)!
-            DispatchQueue.main.async {
-                // Tell the Rosvita server to move the arm to the selected position
-                GotoView(&cStr)
-                print("Moved arm to position \(posStr)")
-            }
+            print(Int(tokens[1]))
+//            guard Int(tokens[1])
+//
+//            let posStr: String
+//            if let posStr = tokens[1] {
+//
+//            } else {
+//                print("movearm: \(tokens[1]) is not a valid position index string.")
+//                break
+//            }
+//            print("Moving arm to position \(posStr)")
+//            var cStr = posStr.cString(using: .ascii)!
+//            DispatchQueue.main.async {
+//                // Tell the Rosvita server to move the arm to the selected position
+//                GotoView(&cStr)
+//                print("Moved arm to position \(posStr)")
+//            }
         default:
             print(usage)
             break
