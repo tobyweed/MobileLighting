@@ -75,7 +75,7 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var out_suffix = "1crosscheck1".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 0, 0, &in_suffix, &out_suffix)
     
-    // if images are rectified, do not perform filter disparities
+    // if images are not rectified, do not perform filter disparities
     if !rectified {
         return
     }
@@ -87,18 +87,20 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     
     var dispx, dispy, outx, outy: [CChar]
     
+    // Filter the LEFT disparities
     dispx = disparityDirLeft + in_suffix_x
     dispy = disparityDirLeft + in_suffix_y
     outx = disparityDirLeft + out_suffix_x
     outy = disparityDirLeft + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 0.75, 3, 0, 20, 200)
-    
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+
+    // Filter the RIGHT disparities
     dispx = disparityDirRight + in_suffix_x
     dispy = disparityDirRight + in_suffix_y
     outx = disparityDirRight + out_suffix_x
     outy = disparityDirRight + out_suffix_y
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
     
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 0.75, 3, 0, 20, 200)
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
