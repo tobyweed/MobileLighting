@@ -33,7 +33,7 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
     photoReceiver.dataReceivers.insertFirst(
         SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
     )
- */I
+ */
 }
 
 //MARK: disparity matching functions
