@@ -7,18 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		617302D822B42D8B00A5C398 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 617302D722B42D8B00A5C398 /* libpng16.16.dylib */; };
-		617302EA22B42EC500A5C398 /* libpng16.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 617302E922B42EC500A5C398 /* libpng16.a */; };
-		617302EC22B7DDB100A5C398 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617302EB22B7DDB100A5C398 /* opencv2.framework */; };
-		AA6961CF22B9351700C21D61 /* libopencv_aruco.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961CE22B9351700C21D61 /* libopencv_aruco.3.4.6.dylib */; };
-		AA6961D222B9356500C21D61 /* libopencv_highgui.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961D022B9356400C21D61 /* libopencv_highgui.3.4.6.dylib */; };
-		AA6961D322B9356500C21D61 /* libopencv_videoio.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961D122B9356500C21D61 /* libopencv_videoio.3.4.6.dylib */; };
-		AA6961D522B9358700C21D61 /* libopencv_core.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961D422B9358700C21D61 /* libopencv_core.3.4.6.dylib */; };
-		AA6961D722B935D400C21D61 /* libopencv_imgcodecs.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961D622B935D400C21D61 /* libopencv_imgcodecs.3.4.6.dylib */; };
-		AA6961D922B935F500C21D61 /* libopencv_features2d.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961D822B935F500C21D61 /* libopencv_features2d.3.4.6.dylib */; };
-		AA6961DB22B9360D00C21D61 /* libopencv_imgproc.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961DA22B9360D00C21D61 /* libopencv_imgproc.3.4.6.dylib */; };
-		AA6961DC22B9363200C21D61 /* libopencv_calib3d.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6961CC22B9340C00C21D61 /* libopencv_calib3d.3.4.6.dylib */; };
-		AA6961E022B9384A00C21D61 /* ConnectionUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6961DF22B9384A00C21D61 /* ConnectionUtils.swift */; };
+		AA3FB608227B833D001DB4D6 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB607227B833D001DB4D6 /* opencv2.framework */; };
+		AA3FB612227CB722001DB4D6 /* libopencv_aruco.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60A227CB721001DB4D6 /* libopencv_aruco.3.4.6.dylib */; };
+		AA3FB613227CB722001DB4D6 /* libopencv_imgcodecs.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60B227CB721001DB4D6 /* libopencv_imgcodecs.3.4.6.dylib */; };
+		AA3FB614227CB722001DB4D6 /* libopencv_imgproc.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60C227CB721001DB4D6 /* libopencv_imgproc.3.4.6.dylib */; };
+		AA3FB615227CB722001DB4D6 /* libopencv_core.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60D227CB721001DB4D6 /* libopencv_core.3.4.6.dylib */; };
+		AA3FB616227CB722001DB4D6 /* libopencv_highgui.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60E227CB721001DB4D6 /* libopencv_highgui.3.4.6.dylib */; };
+		AA3FB617227CB722001DB4D6 /* libopencv_calib3d.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB60F227CB721001DB4D6 /* libopencv_calib3d.3.4.6.dylib */; };
+		AA3FB618227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB610227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib */; };
+		AA3FB61A227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB619227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib */; };
+		AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */; };
+		AA6961E622B94BE900C21D61 /* CommunicationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
@@ -33,6 +32,7 @@
 		E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEE1EE1B90F008F9F0F /* PhotoDataPacket.swift */; };
 		E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FEF1EE1B90F008F9F0F /* Timing.swift */; };
 		E1268D7920FD30DF002BB095 /* MotionRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1268D7820FD30DF002BB095 /* MotionRecorder.swift */; };
+		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E15D3BC120BF47880058AD1A /* SceneMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15D3BC020BF47880058AD1A /* SceneMetadata.swift */; };
 		E1682DC820F94B5200DF0FD4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E1682DC920F94B5200DF0FD4 /* Parameters.h in Sources */ = {isa = PBXBuildFile; fileRef = E14CDBD820F4ED5E004AF1B6 /* Parameters.h */; };
@@ -251,18 +251,17 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		617302D722B42D8B00A5C398 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../usr/local/Cellar/libpng/1.6.35/lib/libpng16.16.dylib; sourceTree = "<group>"; };
-		617302E922B42EC500A5C398 /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../usr/local/Cellar/libpng/1.6.35/lib/libpng16.a; sourceTree = "<group>"; };
-		617302EB22B7DDB100A5C398 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = opencv2.framework; path = MobileLighting_iPhone/opencv2.framework; sourceTree = "<group>"; };
-		AA6961CC22B9340C00C21D61 /* libopencv_calib3d.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_calib3d.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961CE22B9351700C21D61 /* libopencv_aruco.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_aruco.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_aruco.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961D022B9356400C21D61 /* libopencv_highgui.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_highgui.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961D122B9356500C21D61 /* libopencv_videoio.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videoio.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_videoio.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961D422B9358700C21D61 /* libopencv_core.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_core.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961D622B935D400C21D61 /* libopencv_imgcodecs.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_imgcodecs.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961D822B935F500C21D61 /* libopencv_features2d.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_features2d.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961DA22B9360D00C21D61 /* libopencv_imgproc.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_imgproc.3.4.6.dylib; sourceTree = "<group>"; };
-		AA6961DF22B9384A00C21D61 /* ConnectionUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionUtils.swift; sourceTree = "<group>"; };
+		AA3FB607227B833D001DB4D6 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
+		AA3FB60A227CB721001DB4D6 /* libopencv_aruco.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_aruco.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_aruco.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB60B227CB721001DB4D6 /* libopencv_imgcodecs.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_imgcodecs.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB60C227CB721001DB4D6 /* libopencv_imgproc.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_imgproc.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB60D227CB721001DB4D6 /* libopencv_core.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_core.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB60E227CB721001DB4D6 /* libopencv_highgui.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_highgui.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB60F227CB721001DB4D6 /* libopencv_calib3d.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_calib3d.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB610227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videoio.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_videoio.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB619227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.3.4.6.dylib; path = ../../../../../usr/local/lib/libopencv_features2d.3.4.6.dylib; sourceTree = "<group>"; };
+		AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
+		AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunicationUtils.swift; sourceTree = "<group>"; };
 		AAA0AA1E22AEE5CB00002E78 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -293,6 +292,7 @@
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E15D3BC020BF47880058AD1A /* SceneMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMetadata.swift; sourceTree = "<group>"; };
 		E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor2.swift; sourceTree = "<group>"; };
+		E162D52620B5CE93001702BD /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../../../usr/local/Cellar/libpng/1.6.34/lib/libpng16.a; sourceTree = "<group>"; };
 		E1682DA020F9322200DF0FD4 /* Trajectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trajectory.swift; sourceTree = "<group>"; };
 		E1682DB020F947C700DF0FD4 /* MobileLighting_Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MobileLighting_Mac; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1682E0A20F9580700DF0FD4 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -332,7 +332,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				617302EC22B7DDB100A5C398 /* opencv2.framework in Frameworks */,
+				AA3FB608227B833D001DB4D6 /* opencv2.framework in Frameworks */,
 				E17AC73D20FE29430007EF77 /* CocoaAsyncSocket.framework in Frameworks */,
 				E17AC78220FE38C40007EF77 /* Yaml.framework in Frameworks */,
 			);
@@ -342,16 +342,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA6961DC22B9363200C21D61 /* libopencv_calib3d.3.4.6.dylib in Frameworks */,
-				AA6961DB22B9360D00C21D61 /* libopencv_imgproc.3.4.6.dylib in Frameworks */,
-				AA6961D922B935F500C21D61 /* libopencv_features2d.3.4.6.dylib in Frameworks */,
-				AA6961D722B935D400C21D61 /* libopencv_imgcodecs.3.4.6.dylib in Frameworks */,
-				AA6961D522B9358700C21D61 /* libopencv_core.3.4.6.dylib in Frameworks */,
-				AA6961D222B9356500C21D61 /* libopencv_highgui.3.4.6.dylib in Frameworks */,
-				AA6961D322B9356500C21D61 /* libopencv_videoio.3.4.6.dylib in Frameworks */,
-				AA6961CF22B9351700C21D61 /* libopencv_aruco.3.4.6.dylib in Frameworks */,
-				617302EA22B42EC500A5C398 /* libpng16.a in Frameworks */,
-				617302D822B42D8B00A5C398 /* libpng16.16.dylib in Frameworks */,
+				AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */,
+				AA3FB61A227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib in Frameworks */,
+				AA3FB612227CB722001DB4D6 /* libopencv_aruco.3.4.6.dylib in Frameworks */,
+				AA3FB613227CB722001DB4D6 /* libopencv_imgcodecs.3.4.6.dylib in Frameworks */,
+				AA3FB614227CB722001DB4D6 /* libopencv_imgproc.3.4.6.dylib in Frameworks */,
+				AA3FB615227CB722001DB4D6 /* libopencv_core.3.4.6.dylib in Frameworks */,
+				AA3FB616227CB722001DB4D6 /* libopencv_highgui.3.4.6.dylib in Frameworks */,
+				AA3FB617227CB722001DB4D6 /* libopencv_calib3d.3.4.6.dylib in Frameworks */,
+				AA3FB618227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib in Frameworks */,
 				E1A57AD72108D4E300C208C6 /* SerialUtils.framework in Frameworks */,
 				E1A57AD82108D4E300C208C6 /* SwiftSerial.framework in Frameworks */,
 				E1A57ADA2108D4E300C208C6 /* VXMCtrl.framework in Frameworks */,
@@ -403,18 +402,17 @@
 		E11F1FA81EE1B4E7008F9F0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AA6961DA22B9360D00C21D61 /* libopencv_imgproc.3.4.6.dylib */,
-				AA6961D822B935F500C21D61 /* libopencv_features2d.3.4.6.dylib */,
-				AA6961D622B935D400C21D61 /* libopencv_imgcodecs.3.4.6.dylib */,
-				AA6961D422B9358700C21D61 /* libopencv_core.3.4.6.dylib */,
-				AA6961D022B9356400C21D61 /* libopencv_highgui.3.4.6.dylib */,
-				AA6961D122B9356500C21D61 /* libopencv_videoio.3.4.6.dylib */,
-				AA6961CE22B9351700C21D61 /* libopencv_aruco.3.4.6.dylib */,
-				AA6961CC22B9340C00C21D61 /* libopencv_calib3d.3.4.6.dylib */,
-				617302EB22B7DDB100A5C398 /* opencv2.framework */,
-				617302E922B42EC500A5C398 /* libpng16.a */,
-				617302D722B42D8B00A5C398 /* libpng16.16.dylib */,
+				AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */,
+				AA3FB60A227CB721001DB4D6 /* libopencv_aruco.3.4.6.dylib */,
+				AA3FB60F227CB721001DB4D6 /* libopencv_calib3d.3.4.6.dylib */,
+				AA3FB619227CB80A001DB4D6 /* libopencv_features2d.3.4.6.dylib */,
+				AA3FB60D227CB721001DB4D6 /* libopencv_core.3.4.6.dylib */,
+				AA3FB60E227CB721001DB4D6 /* libopencv_highgui.3.4.6.dylib */,
+				AA3FB60B227CB721001DB4D6 /* libopencv_imgcodecs.3.4.6.dylib */,
+				AA3FB60C227CB721001DB4D6 /* libopencv_imgproc.3.4.6.dylib */,
+				AA3FB610227CB722001DB4D6 /* libopencv_videoio.3.4.6.dylib */,
 				E147578420F7D55B00BE5219 /* CocoaAsyncSocket.framework.dSYM */,
+				E162D52620B5CE93001702BD /* libpng16.a */,
 				E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */,
 				E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */,
 			);
@@ -441,6 +439,7 @@
 				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
 				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
+				AA3FB607227B833D001DB4D6 /* opencv2.framework */,
 				E17AC73B20FE29300007EF77 /* CocoaAsyncSocket.framework */,
 			);
 			path = MobileLighting_iPhone;
@@ -469,7 +468,7 @@
 				E1A2165620C841000016DFC6 /* DirectoryStructure.swift */,
 				E1682DA020F9322200DF0FD4 /* Trajectory.swift */,
 				E17AC73F20FE29B40007EF77 /* CocoaAsyncSocket.framework */,
-				AA6961DF22B9384A00C21D61 /* ConnectionUtils.swift */,
+				AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */,
 			);
 			path = MobileLighting_Mac;
 			sourceTree = "<group>";
@@ -769,6 +768,7 @@
 				E1BBBAD020BC76A100E57123 /* Debug.swift in Sources */,
 				E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */,
 				E11F1FFD1EE1BC36008F9F0F /* PhotoDataPacket.swift in Sources */,
+				E136681E1F1E505800BC561A /* Utils.swift in Sources */,
 				E1E8BB2D1EEB365C00F84F74 /* ImageProcessor.swift in Sources */,
 				E1268D7920FD30DF002BB095 /* MotionRecorder.swift in Sources */,
 				E11F1FFE1EE1BC36008F9F0F /* Timing.swift in Sources */,
@@ -800,7 +800,7 @@
 				E1682DD520F94B7300DF0FD4 /* FullscreenWindow.swift in Sources */,
 				E1682DD620F94B7300DF0FD4 /* BinaryCodeDrawer.swift in Sources */,
 				E1682DD720F94B7300DF0FD4 /* ProgramControl.swift in Sources */,
-				AA6961E022B9384A00C21D61 /* ConnectionUtils.swift in Sources */,
+				AA6961E622B94BE900C21D61 /* CommunicationUtils.swift in Sources */,
 				E1682DD820F94B7300DF0FD4 /* SettingsManager.swift in Sources */,
 				E1682DDA20F94B7300DF0FD4 /* MobileLighting_Mac-Bridging-Header.h in Sources */,
 				E1682DDC20F94B7300DF0FD4 /* DirectoryStructure.swift in Sources */,
@@ -936,7 +936,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "$(inherited)";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -1005,15 +1004,12 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
 				);
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/opencv2.framework/Headers",
-					/usr/local/include,
-				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone1234";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -1038,15 +1034,12 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
 				);
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/opencv2.framework/Headers",
-					/usr/local/include,
-				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone1234";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/MobileLighting_iPhone/MobileLighting_iPhone_Bridging_Header.h";
@@ -1091,8 +1084,6 @@
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
 					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
-					/usr/local/Cellar/libpng/1.6.35/lib,
-					/usr/local/Cellar/opencv/3.4.2/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -1136,8 +1127,6 @@
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
 					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
-					/usr/local/Cellar/libpng/1.6.35/lib,
-					/usr/local/Cellar/opencv/3.4.2/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "MobileLighting_Mac/MobileLighting_Mac-Bridging-Header.h";

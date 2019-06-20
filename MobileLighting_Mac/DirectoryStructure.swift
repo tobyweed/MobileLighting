@@ -174,6 +174,8 @@ class DirectoryStructure {
             return self.computed + "/" + "decoded"
         }
     }
+    
+    
     func decoded(_ rectified: Bool) -> String {
         let subdir = "\(self.decoded)/\(rectified ? "rectified" : "unrectified")"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
@@ -188,6 +190,31 @@ class DirectoryStructure {
     
     func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
         let subdir = "\(self.decoded(proj: proj, rectified: rectified))/pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    // For storing rectified ambient images
+    func ambientComputed() -> String {
+        let subdir = "\(self.computed)/ambient"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    func ambientComputed(rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed())/\(rectified ? "rectified" : "unrectified")"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    func ambientComputed(pos: Int, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(rectified: rectified))/pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    func ambientComputed(exp: Int, pos: Int, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(pos: pos, rectified: rectified))/exp\(exp)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }

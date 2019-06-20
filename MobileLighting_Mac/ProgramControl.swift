@@ -47,6 +47,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // image processing
     case refine
     case rectify
+    case rectifyamb
     case disparity
     case merge
     case reproject
@@ -54,7 +55,6 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     
     // camera calibration
     case calibrate  // 'x'
-    case calibrate2pos
     case stereocalib
     case getintrinsics
     case getextrinsics
@@ -81,9 +81,8 @@ func getUsage(_ command: Command) -> String {
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
-    case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
-    case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
+    case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
+    case .struclight: return "struclight [id] [projector #] [resolution=high]"
     case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
@@ -106,6 +105,7 @@ func getUsage(_ command: Command) -> String {
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .rectifyamb: return "rectifyamb [left] [right]\n       rectify   -a\n"
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
@@ -332,33 +332,6 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-        // captures calibration images from two viewpoints
-        // viewpoints specified as integers corresponding to the position along the linear
-        //    robot arm's axis
-        // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
-    //     proper location
-    case .calibrate2pos:
-        guard tokens.count >= 4 && tokens.count <= 5 else {
-            print(usage)
-            break
-        }
-        guard let left = Int(tokens[1]),
-            let right = Int(tokens[2]),
-            let nPhotos = Int(tokens[3]),
-            nPhotos > 0 else {
-                print("calibrate2pos: invalid argument(s).")
-                break
-        }
-        
-        if calibrationExposure != (0, 0) {
-            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
-            cameraServiceBrowser.sendPacket(packet)
-        }
-        
-        let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
-        captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
-        break
-        
     case .stereocalib:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         // Make sure we have the right number of tokens
@@ -397,18 +370,15 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        let posIDs = [Int](0..<positions.count)
+        var posIDs: [Int] = Array(0..<nPositions)
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         
-    // captures scene using structured lighting from specified projector and position number
-    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
-    //  NOTE: this command does not move the arm; it must already be in the correct positions
-    //      BUT it does configure the projectors
+    // captures scene using structured lighting from specified projector
     case .struclight:
         let system: BinaryCodeSystem
         
-        guard tokens.count >= 4 else {
+        guard tokens.count >= 3 else {
             print(usage)
             break
         }
@@ -420,23 +390,12 @@ func processCommand(_ input: String) -> Bool {
             print("struclight: invalid projector id.")
             break
         }
-        guard let armPos = Int(tokens[3]) else {
-            print("struclight: invalid position number \(tokens[2]).")
-            break
-        }
-        guard armPos >= 0, armPos < positions.count else {
-            print("struclight: position \(armPos) out of range.")
-            break
-        }
-        
-        // currentPos = armPos       // update current position
-        // currentProj = projPos     // update current projector
         
         system = .MinStripeWidthCode
         
         let resolution: String
-        if tokens.count == 5 {
-            resolution = tokens[4]
+        if tokens.count == 4 {
+            resolution = tokens[3]
         } else {
             resolution = defaultResolution
         }
@@ -448,12 +407,13 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.") // Turn on the selected projector
         _ = readLine()  // wait until user hits enter
         
-        // Tell the Rosvita server to move the arm to the selected position
-        var posStr = *String(armPos) // get pointer to pose string
-        GotoView(&posStr) // pass address of pointer
-        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
-        
-        captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
+        for i in 0..<nPositions {
+            // Tell the Rosvita server to move the arm to the selected position
+            var posStr = *String(i) // get pointer to pose string
+            GotoView(&posStr) // pass address of pointer
+            
+            captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
+        }
         break
         
         
@@ -500,10 +460,9 @@ func processCommand(_ input: String) -> Bool {
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
             // Move the robot to the correct position and prompt photo capture
-            for pos in 0..<positions.count {
+            for pos in 0..<nPositions {
                 var posStr = *String(pos)
                 GotoView(&posStr)
-                usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
             
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
@@ -773,57 +732,58 @@ func processCommand(_ input: String) -> Bool {
     //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
-        switch tokens.count {
-        case 2:
-            let posStr: String
-            if let posID = Int(tokens[1]) {
-                posStr = positions[posID]
-            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
-                posStr = tokens[1]
-            } else {
-                print("movearm: \(tokens[1]) is not a valid position string or index.")
-                break
-            }
-            print("Moving arm to position \(posStr)")
-            var cStr = posStr.cString(using: .ascii)!
-            DispatchQueue.main.async {
-                // Tell the Rosvita server to move the arm to the selected position
-                GotoView(&cStr)
-                print("Moved arm to position \(posStr)")
-            }
-        case 3:
-            guard let ds = Float(tokens[2]) else {
-                print("movearm: \(tokens[2]) is not a valid distance.")
-                break
-            }
-            switch tokens[1] {
-            case "x":
-                DispatchQueue.main.async {
-//                    MoveLinearX(ds, 0, 0)
-                }
-            case "y":
-                DispatchQueue.main.async {
-//                    MoveLinearY(ds, 0, 0)
-                }
-            case "z":
-                DispatchQueue.main.async {
-//                    MoveLinearZ(ds, 0, 0)
-                }
-            default:
-                print("moevarm: \(tokens[1]) is not a recognized direction.")
-            }
-            
-        default:
-            print(usage)
-            break
-        }
-        
         break
-        
-        // used to turn projectors on or off
-        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
-        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
-    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
+//        switch tokens.count {
+//        case 2:
+//            let posStr: String
+//            if let posID = Int(tokens[1]) {
+//                posStr = positions[posID]
+//            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
+//                posStr = tokens[1]
+//            } else {
+//                print("movearm: \(tokens[1]) is not a valid position string or index.")
+//                break
+//            }
+//            print("Moving arm to position \(posStr)")
+//            var cStr = posStr.cString(using: .ascii)!
+//            DispatchQueue.main.async {
+//                // Tell the Rosvita server to move the arm to the selected position
+//                GotoView(&cStr)
+//                print("Moved arm to position \(posStr)")
+//            }
+//        case 3:
+//            guard let ds = Float(tokens[2]) else {
+//                print("movearm: \(tokens[2]) is not a valid distance.")
+//                break
+//            }
+//            switch tokens[1] {
+//            case "x":
+//                DispatchQueue.main.async {
+////                    MoveLinearX(ds, 0, 0)
+//                }
+//            case "y":
+//                DispatchQueue.main.async {
+////                    MoveLinearY(ds, 0, 0)
+//                }
+//            case "z":
+//                DispatchQueue.main.async {
+////                    MoveLinearZ(ds, 0, 0)
+//                }
+//            default:
+//                print("moevarm: \(tokens[1]) is not a recognized direction.")
+//            }
+//
+//        default:
+//            print(usage)
+//            break
+//        }
+//
+//        break
+//
+//        // used to turn projectors on or off
+//        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+//        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+//    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
             print(usage)
@@ -1127,8 +1087,45 @@ func processCommand(_ input: String) -> Bool {
                 posIDpairs = [singlePosPair!]
             }
             for (left, right) in posIDpairs {
-                rectify(left: left, right: right, proj: proj)
+                rectifyDec(left: left, right: right, proj: proj)
             }
+        }
+        
+    //rectify ambient images
+    case .rectifyamb:
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+
+        //determine whether we are rectifying all position pairs
+        var allpos = false
+        for flag in flags {
+            switch flag {
+            case "-a":
+                if !allpos {
+                    allpos = true
+                } else {
+                    print("rectifyamb: extra flag \(flag)")
+                }
+            default:
+                print("rectifyamb: invalid flag \(flag)")
+                break cmdSwitch
+            }
+        }
+        
+        //assign the correct position pairs to posIDpairs
+        let posIDpairs: [(Int,Int)]
+        var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(.normal)), prefix: "pos", suffix: "")
+        guard posIDs.count > 1 else {
+            print("rectifyamb: not enough positions.")
+            break
+        }
+        posIDs.sort()
+        posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
+        
+        //loop through all pos pairs and rectify them (untested for multiple pairs)
+        for (left, right) in posIDpairs {
+            print("\nRectifying position pair: \(left) (left) and \(right) (right)");
+            //rectify ambient images of all exposures
+            rectifyAmb(left: left, right: right)
         }
         
     case .merge:
@@ -1348,7 +1345,7 @@ func processCommand(_ input: String) -> Bool {
                 print(usage)
                 break
             }
-            let posIDs = [Int](0..<positions.count)
+            let posIDs = [Int](0..<nPositions)
             positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
             curParam = 1
         } else {
