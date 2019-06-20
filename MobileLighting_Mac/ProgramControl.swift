@@ -732,53 +732,30 @@ func processCommand(_ input: String) -> Bool {
     //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
     //      (and zeroes out the coordinate system)*
     case .movearm:
+        switch tokens.count {
+        case 2:
+            let posStr: String
+            if let posID = Int(tokens[1]) {
+                posStr = positions[posID]
+            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
+                posStr = tokens[1]
+            } else {
+                print("movearm: \(tokens[1]) is not a valid position string or index.")
+                break
+            }
+            print("Moving arm to position \(posStr)")
+            var cStr = posStr.cString(using: .ascii)!
+            DispatchQueue.main.async {
+                // Tell the Rosvita server to move the arm to the selected position
+                GotoView(&cStr)
+                print("Moved arm to position \(posStr)")
+            }
+        default:
+            print(usage)
+            break
+        }
+
         break
-//        switch tokens.count {
-//        case 2:
-//            let posStr: String
-//            if let posID = Int(tokens[1]) {
-//                posStr = positions[posID]
-//            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
-//                posStr = tokens[1]
-//            } else {
-//                print("movearm: \(tokens[1]) is not a valid position string or index.")
-//                break
-//            }
-//            print("Moving arm to position \(posStr)")
-//            var cStr = posStr.cString(using: .ascii)!
-//            DispatchQueue.main.async {
-//                // Tell the Rosvita server to move the arm to the selected position
-//                GotoView(&cStr)
-//                print("Moved arm to position \(posStr)")
-//            }
-//        case 3:
-//            guard let ds = Float(tokens[2]) else {
-//                print("movearm: \(tokens[2]) is not a valid distance.")
-//                break
-//            }
-//            switch tokens[1] {
-//            case "x":
-//                DispatchQueue.main.async {
-////                    MoveLinearX(ds, 0, 0)
-//                }
-//            case "y":
-//                DispatchQueue.main.async {
-////                    MoveLinearY(ds, 0, 0)
-//                }
-//            case "z":
-//                DispatchQueue.main.async {
-////                    MoveLinearZ(ds, 0, 0)
-//                }
-//            default:
-//                print("moevarm: \(tokens[1]) is not a recognized direction.")
-//            }
-//
-//        default:
-//            print(usage)
-//            break
-//        }
-//
-//        break
 //
 //        // used to turn projectors on or off
 //        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
