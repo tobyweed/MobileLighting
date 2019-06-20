@@ -23,14 +23,20 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case quit
     case reloadsettings
     
+    // photo capture
+    case calibrate
+    case stereocalib
     case struclight
     case takeamb
     
-    // camera settings
+    // camera control
     case readfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
     case lockwhitebalance
     case focuspoint
+    
+    // projector control
+    case proj
     case cb     // displays checkerboard
     case black, white
     case diagonal, verticalbars   // displays diagonal stripes (for testing 'diagonal' DLP chip)
@@ -38,11 +44,15 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // communications & serial control
     case connect
     case disconnect, disconnectall
-    case proj
     
     // robot control
     case loadpath
     case movearm
+    case setvelocity
+    
+    // camera calibration
+    case getintrinsics
+    case getextrinsics
     
     // image processing
     case refine
@@ -53,20 +63,14 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case reproject
     case merge2
     
-    // camera calibration
-    case calibrate  // 'x'
-    case stereocalib
-    case getintrinsics
-    case getextrinsics
-    
     // take ambient photos
     
-    // for debugging
+    // debugging
     case dispres
     case dispcode
     case clearpackets
     
-    // for scripting
+    // scripting
     case sleep
 }
 
@@ -77,13 +81,16 @@ func getUsage(_ command: Command) -> String {
     case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
+    // communications
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
+    // photo capture
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
     case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
     case .struclight: return "struclight [id] [projector #] [resolution=high]"
     case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
+    // camera control
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
     case .lockfocus: return "lockfocus"
@@ -94,14 +101,18 @@ func getUsage(_ command: Command) -> String {
     case .autoexposure: return "autoexposure"
     case .lockexposure: return "lockexposure"
     case .setexposure: return "setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)"
+    // projector control
+    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
     case .cb: return "cb [squareSize=2]"
     case .black: return "black"
     case .white: return "white"
     case .diagonal: return "diagonal [stripe width]"
     case .verticalbars: return "verticalbars [width]"
+    // robot control
     case .loadpath: return "loadpath [pathname]"
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
-    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
+    case .setvelocity: return "setvelocity [velocity]\n"
+    // image processing
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
@@ -109,12 +120,14 @@ func getUsage(_ command: Command) -> String {
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
+    // camera calibration
     case .getintrinsics: return "getintrinsics"
     case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    // debugging
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
-    case .sleep: return "sleep [secs: Float]"
     case .clearpackets: return "clearpackets"
+    case .sleep: return "sleep [secs: Float]"
     }
 }
 
@@ -739,7 +752,6 @@ func processCommand(_ input: String) -> Bool {
                         // Tell the Rosvita server to move the arm to the selected position
                         var posStr = *String(posInt)
                         GotoView(&posStr)
-                        print("Moved arm to position \(posInt)")
                     }
                 } else if (!(posInt >= 0)) {
                     print("Please enter a positive number.")
@@ -753,13 +765,35 @@ func processCommand(_ input: String) -> Bool {
             print(usage)
             break
         }
-
         break
-//
-//        // used to turn projectors on or off
-//        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
-//        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
-//    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
+        
+    // Set robot arm velocity. Expects a float from 0 to 1. Note that higher velocities correspond to less repetition (eg precision) in positions.
+    case .setvelocity:
+        switch tokens.count {
+        case 2:
+            if let vFloat = Float(tokens[1]) {
+                if( vFloat >= 0.0 && vFloat <= 1.0 ) {
+                    print("Setting velocity to \(vFloat)")
+                    DispatchQueue.main.async {
+                        // Tell the Rosvita server to set the velocity to the specified Float
+                        SetVelocity(vFloat)
+                    }
+                } else {
+                    print("Please enter a Float between 0.0 and 1.0.")
+                } 
+            } else {
+                print("\(tokens[1]) is not a valid Float.")
+            }
+        default:
+            print(usage)
+            break
+        }
+        break
+        
+    // used to turn projectors on or off
+    //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+    //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+    // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
             print(usage)
