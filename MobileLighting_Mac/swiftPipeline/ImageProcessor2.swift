@@ -33,8 +33,7 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
     photoReceiver.dataReceivers.insertFirst(
         SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
     )
- */
-
+ */I
 }
 
 //MARK: disparity matching functions
@@ -46,16 +45,8 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
 // NOW: also refines disparity maps
 func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var refinedDirLeft: [CChar], refinedDirRight: [CChar]
-//    if rectified {
-//        refinedDirLeft = (dirStruc.subdir(dirStruc.refined, proj: proj, pos: leftpos) + "/left").cString(using: .ascii)!
-//        refinedDirRight = (dirStruc.subdir(dirStruc.refined, proj: proj, pos: rightpos) + "/right").cString(using: .ascii)!
-        refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
-        refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
-//    } else {
-////        refinedDirLeft = dirStruc.subdir(dirStruc.refined, proj: proj, pos: leftpos).cString(using: .ascii)!
-////        refinedDirRight = dirStruc.subdir(dirStruc.refined, proj: proj, pos: rightpos).cString(using: .ascii)!
-//        refinedDirLeft = *dirStruc
-//    }
+    refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
+    refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
     var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: leftpos)
     var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: rightpos)
     let l = Int32(leftpos)
