@@ -728,29 +728,27 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-    // moves linear robot arm to specified position using VXM controller box
-    //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
-    //      (and zeroes out the coordinate system)*
+    // moves robot arm to specified position ID by communicating with Rosvita server
     case .movearm:
         switch tokens.count {
         case 2:
-            print(Int(tokens[1]))
-//            guard Int(tokens[1])
-//
-//            let posStr: String
-//            if let posStr = tokens[1] {
-//
-//            } else {
-//                print("movearm: \(tokens[1]) is not a valid position index string.")
-//                break
-//            }
-//            print("Moving arm to position \(posStr)")
-//            var cStr = posStr.cString(using: .ascii)!
-//            DispatchQueue.main.async {
-//                // Tell the Rosvita server to move the arm to the selected position
-//                GotoView(&cStr)
-//                print("Moved arm to position \(posStr)")
-//            }
+            if let posInt = Int(tokens[1]) {
+                if( posInt >= 0 && posInt < nPositions ) {
+                    print("Moving arm to position \(posInt)")
+                    DispatchQueue.main.async {
+                        // Tell the Rosvita server to move the arm to the selected position
+                        var posStr = *String(posInt)
+                        GotoView(&posStr)
+                        print("Moved arm to position \(posInt)")
+                    }
+                } else if (!(posInt >= 0)) {
+                    print("Please enter a positive number.")
+                } else {
+                    print("\(posInt) is not a position ID. There are only \(nPositions) in the path currently loaded.")
+                }
+            } else {
+                print("\(tokens[1]) is not a valid position ID string.")
+            }
         default:
             print(usage)
             break
