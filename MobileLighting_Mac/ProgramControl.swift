@@ -736,8 +736,11 @@ func processCommand(_ input: String) -> Bool {
         let path: String = tokens[1] // the first argument should specify a pathname
         var pathPointer = *path // get pointer to the string
         var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
-        if status != 0 { // print a message if the LoadPath doesn't return 0
+        if status == -1 { // print a message if the LoadPath doesn't return 0
             print("Could not load path \"\(path)\"")
+        } else {
+            nPositions = Int(status)
+            print("Succesfully loaded path with \(nPositions) positions")
         }
         break
         

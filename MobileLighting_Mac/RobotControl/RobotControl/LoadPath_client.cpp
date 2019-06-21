@@ -53,7 +53,7 @@ int sendCommand(char *script){
     char buffer[1024] = {0};
     if(client_sock<1)
         return -1;
-    send(client_sock, script, strlen(script),0);
+    result = send(client_sock, script, strlen(script),0);
     if (result<0){
         printf("\nSending Failed\n");
         return -1;

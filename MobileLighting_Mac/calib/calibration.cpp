@@ -1391,6 +1391,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
     
     printf("\nStereo reprojection error = %.4f\n", err);
     
+    printf("\n Alpha: %d",s.alpha);
     
     // Rectify the images using these extrinsic results
     stereoRectify(inCal.cameraMatrix, inCal.distCoeffs,
