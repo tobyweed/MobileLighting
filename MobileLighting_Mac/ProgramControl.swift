@@ -421,8 +421,10 @@ func processCommand(_ input: String) -> Bool {
         
         for i in 0..<nPositions {
             // Tell the Rosvita server to move the arm to the selected position
-            var posStr = *String(i) // get pointer to pose string
-            GotoView(&posStr) // pass address of pointer
+            if( !debugMode ) {
+                var posStr = *String(i) // get pointer to pose string
+                GotoView(&posStr) // pass address of pointer
+            }
             
             captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
         }
@@ -473,8 +475,10 @@ func processCommand(_ input: String) -> Bool {
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
-                var posStr = *String(pos)
-                GotoView(&posStr)
+                if ( !debugMode ) {
+                    var posStr = *String(pos)
+                    GotoView(&posStr)
+                }
             
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
@@ -736,6 +740,7 @@ func processCommand(_ input: String) -> Bool {
         let path: String = tokens[1] // the first argument should specify a pathname
         var pathPointer = *path // get pointer to the string
         var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
+        
         if status == -1 { // print a message if the LoadPath doesn't return 0
             print("Could not load path \"\(path)\"")
         } else {
@@ -753,8 +758,10 @@ func processCommand(_ input: String) -> Bool {
                     print("Moving arm to position \(posInt)")
                     DispatchQueue.main.async {
                         // Tell the Rosvita server to move the arm to the selected position
-                        var posStr = *String(posInt)
-                        GotoView(&posStr)
+                        if (!debugMode) {
+                            var posStr = *String(posInt)
+                            GotoView(&posStr)
+                        }
                     }
                 } else if (!(posInt >= 0)) {
                     print("Please enter a positive number.")

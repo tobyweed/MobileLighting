@@ -20,6 +20,10 @@ import Yaml
 //  since the Mac program compiles to a command-line binary
 var app = NSApplication.shared
 
+// When debugMode == true, the program will skip communication with the robot server. Used to debug the program
+//  without having to connect to the robot.
+var debugMode = true
+
 // Communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
@@ -158,15 +162,19 @@ if configureDisplays() {
 // Establish connection with the iPhone and set the instruction packet
 initializeIPhoneCommunications()
 
-// Attempt to load the path listed in the sceneSettings file to the Rosvita server
-let path: String = sceneSettings.robotPathName
-var pathPointer = *path
-var status = LoadPath(&pathPointer) // load the path on Rosvita server
-if status < 0 { // print a message if the LoadPath doesn't return 0
-    print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
+if( !debugMode ) {
+    // Attempt to load the path listed in the sceneSettings file to the Rosvita server
+    let path: String = sceneSettings.robotPathName
+    var pathPointer = *path
+    var status = LoadPath(&pathPointer) // load the path on Rosvita server
+    if status < 0 { // print a message if the LoadPath doesn't return 0
+        print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
+    } else {
+        nPositions = Int(status)
+        print("Succesfully loaded path with \(nPositions) positions")
+    }
 } else {
-    nPositions = Int(status)
-    print("Succesfully loaded path with \(nPositions) positions")
+    nPositions = 2
 }
 
 // focus iPhone if focus provided

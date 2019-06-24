@@ -73,8 +73,11 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         // Take set of calibration photos, one from each position
         while i < posIDs.count {
             // Move the robot to the right position
-            var posStr = *String(i)
-            GotoView(&posStr)
+            if (!debugMode) {
+                var posStr = *String(i)
+                GotoView(&posStr)
+            }
+
             print("\nTaking image from position \(i)...")
 
             // take photo at position i
@@ -85,10 +88,15 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             receiveCalibrationImageSync(dir: photoDir, id: photoID)
             
             if i > 0 {
-                // now perform detection check
                 print("\nDetecting objectPoints...")
                 var leftpath = *"\(stereoDirDict[i]!)/IMG\(photoID).JPG"
                 var rightpath = *"\(stereoDirDict[i-1]!)/IMG\(photoID).JPG"
+                // generate image lists for DetectionCheck to read later
+                generateStereoImageList(left: stereoDirDict[i]!, right: stereoDirDict[i-1]!)
+                // make sure DetectionCheck will read from the right image list
+                settings.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
+                settings.save()
+                // now perform check what patterns were detected
                 _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
             }
             i += 1
