@@ -552,9 +552,10 @@ func processCommand(_ input: String) -> Bool {
                 }
             }
             
-//            trajectory.moveToStart()
-            print("takeamb video: hit enter when camera in position.")
-            _ = readLine()
+            if( !debugMode ) {
+                var startPos = *String(0)
+                GotoView(&startPos)
+            }
             
             print("takeamb video: starting recording...")
             var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
@@ -568,7 +569,8 @@ func processCommand(_ input: String) -> Bool {
             let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/imu.yml")
             photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
-//            trajectory.executeScript()
+            // Insert code for smooth trajectory execution here once Guanghan has it
+            // trajectory.executeScript()
             print("takeamb video: hit enter when trajectory completed.")
             _ = readLine()
             packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
