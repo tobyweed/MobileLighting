@@ -60,7 +60,7 @@ guard CommandLine.argc >= 2 else {
 
 switch CommandLine.arguments[1] {
 case "init":
-    // Initialize settings files, then quit
+    // Initialize necessary settings files, then quit
     print("MobileLighting: entering init mode...")
     
     // If no path is provided, ask for one
@@ -80,12 +80,25 @@ case "init":
     }
     
     do {
-        // Try to create sceneSettings, trajectory, and calibration Yaml files
         dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
+        // Generate sceneSettings and calibration Yaml files with default values
         try SceneSettings.create(dirStruc)
+        // Set contingent values
+        sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
+        sceneSettings.set( key: "sceneName", value: Yaml.string(sceneName) )
+        sceneSettings.set( key: "scenesDir", value: Yaml.string(scenesDirectory) )
+        sceneSettings.set( key: "robotPathName", value: Yaml.string("default") )
+        sceneSettings.set( key: "minSWdataPath", value: Yaml.string("(Value not initialized. Enter path to minSW data file.)") )
+        sceneSettings.save()
         print("successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
-        print("successfully created trajectory file at \(scenesDirectory)/\(sceneName)/settings/trajectory.yml")
+        
         try CalibrationSettings.create(dirStruc)
+        // Set contingent values
+        let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)
+        calibSettings.set( key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.calibComputed + "/extrinsics.yml"))
+        calibSettings.set( key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.calibComputed + "/intrinsics.yml"))
+        calibSettings.set( key: .ImageList_Filename, value: Yaml.string(dirStruc.calibration + "/imageLists/intrinsicsImageList.yml"))
+        calibSettings.save()
         print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/calibration.yml")
     } catch let error {
         print(error.localizedDescription)
@@ -93,6 +106,7 @@ case "init":
     print("MobileLighting exiting...")
     exit(0)
     
+// If there is a scenesettings path provided, read the settings from it
 case let path where path.lowercased().hasSuffix(".yml"):
     do {
         sceneSettingsPath = path
@@ -117,9 +131,6 @@ minSWfilepath = sceneSettings.minSWfilepath
 var strucExposureDurations = sceneSettings.strucExposureDurations
 var strucExposureISOs = sceneSettings.strucExposureISOs
 var calibrationExposure = (sceneSettings.calibrationExposureDuration ?? 0, sceneSettings.calibrationExposureISO ?? 0)
-
-// Save the trajectory
-var trajectory = sceneSettings.trajectory
 
 // Save the camera focus
 focus = sceneSettings.focus
@@ -147,8 +158,8 @@ if configureDisplays() {
 // Establish connection with the iPhone and set the instruction packet
 initializeIPhoneCommunications()
 
-// Attempt to load a default path to the Rosvita server
-let path: String = "default"
+// Attempt to load the path listed in the sceneSettings file to the Rosvita server
+let path: String = sceneSettings.robotPathName
 var pathPointer = *path
 var status = LoadPath(&pathPointer) // load the path on Rosvita server
 if status < 0 { // print a message if the LoadPath doesn't return 0

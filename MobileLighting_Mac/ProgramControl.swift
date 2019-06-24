@@ -199,7 +199,6 @@ func processCommand(_ input: String) -> Bool {
             if let calibDuration = sceneSettings.calibrationExposureDuration, let calibISO = sceneSettings.calibrationExposureISO {
                 calibrationExposure = (calibDuration, calibISO)
             }
-            trajectory = sceneSettings.trajectory
         } catch let error {
             print("Fatal error: could not load init settings, \(error.localizedDescription)")
             break
@@ -518,6 +517,7 @@ func processCommand(_ input: String) -> Bool {
             
             break
             
+        // certainly slightly broken
         case "video":
             guard params.count >= 1, params.count <= 2 else {
                 print(usage)
@@ -548,7 +548,7 @@ func processCommand(_ input: String) -> Bool {
                 }
             }
             
-            trajectory.moveToStart()
+//            trajectory.moveToStart()
             print("takeamb video: hit enter when camera in position.")
             _ = readLine()
             
@@ -564,7 +564,7 @@ func processCommand(_ input: String) -> Bool {
             let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/imu.yml")
             photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
-            trajectory.executeScript()
+//            trajectory.executeScript()
             print("takeamb video: hit enter when trajectory completed.")
             _ = readLine()
             packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)

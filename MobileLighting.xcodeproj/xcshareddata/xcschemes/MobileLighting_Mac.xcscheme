@@ -63,7 +63,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/tobyweed/Desktop/scenes/test4/settings/sceneSettings.yml"
+            argument = "/Users/tobyweed/Desktop/scenes/inittest/settings/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

@@ -58,6 +58,15 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
 1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
 
+### Scene Setup
+1. Create a directory to store scenes.
+1. Run MobileLighting_Mac with the "init" option. From Xcode:
+    1. Select MobileLighting_Mac from the build target menu in the top left corner.
+    1. Click "Edit Scheme" at the bottom of the same menu.
+    1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
+    1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+    1. Update the Yaml files with the parameters you will use for the scene. Note that the minSWdataPath parameter is an important one for stereo calibration and is not automatically set. You will need to enter the path to a copy of a file containing minSW data.
+
 ## General Tips
 Use the `help` command to list all possible commands. If you are unsure how to use the `help` command, type `help help`.
 
@@ -97,7 +106,7 @@ The main program, ML Mac, communicates with the robot via a server running Rosvi
 
 They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends  to the server, and that ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp. If it doesn't have the correct IP address, it will try to establish connection for a while before returning a failure message.
 
-The server usually replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath().
+The server replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath(), which returns "-1" indicating failure or "x", where x is the number of positions in the loaded path.
 
 **Loading Paths**
 The server stores robot positions in sets called "paths," which are initialized on the server without any input from or output to ML Mac. Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
@@ -117,10 +126,7 @@ There are numerous steps to dataset acquisition:
     
 All these steps are executed/controlled at the MobileLighting Mac command-line interface.
 
-The "waypoints" along the trajectory, all specified in the `trajectory.yml` file, are the positions at which all still images will be taken, including structured light, calibration, and ambient stills.
-
-The focus remains fixed for the entire capture session. At the beginning of each session, ML Mac will send the `focus` parameter specified in the scene settings file.
-(0.0 ≤ focus ≤ 1.0, where 0.0 is close and 1.0 is far) 
+The focus remains fixed for the entire capture session. At the beginning of each session, ML Mac will send the `focus` parameter specified in the scene settings file (0.0 ≤ focus ≤ 1.0, where 0.0 is close and 1.0 is far). This should be initially established by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. 
 
 ### Calibration
 In order to capture calibration images, the Mac must be connected to the robot arm (and the iPhone).
