@@ -22,7 +22,7 @@ var app = NSApplication.shared
 
 // When debugMode == true, the program will skip communication with the robot server. Used to debug the program
 //  without having to connect to the robot.
-var debugMode = true
+var debugMode = false
 
 // Communication devices
 var cameraServiceBrowser: CameraServiceBrowser!

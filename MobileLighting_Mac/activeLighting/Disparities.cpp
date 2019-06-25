@@ -372,7 +372,7 @@ void matchImages(CFloatImage fim0, CFloatImage fim1, CFloatImage dim, int dmin, 
     int w = sh.width, h = sh.height;
     
     // maximal allowable code difference:
-    float maxdiff = 0.5;
+    float maxdiff = 1.0; // changed from 0.5 to 1.0 on 6/25/19
     float maxdiffsq = maxdiff * maxdiff;
     
     int ncodes = 1024;
