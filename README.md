@@ -236,10 +236,10 @@ Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
 Here is the approximate outline of the image processing pipeline:
 1. Compute intrinsics
 1. Compute extrinsics for all stereo pairs
-1. Rectify decoded images for all stereo pairs
-1. Refine all rectified images (unrectified images should already have automatically been refined during data acquisition)
-1. Disparity-match unrectified, rectified images
-1. Merge disparity maps for unrectified, rectified
+1. Rectify all ambient images & decoded images for all stereo pairs
+1. Refine all rectified code images (unrectified images should already have automatically been refined during data acquisition)
+1. Disparity-match unrectified, rectified code images
+1. Merge disparity maps for unrectified, rectified code images
 1. Reproject rectified, merged disparity maps
 1. Merge reprojected disparities with original disparities and merged disparities for final result
 
@@ -275,6 +275,10 @@ where `[left]` & `[right]` are positions
 
 _for all projectors, all position pairs_:
 `rectify -a -a`
+
+To rectify ambient images, use the following command:
+`rectifyamb`
+This will rectify all ambient images. This is the only processing that ambient images need to go through.
 
 ### Refine
 Use the `refine` command to refine decoded images. Like `rectify`, it can operate on one projector & one position (pair), all projectors & one position (pair), and all projectors & all position (pair)s, depending on the number of `-a` flags.

@@ -23,16 +23,17 @@ func getptr<T>(_ obj: inout [T]) -> UnsafeMutablePointer<T>? {
     return UnsafeMutablePointer<T>(&obj)
 }
 
+// get an array of Integers from an array of paths "strs" to files or directories with the format [prefix]x[suffix]
 func getIDs(_ strs: [String], prefix: String, suffix: String) -> [Int] {
-    return strs.map {
+    return strs.map { // convert the array to contain only the filenames (not whole paths)
         return String($0.split(separator: "/").last!)
-    }.map {
+    }.map { // collect all the IDs, returning nil for all files not in the format [prefix]x[suffix]
         guard $0.hasPrefix(prefix), $0.hasSuffix(suffix) else {
             return nil
         }
         let base = $0.dropFirst(prefix.count).dropLast(suffix.count)
         return Int(base)
-    }.filter{
+    }.filter{ // remove nil values from array
         return $0 != nil
         }.map{ return $0!}
 }

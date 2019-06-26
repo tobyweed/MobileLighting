@@ -20,11 +20,10 @@ import Yaml
 //  since the Mac program compiles to a command-line binary
 var app = NSApplication.shared
 
-// When debugMode == true, the program will skip communication with the robot server. Used to debug the program
-//  without having to connect to the robot.
-var debugMode = false
+// when debugMode == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
+var debugMode = true
 
-// Communication devices
+// communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
 var displayController: DisplayController!   // manages Kramer switcher box
@@ -86,7 +85,7 @@ case "init":
     do {
         dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
         // Generate sceneSettings and calibration Yaml files with default values
-        try SceneSettings.create(dirStruc)
+        _ = try SceneSettings.create(dirStruc)
         // Set contingent values
         sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
         sceneSettings.set( key: "sceneName", value: Yaml.string(sceneName) )

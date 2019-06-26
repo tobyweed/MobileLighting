@@ -137,7 +137,7 @@ class SceneSettings {
     }
     
     // Set the yaml settings dictionary
-    func save() {
+    func save(){
         try! Yaml.save(Yaml.dictionary([Yaml.string("Settings") : self.yml]), toFile: filepath)
     }
     
@@ -145,9 +145,13 @@ class SceneSettings {
     static func create(_ dirStruc: DirectoryStructure) throws {
         let path = "\(dirStruc.settings)/sceneSettings.yml"
         let dir = ((path.first == "/") ? "/" : "") + path.split(separator: "/").dropLast().joined(separator: "/")
-        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-        let yml = try SceneSettings.format.save()
-        try yml.write(toFile: path, atomically: true, encoding: .ascii)
+        do {
+            try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+            let yml = try SceneSettings.format.save()
+            try yml.write(toFile: path, atomically: true, encoding: .ascii)
+        } catch let error {
+            print(error.localizedDescription)
+        }
     }
 }
 

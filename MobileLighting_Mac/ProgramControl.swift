@@ -89,7 +89,7 @@ func getUsage(_ command: Command) -> String {
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
     case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
     case .struclight: return "struclight [id] [projector #] [resolution=high]"
-    case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
+    case .takeamb: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
@@ -323,12 +323,14 @@ func processCommand(_ input: String) -> Bool {
         // Insert photos starting at the right index, stopping on user prompt
         var i: Int = startIndex;
         while(true) {
-            print("Hit enter to take a photo or write q to finish taking photos.")
+            print("Enter to take a photo, q to finish taking photos, or r to retake the last photo.")
             guard let input = readLine() else {
                 fatalError("Unexpected error in reading stdin.")
             }
             if ["q", "quit"].contains(input) {
                 break
+            } else if ["r"].contains(input) {
+                i -= 1
             }
             
             // take calibration photo
@@ -430,7 +432,12 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-        
+    /* take ambient images from all positions at all exposures
+       flags: -t: use torch mode
+              -f: use flash mode
+              -a: append to existing photos
+              -d: delete ALL contents of the ambient/photos directory
+        if neither -a nor -d is given, photos will be written to IMG0.JPG, overwriting any previous file with the same name */
     case .takeamb:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
@@ -441,11 +448,6 @@ func processCommand(_ input: String) -> Bool {
         
         switch params[0] {
         case "still":
-            guard params.count >= 1 else {
-                print("usage: takeamb still [resolution]?")
-                break cmdSwitch
-            }
-            
             let resolution: String
             if params.count == 2 {
                 resolution = params[1]
@@ -453,25 +455,42 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
+            
+            // set torch, flash mode, and determine whether we're appending photos to existing ones based on flags
             var mode = DirectoryStructure.PhotoMode.normal
             var flashMode = AVCaptureDevice.FlashMode.off
             var torchMode = AVCaptureDevice.TorchMode.off
+            var appending = false
             for flag in flags {
                 switch flag {
                 case "-f":
-                    print("takeamb still: using flash mode...")
+                    print("using flash mode...")
                     flashMode = .on
                     mode = .flash
                 case "-t":
-                    print("takeamb still: using torch mode...")
+                    print("using torch mode...")
                     mode = .torch
                     torchMode = .on
+                case "-a":
+                    print("appending to existing ambient photos...")
+                    appending = true
+                case "-d":
+                    print("deleting all ambient photos...")
+                    // delete ALL contents of the ambient/photos directory
+                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
+                        return "\(dirStruc.ambientPhotos)/\($0)"
+                    }
+                    for item in photoDirectoryContents {
+                        do { try FileManager.default.removeItem(atPath: item) }
+                        catch { print("could not remove \(item)") }
+                    }
                 default:
-                    print("takeamb still: flag \(flag) not recognized.")
+                    print("flag \(flag) not recognized.")
                 }
             }
                         
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
+            
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
@@ -487,7 +506,19 @@ func processCommand(_ input: String) -> Bool {
                     var nReceived = 0
                     let completionHandler = { nReceived += 1 }
                     for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(exp).JPG"
+                        var startIndex = 0
+                        if(appending) {
+                            // create an array of paths to all the files in the pos, exp ambient photo directory
+                            var photos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))).map {
+                                return "\(dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))/\($0)"
+                            }
+                            // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
+                            let ids: [Int] = getIDs(photos, prefix: "IMG", suffix: ".JPG")
+                            // set startIndex to one greater than the largest collected ID
+                            startIndex = ids.max()! + 1
+                        }
+                        
+                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(startIndex).JPG"
                         let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)
                     }
@@ -521,7 +552,6 @@ func processCommand(_ input: String) -> Bool {
             
             break
             
-        // certainly slightly broken
         case "video":
             guard params.count >= 1, params.count <= 2 else {
                 print(usage)

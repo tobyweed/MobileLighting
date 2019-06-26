@@ -149,27 +149,52 @@ func rectifyAmb(left: Int, right: Int) {
 
     //loop through all exposures
     for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-        //paths for retreiving input
-        var resultl = *"\(dirStruc.ambientPhotos(pos: left, mode: .normal))/exp\(exp)/IMG\(exp).JPG"
-        var resultr = *"\(dirStruc.ambientPhotos(pos: right, mode: .normal))/exp\(exp)/IMG\(exp).JPG"
-        
-        if(exp == 0) { //only computer maps on first iteration
-            computeMaps(&resultl, &intr, &extr, &settings)
+        // create an array of paths to all the files in the position 0, exposure 0 ambient photo directory
+        var leftPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, exp: exp, mode: .normal))).map {
+            return "\(dirStruc.ambientPhotos(pos: left, exp: exp, mode: .normal))/\($0)"
+        }
+        var rightPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: right, exp: exp, mode: .normal))).map {
+            return "\(dirStruc.ambientPhotos(pos: right, exp: exp, mode: .normal))/\($0)"
         }
         
-        //paths for storing output
-        let outpaths = [dirStruc.ambientComputed(exp: exp, pos: left, rectified: true) + "/\(left)\(right)rectified.jpg",
-            dirStruc.ambientComputed(exp: exp, pos: right, rectified: true) + "/\(left)\(right)rectified.jpg"
-        ]
-        var coutpaths = outpaths.map {
-            return $0.cString(using: .ascii)!
-        }
+        // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
+        let leftIds: [Int] = getIDs(leftPhotos, prefix: "IMG", suffix: ".JPG")
+        let leftMaxIndex = leftIds.max()!
+        let rightIds: [Int] = getIDs(rightPhotos, prefix: "IMG", suffix: ".JPG")
+        let rightMaxIndex = rightIds.max()!
         
-        //rectify both poses
-        print("trying to save rectified image to path: \(outpaths[0])");
-        rectifyAmbient(0, &resultl, &coutpaths[0])
-        print("trying to save rectified image to path: \(outpaths[1])");
-        rectifyAmbient(1, &resultr, &coutpaths[1])
+        // check to see if left and right have the same number of photos. If not, print a warning and use the smaller number
+        if(leftMaxIndex != rightMaxIndex) {
+            print("WARNING: left and right positions have different max photo IDs.")
+            print("rectifying only IDs smaller than or equal to the lower maximum.")
+        }
+        let maxIndex =  max(leftMaxIndex, rightMaxIndex)
+        print("max index: (maxIndex)")
+        
+        // loop through all images in each exposure directory
+        for id in 0...maxIndex {
+            //paths for retreiving input
+            var resultl = *"\(dirStruc.ambientPhotos(pos: left, mode: .normal))/exp\(exp)/IMG\(id).JPG"
+            var resultr = *"\(dirStruc.ambientPhotos(pos: right, mode: .normal))/exp\(exp)/IMG\(id).JPG"
+            
+            if(exp == 0) { //only computer maps on first iteration
+                computeMaps(&resultl, &intr, &extr, &settings)
+            }
+            
+            //paths for storing output
+            let outpaths = [dirStruc.ambientComputed(exp: exp, pos: left, rectified: true) + "/\(left)\(right)rectified\(id).jpg",
+                dirStruc.ambientComputed(exp: exp, pos: right, rectified: true) + "/\(left)\(right)rectified\(id).jpg"
+            ]
+            var coutpaths = outpaths.map {
+                return $0.cString(using: .ascii)!
+            }
+            
+            //rectify both poses
+            print("trying to save rectified image to path: \(outpaths[0])");
+            rectifyAmbient(0, &resultl, &coutpaths[0])
+            print("trying to save rectified image to path: \(outpaths[1])");
+            rectifyAmbient(1, &resultr, &coutpaths[1])
+        }
     }
 }
 
