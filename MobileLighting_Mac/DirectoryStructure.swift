@@ -213,14 +213,20 @@ class DirectoryStructure {
         return subdir
     }
     
-    func ambientComputed(pos: Int, rectified: Bool) -> String {
-        let subdir = "\(self.ambientComputed(rectified: rectified))/pos\(pos)"
+    func ambientComputed(mode: PhotoMode, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(rectified: rectified))/\(mode)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientComputed(exp: Int, pos: Int, rectified: Bool) -> String {
-        let subdir = "\(self.ambientComputed(pos: pos, rectified: rectified))/exp\(exp)"
+    func ambientComputed(mode: PhotoMode, pos: Int, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(mode: mode, rectified: rectified))/pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    func ambientComputed(mode: PhotoMode, exp: Int, pos: Int, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(mode: mode, pos: pos, rectified: rectified))/exp\(exp)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }

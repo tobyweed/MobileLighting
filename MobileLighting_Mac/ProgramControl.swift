@@ -116,7 +116,7 @@ func getUsage(_ command: Command) -> String {
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
-    case .rectifyamb: return "rectifyamb [left] [right]\n       rectify   -a\n"
+    case .rectifyamb: return "rectifyamb (-a|-n|-t|-f)\n"
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
@@ -565,7 +565,6 @@ func processCommand(_ input: String) -> Bool {
                     break
                 }
             }
-            
             break
             
         case "video":
@@ -1159,20 +1158,28 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-    //rectify ambient images
+    // rectify ambient images of all positions and exposures
     case .rectifyamb:
         let (params, flags) = partitionTokens([String](tokens[1...]))
 
         //determine whether we are rectifying all position pairs
-        var allpos = false
+        var modes: [DirectoryStructure.PhotoMode] = []
+        guard flags.count >= 1 else {
+            print(usage)
+            break
+        }
         for flag in flags {
             switch flag {
             case "-a":
-                if !allpos {
-                    allpos = true
-                } else {
-                    print("rectifyamb: extra flag \(flag)")
-                }
+                modes.append(.normal)
+                modes.append(.torch)
+                modes.append(.flash)
+            case "-n":
+                modes.append(.normal)
+            case "-t":
+                modes.append(.torch)
+            case "-f":
+                modes.append(.flash)
             default:
                 print("rectifyamb: invalid flag \(flag)")
                 break cmdSwitch
@@ -1189,11 +1196,20 @@ func processCommand(_ input: String) -> Bool {
         posIDs.sort()
         posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
         
-        //loop through all pos pairs and rectify them (untested for multiple pairs)
-        for (left, right) in posIDpairs {
-            print("\nRectifying position pair: \(left) (left) and \(right) (right)");
-            //rectify ambient images of all exposures
-            rectifyAmb(left: left, right: right)
+        // loop though all modes & rectify them
+        for mode in modes {
+            print("\nrectifying mode: \(mode)");
+            // loop through all pos pairs and rectify them
+            for (left, right) in posIDpairs {
+                print("rectifying position pair: \(left) (left) and \(right) (right)");
+                // loop through all exposures
+                // set numExp to zero if in flash mode
+                let numExp: Int = (mode == .flash) ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
+                for exp in 0..<numExp {
+                    print("rectifying exposure: \(exp)");
+                    rectifyAmb(left: left, right: right, mode: mode, exp: exp)
+                }
+            }
         }
         
     case .merge:
