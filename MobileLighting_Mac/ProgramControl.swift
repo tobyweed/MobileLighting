@@ -502,22 +502,36 @@ func processCommand(_ input: String) -> Bool {
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
                 
+                // get the right index to write photos to
+                func getStartIndex(pos: Int, exp: Int, mode: DirectoryStructure.PhotoMode) -> Int {
+                    var startIndex = 0
+                    if(appending) {
+                        // create an array of paths to all the files in the pos, exp ambient photo directory
+                        // include exposure directory for all modes but flash
+                        var photos: [String]
+                        if( mode != .flash ){
+                            photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))).map {
+                                return "\(dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))/\($0)"
+                            }
+                        } else {
+                            photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: pos, mode: .flash))).map {
+                                return "\(dirStruc.ambientPhotos(pos: pos, mode: .flash))/\($0)"
+                            }
+                        }
+    
+                        // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
+                        let ids: [Int] = getIDs(photos, prefix: "IMG", suffix: ".JPG")
+                        // set startIndex to one greater than the largest collected ID
+                        if(ids.max() != nil) { startIndex = ids.max()! + 1 }
+                    }
+                    return startIndex
+                }
+                
                 func receivePhotos() {
                     var nReceived = 0
                     let completionHandler = { nReceived += 1 }
                     for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                        var startIndex = 0
-                        if(appending) {
-                            // create an array of paths to all the files in the pos, exp ambient photo directory
-                            var photos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))).map {
-                                return "\(dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode))/\($0)"
-                            }
-                            // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
-                            let ids: [Int] = getIDs(photos, prefix: "IMG", suffix: ".JPG")
-                            // set startIndex to one greater than the largest collected ID
-                            startIndex = ids.max()! + 1
-                        }
-                        
+                        let startIndex = getStartIndex(pos: pos, exp: exp, mode: mode)
                         let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(startIndex).JPG"
                         let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)
@@ -529,7 +543,9 @@ func processCommand(_ input: String) -> Bool {
                 case .flash:
                     var received = false
                     let completionHandler = { received = true }
-                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG.JPG"
+                    let startIndex = getStartIndex(pos: pos, exp: 0, mode: .flash)
+                    // don't include exp directory for flash as flash disables manual exposure setting (always uses auto)
+                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG\(startIndex).JPG"
                     let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                     photoReceiver.dataReceivers.insertFirst(ambReceiver)
                     while !received {}
