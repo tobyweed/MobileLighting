@@ -143,29 +143,21 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 
 
 //rectify ambient images
-func rectifyAmb(left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
+func rectifyAmb(ball: Bool, left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
     var intr = *dirStruc.intrinsicsYML
     var extr = *dirStruc.extrinsicsYML(left: left, right: right)
     var settings = *dirStruc.calibrationSettingsFile
-
-    // create arrays of paths to all the files in the correct directories
-    var leftPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))).map {
-            return "\(dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))/\($0)"
-        }
-    var rightPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))).map {
-        return "\(dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))/\($0)"
-    }
     
-    var resultl = *"\(dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
-    var resultr = *"\(dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
+    var resultl = *"\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
+    var resultr = *"\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
 
     if(exp == 0) { //maps only need to be computed once per stereo pair
         computeMaps(&resultl, &intr, &extr, &settings)
     }
     
     //paths for storing output
-    var outpaths: [String] = [dirStruc.ambientComputed(mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
-        dirStruc.ambientComputed(mode: mode, pos: right, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png"
+    var outpaths: [String] = [dirStruc.ambientComputed(ball: ball, mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
+        dirStruc.ambientComputed(ball: ball, mode: mode, pos: right, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png"
     ]
     
     var coutpaths = outpaths.map {

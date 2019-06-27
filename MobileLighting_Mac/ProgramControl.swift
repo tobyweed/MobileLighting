@@ -455,12 +455,12 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
-            
             // set torch, flash mode, and determine whether we're appending photos to existing ones based on flags
             var mode = DirectoryStructure.PhotoMode.normal
             var flashMode = AVCaptureDevice.FlashMode.off
             var torchMode = AVCaptureDevice.TorchMode.off
             var appending = false
+            var ball = false
             for flag in flags {
                 switch flag {
                 case "-f":
@@ -471,14 +471,20 @@ func processCommand(_ input: String) -> Bool {
                     print("using torch mode...")
                     mode = .torch
                     torchMode = .on
+                // save photos to ambientBall instead of ambient. used for taking ambients with a ball
+                case "-b":
+                    print("taking ambients with mirror ball...")
+                    ball = true
+                // create a new directory with a higher index. used for taking photos under different lighting conditions
                 case "-a":
-                    print("adding a lighting condition...")
+                    print("appending another ambient image directory...")
                     appending = true
+                // delete all contents of ambient or ambientBall. note that the -b must precede the -d to successfully delete ambientBall instead of ambient
                 case "-d":
                     print("deleting all ambient photos...")
                     // delete ALL contents of the ambient/photos directory
-                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
-                        return "\(dirStruc.ambientPhotos)/\($0)"
+                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                        return "\(dirStruc.ambientPhotos(ball))/\($0)"
                     }
                     for item in photoDirectoryContents {
                         do { try FileManager.default.removeItem(atPath: item) }
@@ -500,9 +506,10 @@ func processCommand(_ input: String) -> Bool {
                     // create an array of paths to all the files in the pos, exp ambient photo directory
                     // include exposure directory for all modes but flash
                     
-                    let photoDirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
-                        return "\(dirStruc.ambientPhotos)/\($0)"
-                    }
+                    
+                    let photoDirs = ((try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                        return "\(dirStruc.ambientPhotos(ball))/\($0)"
+                    })
                     
                     // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
                     var ids: [Int]
@@ -540,7 +547,8 @@ func processCommand(_ input: String) -> Bool {
                     let completionHandler = { nReceived += 1 }
                     let numExps = (mode == .flash) ? (1) : (sceneSettings.ambientExposureDurations!.count)
                     for exp in 0..<numExps {
-                        let path = dirStruc.ambientPhotos(pos: pos, mode: mode, lighting: startIndex) + "/exp\(exp).JPG"
+                        
+                        let path = (dirStruc.ambientPhotos(ball: ball, pos: pos, mode: mode, lighting: startIndex) + "/exp\(exp).JPG")
                         let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)
                     }
@@ -1158,6 +1166,17 @@ func processCommand(_ input: String) -> Bool {
     case .rectifyamb:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
+        var ball = false
+        for flag in flags {
+            switch flag {
+            case "-b":
+                print("rectifying ball images...")
+                ball = true
+            default:
+                print("flag \(flag) not recognized.")
+            }
+        }
+        
         let modes: [DirectoryStructure.PhotoMode] = [.normal, .flash, .torch]
         
         // loop though all modes & rectify them
@@ -1182,7 +1201,7 @@ func processCommand(_ input: String) -> Bool {
                 
                 //assign the correct position pairs to posIDpairs
                 let posIDpairs: [(Int,Int)]
-                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(mode: mode, lighting: lighting)), prefix: "pos", suffix: "")
+                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball: ball, mode: mode, lighting: lighting)), prefix: "pos", suffix: "")
                 guard posIDs.count > 1 else {
                     print("rectifyamb: not enough positions.")
                     break
@@ -1198,7 +1217,7 @@ func processCommand(_ input: String) -> Bool {
                     // loop through all exposures
                     for exp in 0..<numExp {
                         print("rectifying exposure: \(exp)");
-                        rectifyAmb(left: left, right: right, mode: mode, exp: exp, lighting: lighting)
+                        rectifyAmb(ball: ball, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
                     }
                 }
             }

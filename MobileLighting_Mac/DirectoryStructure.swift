@@ -67,32 +67,50 @@ class DirectoryStructure {
         case torch
     }
     
+    // Ambient photos --------------------------------------------------------------------------------------------------
+    var ambientBall: String {
+        get {
+            return self.orig + "/" + "ambientBall"
+        }
+    }
+    
+    var ambientBallPhotos: String {
+        get {
+            return self.ambientBall + "/" + "photos"
+        }
+    }
+    
     var ambientPhotos: String {
         get {
             return self.ambient + "/" + "photos"
         }
     }
     
-    func ambientPhotos(mode: PhotoMode, lighting: Int) -> String {
+    func ambientPhotos(_ ball: Bool) -> String {
+        return (ball) ? ambientPhotos : ambientBallPhotos
+    }
+    
+    func ambientPhotos(ball: Bool, mode: PhotoMode, lighting: Int) -> String {
         var subdir: String
         switch mode {
         case .flash:
-            subdir =  "\(ambientPhotos)/F\(lighting)"
+            subdir =  "\(ambientPhotos(ball))/F\(lighting)"
             break
         case .torch:
-            subdir =  "\(ambientPhotos)/T\(lighting)"
+            subdir =  "\(ambientPhotos(ball))/T\(lighting)"
             break
         default:
-            subdir =  "\(ambientPhotos)/L\(lighting)"
+            subdir =  "\(ambientPhotos(ball))/L\(lighting)"
         }
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientPhotos(pos: Int, mode: PhotoMode, lighting: Int) -> String {
-        return subdir(self.ambientPhotos(mode: mode, lighting: lighting), pos: pos)
+    func ambientPhotos(ball: Bool, pos: Int, mode: PhotoMode, lighting: Int) -> String {
+        return subdir(self.ambientPhotos(ball: ball, mode: mode, lighting: lighting), pos: pos)
     }
     
+    // Ambient videos --------------------------------------------------------------------------------------------------
     var ambientVideos: String {
         get {
             return self.ambient + "/" + "videos"
@@ -114,12 +132,6 @@ class DirectoryStructure {
         let subdir = "\(self.ambientVideos(mode))/exp\(exp)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
-    }
-    
-    var ambientBall: String {
-        get {
-            return self.orig + "/" + "ambientBall"
-        }
     }
     
     var calibration: String {
@@ -205,19 +217,20 @@ class DirectoryStructure {
     }
     
     // For storing rectified ambient images
-    func ambientComputed() -> String {
-        let subdir = "\(self.computed)/ambient"
+    func ambientComputed(_ ball: Bool) -> String {
+        
+        let subdir = (ball) ? ("\(self.computed)/ambientBall") : ("\(self.computed)/ambient")
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientComputed(rectified: Bool) -> String {
-        let subdir = "\(self.ambientComputed())/\(rectified ? "rectified" : "unrectified")"
+    func ambientComputed(ball: Bool, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(ball))/\(rectified ? "rectified" : "unrectified")"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientComputed(mode: PhotoMode, lighting: Int, rectified: Bool) -> String {
+    func ambientComputed(ball: Bool, mode: PhotoMode, lighting: Int, rectified: Bool) -> String {
         var prefix: String
         switch mode {
         case .flash:
@@ -230,13 +243,13 @@ class DirectoryStructure {
             prefix =  "L"
         }
 
-        let subdir = "\(self.ambientComputed(rectified: rectified))/\(prefix)\(lighting)"
+        let subdir = "\(self.ambientComputed(ball: ball, rectified: rectified))/\(prefix)\(lighting)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
     
-    func ambientComputed(mode: PhotoMode, pos: Int, lighting: Int, rectified: Bool) -> String {
-        let subdir = "\(self.ambientComputed(mode: mode, lighting: lighting, rectified: rectified))/pos\(pos)"
+    func ambientComputed(ball: Bool, mode: PhotoMode, pos: Int, lighting: Int, rectified: Bool) -> String {
+        let subdir = "\(self.ambientComputed(ball: ball, mode: mode, lighting: lighting, rectified: rectified))/pos\(pos)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }
