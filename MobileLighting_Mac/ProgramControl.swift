@@ -116,7 +116,7 @@ func getUsage(_ command: Command) -> String {
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
-    case .rectifyamb: return "rectifyamb (-a|-n|-t|-f)\n"
+    case .rectifyamb: return "rectifyamb (-a|-n|-t|-f]\n"
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
