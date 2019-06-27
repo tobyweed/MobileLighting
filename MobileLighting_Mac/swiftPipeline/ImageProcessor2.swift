@@ -141,86 +141,42 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
     rectifyDecoded(1, &result1r, &coutpaths[3])
 }
 
+
 //rectify ambient images
-func rectifyAmb(left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int) {
+func rectifyAmb(left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
     var intr = *dirStruc.intrinsicsYML
     var extr = *dirStruc.extrinsicsYML(left: left, right: right)
     var settings = *dirStruc.calibrationSettingsFile
 
     // create arrays of paths to all the files in the correct directories
-    var leftPhotos: [String]
-    var rightPhotos: [String]
-    // exclude exposure directory if in flash mode
-    if( mode != .flash ){
-        leftPhotos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, exp: exp, mode: mode))).map {
-            return "\(dirStruc.ambientPhotos(pos: left, exp: exp, mode: mode))/\($0)"
+    var leftPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))).map {
+            return "\(dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))/\($0)"
         }
-        rightPhotos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: right, exp: exp, mode: mode))).map {
-            return "\(dirStruc.ambientPhotos(pos: right, exp: exp, mode: mode))/\($0)"
-        }
-    } else {
-        leftPhotos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, mode: mode))).map {
-            return "\(dirStruc.ambientPhotos(pos: left, mode: mode))/\($0)"
-        }
-        rightPhotos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: left, mode: mode))).map {
-            return "\(dirStruc.ambientPhotos(pos: left, mode: mode))/\($0)"
-        }
+    var rightPhotos: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))).map {
+        return "\(dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))/\($0)"
     }
     
-    // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
-    let leftIds: [Int] = getIDs(leftPhotos, prefix: "IMG", suffix: ".JPG")
-    let leftMaxIndex = (leftIds.max() != nil) ? (leftIds.max()!) : (-1)
-    let rightIds: [Int] = getIDs(rightPhotos, prefix: "IMG", suffix: ".JPG")
-    let rightMaxIndex = (rightIds.max() != nil) ? (rightIds.max()!) : (-1)
+    var resultl = *"\(dirStruc.ambientPhotos(pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
+    var resultr = *"\(dirStruc.ambientPhotos(pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
 
-    // check to see if left and right have the same number of photos. If not, print a warning and use the smaller number
-    if(leftMaxIndex != rightMaxIndex) {
-        print("WARNING: left and right positions have different max photo IDs.")
-        print("rectifying only IDs smaller than or equal to the lower maximum.")
+    if(exp == 0) { //maps only need to be computed once per stereo pair
+        computeMaps(&resultl, &intr, &extr, &settings)
     }
-    let maxIndex =  max(leftMaxIndex, rightMaxIndex)
-    if(maxIndex < 0) {
-        print("need at least one image to rectify from both left and right directories. not rectifying exposure \(exp) for position pair \(left), \(right) for mode \(mode).")
-        return
+    
+    //paths for storing output
+    var outpaths: [String] = [dirStruc.ambientComputed(mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
+        dirStruc.ambientComputed(mode: mode, pos: right, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png"
+    ]
+    
+    var coutpaths = outpaths.map {
+        return $0.cString(using: .ascii)!
     }
-    // loop through all images in each exposure directory
-    for id in 0...maxIndex {
-        //paths for retreiving input
-        var resultl: [CChar]
-        var resultr: [CChar]
-        if(mode != .flash) {
-            resultl = *"\(dirStruc.ambientPhotos(pos: left, exp: exp, mode: mode))/IMG\(id).JPG"
-            resultr = *"\(dirStruc.ambientPhotos(pos: right, exp: exp, mode: mode))/IMG\(id).JPG"
-        } else {
-            resultl = *"\(dirStruc.ambientPhotos(pos: left, mode: mode))/IMG\(id).JPG"
-            resultr = *"\(dirStruc.ambientPhotos(pos: right, mode: mode))/IMG\(id).JPG"
-        }
-        
-        if(exp == 0) { //only compute maps on first iteration
-            computeMaps(&resultl, &intr, &extr, &settings)
-        }
-        
-        //paths for storing output
-        var outpaths: [String]
-        if(mode != .flash) {
-            outpaths = [dirStruc.ambientComputed(mode: mode, exp: exp, pos: left, rectified: true) + "/\(left)\(right)rectified\(id).jpg",
-                dirStruc.ambientComputed(mode: mode, exp: exp, pos: right, rectified: true) + "/\(left)\(right)rectified\(id).jpg"
-            ]
-        } else {
-            outpaths = [dirStruc.ambientComputed(mode: mode, pos: left, rectified: true) + "/\(left)\(right)rectified\(id).jpg",
-                dirStruc.ambientComputed(mode: mode, pos: right, rectified: true) + "/\(left)\(right)rectified\(id).jpg"
-            ]
-        }
-        var coutpaths = outpaths.map {
-            return $0.cString(using: .ascii)!
-        }
-        
-        //rectify both poses
-        print("trying to save rectified image to path: \(outpaths[0])");
-        rectifyAmbient(0, &resultl, &coutpaths[0])
-        print("trying to save rectified image to path: \(outpaths[1])");
-        rectifyAmbient(1, &resultr, &coutpaths[1])
-    }
+    
+    //rectify both poses
+    print("trying to save rectified image to path: \(outpaths[0])");
+    rectifyAmbient(0, &resultl, &coutpaths[0])
+    print("trying to save rectified image to path: \(outpaths[1])");
+    rectifyAmbient(1, &resultr, &coutpaths[1])
 }
 
 // merge disparity maps for one stereo pair across all projectors
