@@ -143,7 +143,7 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 
 
 //rectify ambient images
-func rectifyAmb(ball: Bool, left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
+func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, lighting: Int) {
     var intr = *dirStruc.intrinsicsYML
     var extr = *dirStruc.extrinsicsYML(left: left, right: right)
     var settings = *dirStruc.calibrationSettingsFile

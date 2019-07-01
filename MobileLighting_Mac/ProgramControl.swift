@@ -426,6 +426,8 @@ func processCommand(_ input: String) -> Bool {
             if( !debugMode ) {
                 var posStr = *String(i) // get pointer to pose string
                 GotoView(&posStr) // pass address of pointer
+            } else {
+                print("program is in debugMode. skipping robot motion")
             }
             
             captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
@@ -456,7 +458,7 @@ func processCommand(_ input: String) -> Bool {
             }
             
             // set torch, flash mode, and determine whether we're appending photos to existing ones based on flags
-            var mode = DirectoryStructure.PhotoMode.normal
+            var mode = "normal"
             var flashMode = AVCaptureDevice.FlashMode.off
             var torchMode = AVCaptureDevice.TorchMode.off
             var appending = false
@@ -466,10 +468,10 @@ func processCommand(_ input: String) -> Bool {
                 case "-f":
                     print("using flash mode...")
                     flashMode = .on
-                    mode = .flash
+                    mode = "flash"
                 case "-t":
                     print("using torch mode...")
-                    mode = .torch
+                    mode = "torch"
                     torchMode = .on
                 // save photos to ambientBall instead of ambient. used for taking ambients with a ball
                 case "-b":
@@ -498,45 +500,15 @@ func processCommand(_ input: String) -> Bool {
             // make the camera intruction packet
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
-            // gets the right index to write photos to
-            // packaged as a function for cleanliness & possible future repeated use
-            func getStartIndex(mode: DirectoryStructure.PhotoMode) -> Int {
-                var startIndex = 0
-                if(appending) {
-                    // create an array of paths to all the files in the pos, exp ambient photo directory
-                    // include exposure directory for all modes but flash
-                    
-                    
-                    let photoDirs = ((try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
-                        return "\(dirStruc.ambientPhotos(ball))/\($0)"
-                    })
-                    
-                    // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
-                    var ids: [Int]
-                    switch mode {
-                    case .flash:
-                        ids = getIDs(photoDirs, prefix: "F", suffix: "")
-                        break
-                    case .torch:
-                        ids = getIDs(photoDirs, prefix: "T", suffix: "")
-                        break
-                    default:
-                        ids = getIDs(photoDirs, prefix: "L", suffix: "")
-                    }
-                    
-                    // set startIndex to one greater than the largest collected ID
-                    if(ids.max() != nil) { startIndex = ids.max()! + 1 }
-                }
-                return startIndex
-            }
-            
-            let startIndex = getStartIndex(mode: mode)
+            let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: true, ball: ball, mode: mode)
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
                 if ( !debugMode ) {
                     var posStr = *String(pos)
                     GotoView(&posStr)
+                } else {
+                    print("program is in debugMode. skipping robot motion")
                 }
             
                 // take photo bracket
@@ -545,7 +517,7 @@ func processCommand(_ input: String) -> Bool {
                 func receivePhotos() {
                     var nReceived = 0
                     let completionHandler = { nReceived += 1 }
-                    let numExps = (mode == .flash) ? (1) : (sceneSettings.ambientExposureDurations!.count)
+                    let numExps = (mode == "flash") ? (1) : (sceneSettings.ambientExposureDurations!.count)
                     for exp in 0..<numExps {
                         
                         let path = (dirStruc.ambientPhotos(ball: ball, pos: pos, mode: mode, lighting: startIndex) + "/exp\(exp).JPG")
@@ -556,7 +528,7 @@ func processCommand(_ input: String) -> Bool {
                 }
                 
                 switch mode {
-                case .torch:
+                case "torch":
                     let torchPacket = CameraInstructionPacket(cameraInstruction: .ConfigureTorchMode, torchMode: .on, torchLevel: torchModeLevel)
                     cameraServiceBrowser.sendPacket(torchPacket)
                     receivePhotos()
@@ -577,60 +549,87 @@ func processCommand(_ input: String) -> Bool {
                 break cmdSwitch
             }
             
-            let exp: Int
+            // get the right exposures to take video at
+            var exps: [Int] = []
             if params.count == 1 {
-                exp = min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) / 2
+                // if no exposure is explicitly given, assume we're looping through all exposures
+                exps = Array(0..<min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1))
             } else {
-                guard let exp_ = Int(params[1]), exp_ >= 0, exp_ < min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) else {
-                    print("takeamb video: invalid exposure number \(params[1])")
+                // if we're given an integer in the right range, assign the exposure of that index
+                if let exp = Int(params[1]), exp >= 0, exp < min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1) {
+                    exps.append(exp)
+                } else if params[1] == "all" { // if we're given string "all", use all exposures
+                    exps = Array(0..<min(sceneSettings.ambientExposureDurations?.count ?? -1, sceneSettings.ambientExposureISOs?.count ?? -1))
+                } else { // otherwise give a message and break
+                    print("invalid exposure number \(params[1])")
                     break cmdSwitch
                 }
-                exp = exp_
             }
             
             var torchMode: AVCaptureDevice.TorchMode = .off
-            var mode: DirectoryStructure.VideoMode = .normal
+            var mode = "normal"
+            var appending = false
             for flag in flags {
                 switch flag {
-                case "-f", "-t":
-                    print("takeamb video: using torch mode.")
+                case "-t":
+                    print("using torch mode...")
                     torchMode = .on
-                    mode = .torch
+                    mode = "torch"
+                    break
+                case "-a":
+                    print("appending a new video directory...")
+                    appending = true
+                    break
                 default:
-                    print("takeamb video: flag \(flag) not recognized.")
+                    print("flag \(flag) not recognized.")
                 }
             }
             
-            if( !debugMode ) {
-                var startPos = *String(0)
-                GotoView(&startPos)
+            // capture video at all selected exposures
+            for exp in exps {
+                print("\ntaking video at exposure \(exp)")
+                
+                // go to the start position
+                if( !debugMode ) {
+                    var startPos = *String(0)
+                    GotoView(&startPos)
+                } else {
+                    print("program is in debugMode. skipping robot motion")
+                }
+                
+                print("starting to record")
+                
+                var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
+                cameraServiceBrowser.sendPacket(packet)
+                
+                // get the right lighting to write to
+                let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode)
+                
+                // configure video data receiver
+                let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex))/exp\(exp)video.mp4")
+                photoReceiver.dataReceivers.insertFirst(videoReceiver)
+                let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex))/exp\(exp)imu.yml")
+                photoReceiver.dataReceivers.insertFirst(imuReceiver)
+                
+                // Tell the Rosvita server to move the robot smoothly through its whole trajectory
+                if( !debugMode ) {
+                    if( ExecutePath() == 0 ) {
+                        print("path completed. stopping recording.")
+                    } else {
+                        print("problem executing path. stopping recording.")
+                    }
+                } else {
+                    print("program is in debugMode. skipping robot motion")
+                }
+                
+                packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
+                cameraServiceBrowser.sendPacket(packet)
+
             }
-            
-            print("takeamb video: starting recording...")
-            var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
-            cameraServiceBrowser.sendPacket(packet)
-            
-            usleep(UInt32(0.5 * 1e6)) // wait 0.5 seconds
-            
-            // configure video data receiver
-            let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/video.mp4")
-            photoReceiver.dataReceivers.insertFirst(videoReceiver)
-            let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/imu.yml")
-            photoReceiver.dataReceivers.insertFirst(imuReceiver)
-            
-            // Insert code for smooth trajectory execution here once Guanghan has it
-            // trajectory.executeScript()
-            print("takeamb video: hit enter when trajectory completed.")
-            _ = readLine()
-            packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
-            cameraServiceBrowser.sendPacket(packet)
-            print("takeamb video: stopping recording.")
-            
             break
         default:
             break
         }
-        
         break
         
         
@@ -1177,7 +1176,7 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-        let modes: [DirectoryStructure.PhotoMode] = [.normal, .flash, .torch]
+        let modes: [String] = ["normal", "flash", "torch"]
         
         // loop though all modes & rectify them
         for mode in modes {
@@ -1186,13 +1185,13 @@ func processCommand(_ input: String) -> Bool {
             }
             var prefix: String
             switch mode {
-            case .flash:
+            case "flash":
                 prefix = "F"
                 break
-            case .torch:
+            case "torch":
                 prefix = "T"
                 break
-            case .normal:
+            default:
                 prefix = "L"
             }
             let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
@@ -1213,7 +1212,7 @@ func processCommand(_ input: String) -> Bool {
                 for (left, right) in posIDpairs {
                     print("rectifying position pair: \(left) (left) and \(right) (right)");
                     // set numExp to zero if in flash mode
-                    let numExp: Int = (mode == .flash) ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
+                    let numExp: Int = (mode == "flash") ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
                     // loop through all exposures
                     for exp in 0..<numExp {
                         print("rectifying exposure: \(exp)");

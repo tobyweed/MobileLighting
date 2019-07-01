@@ -8,9 +8,8 @@
 
 import Foundation
 
-
 /*=====================================================================================
- Setup/capture routines and utility functions
+ Setup/capture routines and utils
  ======================================================================================*/
 
 // setLensPosition
@@ -24,7 +23,6 @@ func setLensPosition(_ lensPosition: Float) -> Float {
     let lensPos = photoReceiver.receiveLensPositionSync()
     return lensPos
 }
-
 
 // creates the camera service browser (for sending instructions to iPhone) and
 //    the photo receiver (for receiving photos, updates, etc from iPhone)
