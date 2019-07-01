@@ -140,10 +140,10 @@ Some important parameters to consider changing:
     * robotPathName: this will be used to try and automatically load the correct robot path to the Rosvita server. Once you have set the robot path on the server, make sure to enter its name here.
     * focus: this parameter, ranging from 0.0 to 1.0 where 0.0 is close and 1.0 is far, sets the camera focus when the app starts. The focus then remains fixed for the entire capture session. This should be initially established with both apps running by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. 
 1. calibration.yml:
-    * Alpha parameter: 
+    * Alpha parameter: the free scaling factor. If -1, the focal lengths of the camera are kept fixed when computing the projection matrices. If 1, the rectified images are decimated and shifted so that all the pixels from the original image are retained in the rectified image -- focal lengths get reduced in the process. If 0, the received pictures are zoomed and shifted so that only valid pixels are visible -- focal lengths get increased in the process.
     * Resizing factor: determines how much to resize the image by on rectification. For example, "2" will zoom the image by 100%.
     * There are also a number of parameters (Num_MarkersX, Marker_Length, Num_of_Boards, Num_MarkersY, First_Marker) which the program uses to generate calibration matrices based on the positions of ArUco or chessboards in calibration images. These need to be changed whenever the board(s) being used for calibration are changed.
-
+    
 #### Scene selection
 The system has a few limitations and caveats to be considered when taking a scene:
 * The system will sometimes assign faulty (reflected) codes to even slightly reflective surfaces. These will usually get discarded during cross checking, causing those surfaces to appear undefined in the final images.
