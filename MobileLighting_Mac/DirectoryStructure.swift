@@ -87,7 +87,7 @@ class DirectoryStructure {
     }
     
     func ambientPhotos(_ ball: Bool) -> String {
-        return (ball) ? ambientPhotos : ambientBallPhotos
+        return (ball) ? ambientBallPhotos : ambientPhotos
     }
     
     func ambientPhotos(ball: Bool, mode: PhotoMode, lighting: Int) -> String {
