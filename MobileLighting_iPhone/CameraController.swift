@@ -199,17 +199,9 @@
             photoSettings.isAutoStillImageStabilizationEnabled = false
             
             self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
-            var di_ = self.captureSession.inputs[0]
-            print("input_: \(di_)")
-            print("device duration: \((di_ as? AVCaptureDeviceInput)!.device.exposureDuration)")
-            var di = self.capturePhotoOutput.connections[0].inputPorts[0].input
-            print("input: \(di)")
-            print("device duration: \((di as? AVCaptureDeviceInput)!.device.exposureDuration)")
-
-            
             self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-            self.isCapturingPhoto = true
-        }
+            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
+            self.isCapturingPhoto = true        }
         
         // main function for capturing normal-inverted pair
         func takeNormalInvertedPair(settings: AVCapturePhotoSettings) {
@@ -228,6 +220,7 @@
             
             settings.isAutoStillImageStabilizationEnabled = false
             self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
             self.isCapturingPhoto = true
         }
         
@@ -252,6 +245,8 @@
             
             settings.isAutoStillImageStabilizationEnabled = false
             self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+            
+            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
             self.isCapturingPhoto = true
         }
         
@@ -404,7 +399,7 @@
 //            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
 //        }
         
-            
+        // called after a photo has been processed by capturePhotoOutput.capturePhoto
         func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
 //            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
             //            guard let photoSampleBuffer = photoSampleBuffer else {
@@ -455,7 +450,7 @@
             }
         }
         
-        
+        // called after a photo has been captured by capturePhotoOutput.capturePhoto
         func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
             if let error = error {
                 print("ERROR: \(error.localizedDescription)")
@@ -514,6 +509,7 @@
             }, completionHandler: completionHandler(_:_:))
         }
         
+        // create a default device
         // based on code from Apple's Photo Capture Programming Guide
         // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
         func defaultDevice() -> AVCaptureDevice {

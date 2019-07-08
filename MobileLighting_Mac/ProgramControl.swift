@@ -646,7 +646,7 @@ func processCommand(_ input: String) -> Bool {
                 processingCommand = false
             }
         )
-        
+                
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
         _ = setLensPosition(-1.0)

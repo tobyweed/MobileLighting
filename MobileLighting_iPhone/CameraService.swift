@@ -430,8 +430,6 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                             let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
                             var exposureModeSet = false
                             
-//                            cameraController.captureSession.beginConfiguration()
-                            
                             // try to lock the capture device for configuration (enabling changing its properties)
                             do { try cameraController.captureDevice.lockForConfiguration() }
                             catch { print("capturebracket: cannot lock camera for configuration."); return }
@@ -445,20 +443,9 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                             // wait for changes to propagate
                             while !exposureModeSet {}
                             
-//                            cameraController.captureSession.commitConfiguration()
-
-                            
-//                            while !cameraController.captureSession.AVCaptureSessionDidStopRunning {}
-
-                            
                             // get the correct photo settings
                             let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
                             
-                            print("duration: \(cameraController.captureDevice.exposureDuration)")
-                            
-                            cameraController.captureSession.stopRunning()
-                            cameraController.captureSession.startRunning()
-
                             cameraController.takePhoto(photoSettings: settings)
                             
                             // wait for photo capture completion
