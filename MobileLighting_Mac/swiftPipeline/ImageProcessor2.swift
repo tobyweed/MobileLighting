@@ -52,12 +52,18 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     let l = Int32(leftpos)
     let r = Int32(rightpos)
     
+    // get the maximum allowable y disparities from scene settings
+    let ythresh = sceneSettings.yDisparityThreshold
+    
     let xmin, xmax, ymin, ymax: Int32
     if (rectified) {
         xmin = -1080
         xmax = 1080
-        ymin = -1
-        ymax = 1
+//        ymin = -1
+//        ymax = 1
+        // will round ythresh to nearest int
+        ymin = -Int32(ythresh)
+        ymax = Int32(ythresh)
     } else {
         xmin = 0
         xmax = 0
@@ -92,19 +98,20 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     dispy = disparityDirLeft + in_suffix_y
     outx = disparityDirLeft + out_suffix_x
     outy = disparityDirLeft + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+//    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
 
     // Filter the RIGHT disparities
     dispx = disparityDirRight + in_suffix_x
     dispy = disparityDirRight + in_suffix_y
     outx = disparityDirRight + out_suffix_x
     outy = disparityDirRight + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
-    
+//    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
+
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
-
 }
 
 //rectify decoded images

@@ -126,11 +126,13 @@ These steps are executed/controlled from the MobileLighting Mac command-line int
 ### Scene Setup and Description
 #### Scene directory creation and configuration
 First, create a directory to store scenes. Then, run MobileLighting_Mac with the "init" option. 
+
 Directions to do this from Xcode:
-    1. Select MobileLighting_Mac from the build target menu in the top left corner.
-    1. Click "Edit Scheme" at the bottom of the same menu.
-    1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
-    1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+1. Select MobileLighting_Mac from the build target menu in the top left corner.
+1. Click "Edit Scheme" at the bottom of the same menu.
+1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
+1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+
 Next, update the Yaml files with the parameters you will use for the scene. 
 Some important parameters to consider changing:
 1. sceneSettings.yml:
@@ -152,7 +154,9 @@ The system has a few limitations and caveats to be considered when taking a scen
 * Vibration in the camera can cause problems, particularly during structured lighting capture, so the floor shouldn't be too shaky and there should be little or no movement from bystanders during struclight. This means that places with lots of foot traffic could be problematic. By the same token, nothing in the scene can move during structured lighting capture, which can be tricker than expected -- for example, even a plant wilting slightly during scene capture could cause issues.
 
 #### Projector and camera positions
-Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.
+Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Also make sure that projects are slightly tilted relative to the camera's axes to avoid moiré patterns from an aliasing effect.
+
+Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory. Note that the images should be stored in JPG format.
 
 Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
 

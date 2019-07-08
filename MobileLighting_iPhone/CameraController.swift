@@ -193,15 +193,20 @@
         //MARK: Entry-point capture functions
         
         func takePhoto(photoSettings: AVCapturePhotoSettings) {
-//            guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
-//                print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
-//                return
-//            }
-            print("Capturing photo: \(self.capturePhotoOutput)")
+            print("Capturing photo: \(String(describing: self.capturePhotoOutput))")
             capturingNormalInvertedPair = false
             capturingInverted = false
             photoSettings.isAutoStillImageStabilizationEnabled = false
+            
             self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
+            var di_ = self.captureSession.inputs[0]
+            print("input_: \(di_)")
+            print("device duration: \((di_ as? AVCaptureDeviceInput)!.device.exposureDuration)")
+            var di = self.capturePhotoOutput.connections[0].inputPorts[0].input
+            print("input: \(di)")
+            print("device duration: \((di as? AVCaptureDeviceInput)!.device.exposureDuration)")
+
+            
             self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
             self.isCapturingPhoto = true
         }
@@ -395,7 +400,13 @@
          }
          */
         
+//        func photoOutput(_ captureOutput: AVCapturePhotoOutput, willBeginCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+//            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
+//        }
+        
+            
         func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+//            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
             //            guard let photoSampleBuffer = photoSampleBuffer else {
             //                print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
             //                print("ERROR: \(error!.localizedDescription)")
@@ -435,8 +446,6 @@
                     pixelBuffers_normal.append(pixelBuffer)
                 }
                 
-                
-                
             } else {
                 //                print("flash mode enabled = \(resolvedSettings.isFlashEnabled)")
                 
@@ -444,7 +453,6 @@
                 self.capturePhotos.append(photo)
                 self.lensPositions.append(self.captureDevice.lensPosition)
             }
-            
         }
         
         
@@ -471,7 +479,6 @@
                 }
                 capturingInverted = !capturingInverted
             } else {
-                
                 for index in 0..<capturePhotos.count {
                     let photo = self.capturePhotos[index]
                     let jpegData: Data

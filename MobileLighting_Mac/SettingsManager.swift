@@ -27,6 +27,7 @@ class SceneSettings {
     var sceneName: String
     var minSWfilepath: String
     var robotPathName: String
+    var yDisparityThreshold: Double
     
     // structured lighting
     var strucExposureDurations: [Double]
@@ -48,6 +49,7 @@ class SceneSettings {
             maindict[Yaml.string("sceneName")] = Yaml.string("(value uninitialized)")
             maindict[Yaml.string("minSWdataPath")] = Yaml.string("(value uninitialized)")
             maindict[Yaml.string("robotPathName")] = Yaml.string("(value uninitialized)")
+            maindict[Yaml.string("yDisparityThreshold")] = Yaml.double(5.0)
             var struclight = [Yaml : Yaml]()
             struclight[Yaml.string("exposureDurations")] = Yaml.array([0.01,0.03,0.10].map{return Yaml.double($0)})
             struclight[Yaml.string("exposureISOs")] = Yaml.array([50.0,150.0,500.0].map{ return Yaml.double($0)})
@@ -59,7 +61,7 @@ class SceneSettings {
             maindict[Yaml.string("calibration")] = Yaml.dictionary(calibration)
             var ambient = [Yaml : Yaml]()
             ambient[Yaml.string("exposureDurations")] = Yaml.array([0.035,0.045,0.055].map{return Yaml.double($0)})
-            ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,60.0,70.0].map{ return Yaml.double($0)})
+            ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,50.0,50.0].map{ return Yaml.double($0)})
             maindict[Yaml.string("ambient")] = Yaml.dictionary(ambient)
             return Yaml.dictionary([Yaml.string("Settings") : Yaml.dictionary(maindict)])
         }
@@ -87,7 +89,8 @@ class SceneSettings {
         guard let scenesDirectory = mainDict[Yaml.string("scenesDir")]?.string,
             let sceneName = mainDict[Yaml.string("sceneName")]?.string,
             let minSWfilepath = mainDict[Yaml.string("minSWdataPath")]?.string,
-            let robotPathName = mainDict[Yaml.string("robotPathName")]?.string else {
+            let robotPathName = mainDict[Yaml.string("robotPathName")]?.string,
+            let yDisparityThreshold = mainDict[Yaml.string("yDisparityThreshold")]?.double else {
                 throw YamlError.MissingRequiredKey
         }
         
@@ -95,6 +98,7 @@ class SceneSettings {
         self.sceneName = sceneName
         self.minSWfilepath = minSWfilepath
         self.robotPathName = robotPathName
+        self.yDisparityThreshold = yDisparityThreshold
         
         self.strucExposureDurations = (mainDict[Yaml.string("struclight")]?.dictionary?[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
             (val: Yaml) -> Double in

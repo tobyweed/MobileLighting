@@ -395,13 +395,13 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                     
                     for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
-                        
                         let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
                         var exposureModeSet = false
                         do { try cameraController.captureDevice.lockForConfiguration() }
                         catch { print("capturebracket: cannot lock camera for configuration."); return }
                         cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
                         cameraController.captureDevice.unlockForConfiguration()
+
                         while !exposureModeSet {}
                         
                         let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
@@ -420,24 +420,48 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                     catch let error { print(error.localizedDescription) }
                 } else {
-                    // Only use photo brackets if the number of exposures does not exceed the max amount for a photo bracket
+                    // only use photo brackets if the number of exposures does not exceed the max amount for a photo bracket
                     if(cameraController.photoBracketExposureDurations!.count <= cameraController.maxBracketedPhotoCount) {
                         let settings = cameraController.photoBracketSettings
                         cameraController.takePhoto(photoSettings: settings)
                     } else {
+                        // loop through the exposure durations and take a photo with each
                         for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
                             let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
                             var exposureModeSet = false
+                            
+//                            cameraController.captureSession.beginConfiguration()
+                            
+                            // try to lock the capture device for configuration (enabling changing its properties)
                             do { try cameraController.captureDevice.lockForConfiguration() }
                             catch { print("capturebracket: cannot lock camera for configuration."); return }
+                            
+                            // set the correct exposure
                             cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
+                            
+                            // unlock the capture device (sets changes)
                             cameraController.captureDevice.unlockForConfiguration()
+                            
+                            // wait for changes to propagate
                             while !exposureModeSet {}
-        
+                            
+//                            cameraController.captureSession.commitConfiguration()
+
+                            
+//                            while !cameraController.captureSession.AVCaptureSessionDidStopRunning {}
+
+                            
+                            // get the correct photo settings
                             let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
-                            //                        settings.flashMode = .on
+                            
+                            print("duration: \(cameraController.captureDevice.exposureDuration)")
+                            
+                            cameraController.captureSession.stopRunning()
+                            cameraController.captureSession.startRunning()
+
                             cameraController.takePhoto(photoSettings: settings)
                             
+                            // wait for photo capture completion
                             while cameraController.isCapturingPhoto {}
                             print("done taking photo.")
                         }

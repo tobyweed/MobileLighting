@@ -69,6 +69,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case dispres
     case dispcode
     case clearpackets
+    case toggledebug
     
     // scripting
     case sleep
@@ -127,6 +128,7 @@ func getUsage(_ command: Command) -> String {
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
     case .clearpackets: return "clearpackets"
+    case .toggledebug: return "toggledebug"
     case .sleep: return "sleep [secs: Float]"
     }
 }
@@ -585,6 +587,9 @@ func processCommand(_ input: String) -> Bool {
                 }
             }
             
+            // get the right lighting to write to
+            let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode)
+            
             // capture video at all selected exposures
             for exp in exps {
                 print("\ntaking video at exposure \(exp)")
@@ -601,9 +606,6 @@ func processCommand(_ input: String) -> Bool {
                 
                 var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
                 cameraServiceBrowser.sendPacket(packet)
-                
-                // get the right lighting to write to
-                let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode)
                 
                 // configure video data receiver
                 let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex))/exp\(exp)video.mp4")
@@ -624,7 +626,6 @@ func processCommand(_ input: String) -> Bool {
                 
                 packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
                 cameraServiceBrowser.sendPacket(packet)
-
             }
             break
         default:
@@ -1486,6 +1487,10 @@ func processCommand(_ input: String) -> Bool {
     //  useful for verifying the minSW.dat file loaded properly
     case .dispcode:
         displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
+        
+    case .toggledebug:
+        debugMode = !debugMode
+        
         
     // scripting
     case .sleep:
