@@ -30,7 +30,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case takeamb
     
     // camera control
-    case readfocus, autofocus, setfocus, lockfocus
+    case readfocus, keepfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
     case lockwhitebalance
     case focuspoint
@@ -93,6 +93,7 @@ func getUsage(_ command: Command) -> String {
     case .takeamb: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
     case .readfocus: return "readfocus"
+    case .keepfocus: return "keepfocus"
     case .autofocus: return "autofocus"
     case .lockfocus: return "lockfocus"
     case .setfocus: return "setfocus [lensPosition s.t. 0≤ l.p. ≤1]"
@@ -642,11 +643,27 @@ func processCommand(_ input: String) -> Bool {
         
         photoReceiver.dataReceivers.insertFirst(
             LensPositionReceiver { (pos: Float) in
-                print("Lens position:\t\(pos)")
+                print("Lens position: \(pos)")
                 processingCommand = false
             }
         )
-                
+        
+    // locks the focus and writes it to the sceneSettings file so it gets set whenever the app is booted up
+    case .keepfocus:
+        // lock the focus
+        let pos = lockLensPosition()
+        print("Locked lens position to \(pos)")
+        
+        //save the focus to the sceneSettings files
+        do {
+            sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
+            sceneSettings.set( key: "focus", value: Yaml.double(Double(pos)) )
+            sceneSettings.save()
+            print("Saved lens position \(pos) to scene settings")
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
         _ = setLensPosition(-1.0)
@@ -654,14 +671,12 @@ func processCommand(_ input: String) -> Bool {
         
     // tells the iPhone to lock the focus at the current position
     case .lockfocus:
-        let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
-        cameraServiceBrowser.sendPacket(packet)
-        _ = photoReceiver.receiveLensPositionSync()
+        let pos = lockLensPosition()
+        print("Locked lens position to \(pos)")
         
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
         guard nextToken < tokens.count else {
-            //            print("usage: setfocus [lensPosition] (0.0 <= lensPosition <= 1.0)")
             print(usage)
             break
         }
