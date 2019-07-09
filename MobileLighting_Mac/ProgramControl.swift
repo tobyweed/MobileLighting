@@ -519,12 +519,14 @@ func processCommand(_ input: String) -> Bool {
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
                 
+                // set up image recievers for all exposures
                 func receivePhotos() {
                     var nReceived = 0
-                    let completionHandler = { nReceived += 1 }
+                    let completionHandler = {
+                        nReceived += 1
+                    }
                     let numExps = (mode == "flash") ? (1) : (sceneSettings.ambientExposureDurations!.count)
                     for exp in 0..<numExps {
-                        
                         let path = (dirStruc.ambientPhotos(ball: ball, pos: pos, mode: mode, lighting: startIndex) + "/exp\(exp).JPG")
                         let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)

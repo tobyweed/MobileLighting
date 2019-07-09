@@ -66,37 +66,11 @@
         var photoBracketExposureDurations: [Double]?
         var photoBracketExposureISOs: [Double]?
         
+        // get photobracketsettings including all exposures
         var photoBracketSettings: AVCapturePhotoBracketSettings {
             get {
                 if let photoBracketExposureDurations = self.photoBracketExposureDurations, let photoBracketExposureISOs = self.photoBracketExposureISOs {
-                    var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
-                    //for exposure in photoBracketExposureDurations {
-                    for i in 0..<min(photoBracketExposureDurations.count, photoBracketExposureISOs.count) {
-                        var duration: Double = photoBracketExposureDurations[i]
-                        var iso: Float = Float(photoBracketExposureISOs[i])
-                        // make sure duration within bounds
-                        if duration < minExposureDuration.seconds || duration > maxExposureDuration.seconds {
-                            print("Exposure duration not within allowed range.\nExposure must be between \(minExposureDuration.seconds) and \(maxExposureDuration.seconds).")
-                            duration = max(min(maxExposureDuration.seconds, duration), minExposureDuration.seconds)
-                        }
-                        if iso < minISO || iso > maxISO {
-                            print("Exposure ISO not within allowed range. Exposure must be between \(minISO) and \(maxISO)")
-                            iso = max(min(maxISO, iso), minISO)
-                        }
-                        
-                        let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
-                        bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(exposureDuration: exposureTime, iso: iso))
-                    }
-                    let pixelFormat = kCVPixelFormatType_32BGRA
-                    let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
-                    print("Available types: \(capturePhotoOutput.availablePhotoPixelFormatTypes)")
-                    
-                    guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(OSType(truncating: NSNumber(value: pixelFormat))) else {
-                        fatalError("Does not contain \(pixelFormat)")
-                    }
-                    let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
-                    settings.isAutoStillImageStabilizationEnabled = false
-                    return settings
+                    return photoBracketSettings(durations: photoBracketExposureDurations, isos: photoBracketExposureISOs)
                 } else {
                     // use default exposure settings
                     let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: -3.0),
@@ -127,6 +101,36 @@
             
             // capture session should be configured, now start it running
             self.captureSession.startRunning()
+        }
+        
+        // return photo bracket settings with the exposures given
+        func photoBracketSettings( durations: [Double], isos: [Double] ) -> AVCapturePhotoBracketSettings {
+            var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
+            for i in 0..<min( durations.count, isos.count ) {
+                var duration: Double = durations[i]
+                var iso: Float = Float(isos[i])
+                // make sure duration within bounds
+                if duration < minExposureDuration.seconds || duration > maxExposureDuration.seconds {
+                    print("Exposure duration not within allowed range.\nExposure must be between \(minExposureDuration.seconds) and \(maxExposureDuration.seconds).")
+                    duration = max(min(maxExposureDuration.seconds, duration), minExposureDuration.seconds)
+                }
+                if iso < minISO || iso > maxISO {
+                    print("Exposure ISO not within allowed range. Exposure must be between \(minISO) and \(maxISO)")
+                    iso = max(min(maxISO, iso), minISO)
+                }
+                
+                let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
+            bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(exposureDuration: exposureTime, iso: iso))
+            }
+            let pixelFormat = kCVPixelFormatType_32BGRA
+            let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
+            
+            guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(OSType(truncating: NSNumber(value: pixelFormat))) else {
+                fatalError("Does not contain \(pixelFormat)")
+            }
+            let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
+            settings.isAutoStillImageStabilizationEnabled = false
+            return settings
         }
         
         func configureNewSession(sessionPreset: String) {
@@ -200,8 +204,9 @@
             
             self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
             self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
-            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
-            self.isCapturingPhoto = true        }
+            // set isCapturingPhoto to true to wait until capturePhoto sets it to false
+            self.isCapturingPhoto = true
+        }
         
         // main function for capturing normal-inverted pair
         func takeNormalInvertedPair(settings: AVCapturePhotoSettings) {
