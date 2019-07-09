@@ -145,7 +145,9 @@ func nextCommand() -> Bool {
         // if input empty, simply return & continue execution
         return true
     }
-    return processCommand(input)
+    // filter all non-ASCII characters in the string (eg from arrow key presses)
+    let command = input.filter({$0.isASCII})
+    return processCommand(command)
 }
 
 func processCommand(_ input: String) -> Bool {

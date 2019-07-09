@@ -178,18 +178,19 @@ if( !debugMode ) {
 
 // focus iPhone if focus provided
 if focus != nil {
+    print("Queuing request to set lens position...")
     // set lens position from value provided in scene settings file
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: Float(focus!))
     cameraServiceBrowser.sendPacket(packet)
     let receiver = LensPositionReceiver { _ in return }
     photoReceiver.dataReceivers.insertFirst(receiver)
     
+    print("Queuing request to lock lens position...")
     // lock lens position
     let packet_ = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
     cameraServiceBrowser.sendPacket(packet_)
     let receiver_ = LensPositionReceiver { _ in return }
     photoReceiver.dataReceivers.insertFirst(receiver_)
-    print("Locked lens position.")
 } else {
     print("No lens position provided. Focus not set")
 }
