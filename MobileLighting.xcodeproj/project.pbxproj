@@ -781,7 +781,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cp -R ${BUILT_PRODUCTS_DIR}/ ${PROJECT_DIR}/bin\n";
+			shellScript = "# copy all files from the Products directory to the bin directory, so the program can be run from bin. -r makes it recursive (copying contents of directories), -u makes it update (not overwriting things that don't need to be changed).\nrsync -r -u ${BUILT_PRODUCTS_DIR}/ ${PROJECT_DIR}/bin\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

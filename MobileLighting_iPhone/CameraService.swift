@@ -422,7 +422,7 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 } else {
                     // take photos in brackets not exceeding the maxBracketedPhotoCount
                     let numExposures = min(cameraController.photoBracketExposureDurations!.count, cameraController.photoBracketExposureISOs!.count)
-                    let numBrackets = 1 + numExposures%cameraController.maxBracketedPhotoCount
+                    let numBrackets = (numExposures - 1 + cameraController.maxBracketedPhotoCount)/(cameraController.maxBracketedPhotoCount)
                     let bracketSize = cameraController.maxBracketedPhotoCount
                     for i in 0..<numBrackets {
                         // add exposures to the bracket until exceeds the max size or there are no more exposures to loop through
