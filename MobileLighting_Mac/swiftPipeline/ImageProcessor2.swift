@@ -114,6 +114,8 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
 }
 
+
+
 //rectify decoded images
 func rectifyDec(left: Int, right: Int, proj: Int) {
     var intr = *dirStruc.intrinsicsYML

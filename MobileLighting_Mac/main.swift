@@ -184,13 +184,6 @@ if focus != nil {
     cameraServiceBrowser.sendPacket(packet)
     let receiver = LensPositionReceiver { _ in return }
     photoReceiver.dataReceivers.insertFirst(receiver)
-    
-    print("Queuing request to lock lens position...")
-    // lock lens position
-    let packet_ = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
-    cameraServiceBrowser.sendPacket(packet_)
-    let receiver_ = LensPositionReceiver { _ in return }
-    photoReceiver.dataReceivers.insertFirst(receiver_)
 } else {
     print("No lens position provided. Focus not set")
 }

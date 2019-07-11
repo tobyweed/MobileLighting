@@ -22,6 +22,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case unrecognized
     case quit
     case reloadsettings
+    case printsettings
     
     // photo capture
     case calibrate
@@ -63,8 +64,6 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case reproject
     case merge2
     
-    // take ambient photos
-    
     // debugging
     case dispres
     case dispcode
@@ -82,6 +81,7 @@ func getUsage(_ command: Command) -> String {
     case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
+    case .printsettings: return "printsettings [type=scene (calib|scene)]" // print settings of calib or scene type. defaults to scene
     // communications
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
@@ -190,25 +190,57 @@ func processCommand(_ input: String) -> Bool {
     case .quit:
         return false
         
+    // rereads scene settings file and reloads attributes
     case .reloadsettings:
-        // rereads init settings file and reloads attributes
         guard tokens.count == 1 else {
             print(usage)
             break
         }
         do {
             sceneSettings = try SceneSettings(sceneSettingsPath)
-            print("Successfully loaded initial settings.")
+            print("Successfully loaded scene settings.")
             strucExposureDurations = sceneSettings.strucExposureDurations
             strucExposureISOs = sceneSettings.strucExposureISOs
             if let calibDuration = sceneSettings.calibrationExposureDuration, let calibISO = sceneSettings.calibrationExposureISO {
                 calibrationExposure = (calibDuration, calibISO)
             }
         } catch let error {
-            print("Fatal error: could not load init settings, \(error.localizedDescription)")
+            print("Fatal error: could not load scene settings, \(error.localizedDescription)")
             break
         }
         
+    // print scene settings properties & values
+    case .printsettings:
+        guard tokens.count <= 2 else {
+            print(usage)
+            break
+        }
+        if tokens.count == 2 {
+            // print calib or throw an error
+            if(tokens[1] == "calib"){
+                let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)
+                let calibProperties = calibSettings.properties()
+                print("Calibration Settings:")
+                for prop in calibProperties {
+                    print("    \(prop.0): \(prop.1)")
+                }
+                break
+            } else if (tokens[1] != "scene") { // if the second token is not calib or scene, print an error and exit
+                print("token \"\(tokens[1])\" is not a valid token.")
+                print(usage)
+                break
+            }
+        }
+        // if we've gotten this far, print scene settings
+        let sceneProperties = sceneSettings.properties()
+        print("Scene Settings:")
+        for prop in sceneProperties {
+            // exclude the yml property
+            if(prop.0 != "yml") {
+                print("    \(prop.0): \(prop.1)")
+            }
+        }
+    
     // connect: use to connect external devices
     case .connect:
         guard tokens.count >= 2 else {
@@ -601,8 +633,7 @@ func processCommand(_ input: String) -> Bool {
                 
                 // go to the start position
                 if( !debugMode ) {
-                    var startPos = *String(0)
-                    GotoView(&startPos)
+                    GotoVideoStart()
                 } else {
                     print("program is in debugMode. skipping robot motion")
                 }
@@ -622,11 +653,14 @@ func processCommand(_ input: String) -> Bool {
                 if( !debugMode ) {
                     if( ExecutePath() == 0 ) {
                         print("path completed. stopping recording.")
+                        
                     } else {
                         print("problem executing path. stopping recording.")
                     }
                 } else {
                     print("program is in debugMode. skipping robot motion")
+                    print("hit enter when trajectory completed.")
+                    _ = readLine()
                 }
                 
                 packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)

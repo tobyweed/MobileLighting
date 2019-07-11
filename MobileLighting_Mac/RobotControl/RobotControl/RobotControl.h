@@ -16,6 +16,7 @@ int Clinet();
 int SendCommand(char *);
 int GotoView(char *);
 int LoadPath(char *);
+int GotoVideoStart();
 int ExecutePath();
 int SetVelocity(float);
 

@@ -66,16 +66,6 @@ int sendCommand(char *script){
     
 }
 
-int gotoView(string num){
-    string script = num;
-    int n = script.length();
-    char command[n+1];
-    strcpy(command, script.c_str());
-    if(sendCommand(command)<0)
-        return -1;
-    return 0;
-}
-
 // Load the path to the Rosvita server. Return -1 if unsuccessful, number of positions if successful
 int loadPath(string pathName){
     string script = "load " + pathName + ".obj";
@@ -99,6 +89,27 @@ int loadPath(string pathName){
     int numViews = std::stoi(buffer);
 
     return numViews;
+}
+
+int gotoVideoStart(){
+    string script = "s";
+    int n = script.length();
+    char command[n+1];
+    strcpy(command, script.c_str());
+    if(sendCommand(command)<0)
+        return -1;
+    return 0;
+}
+
+
+int gotoView(string num){
+    string script = num;
+    int n = script.length();
+    char command[n+1];
+    strcpy(command, script.c_str());
+    if(sendCommand(command)<0)
+        return -1;
+    return 0;
 }
 
 int executePath(){

@@ -133,6 +133,12 @@ class SceneSettings {
         }
     }
     
+    // return all property names as an array of Strings
+    func properties()-> [(String,Any)] {
+        let mirror = Mirror(reflecting: self)
+        return mirror.children.compactMap{ ($0.label!, $0.value) }
+    }
+
     // Set a value on the yaml settings dictionary
     func set(key: String, value: Yaml) {
         guard var dict = self.yml.dictionary else { return }
@@ -158,7 +164,6 @@ class SceneSettings {
         }
     }
 }
-
 
 func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {
     guard var imgs = try? FileManager.default.contentsOfDirectory(atPath: imgsdir) else {
@@ -255,6 +260,12 @@ class CalibrationSettings {
             print(error.localizedDescription)
             fatalError()
         }
+    }
+    
+    // return all property names as an array of Strings
+    func properties()-> [(String,Any)] {
+        let mirror = Mirror(reflecting: self)
+        return mirror.children.compactMap{ ($0.label!, $0.value) }
     }
     
     func set(key: Key, value: Yaml) {

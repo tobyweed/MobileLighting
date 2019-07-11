@@ -17,12 +17,16 @@ extern "C" int SendCommand(char *script) {
   return sendCommand(script);
 }
 
-extern "C" int GotoView(char *num){
-  return gotoView(std::string(num));
-}
-
 extern "C" int LoadPath(char *pathName){
   return loadPath(std::string(pathName));
+}
+
+extern "C" int GotoView(char *num){
+    return gotoView(std::string(num));
+}
+
+extern "C" int GotoVideoStart(){
+    return gotoVideoStart();
 }
 
 extern "C" int ExecutePath(){
