@@ -13,15 +13,10 @@
 #include "Disparities.h"
 #include "Reproject.h"
 #include "Decode.h"
-#include "CropVideo.hpp"
 #include <assert.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-
-extern "C" void cropVideo() {
-    cropvideo();
-}
 
 extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID) {
     refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
