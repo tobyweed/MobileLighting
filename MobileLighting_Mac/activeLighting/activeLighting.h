@@ -1,3 +1,5 @@
+void cropVideo();
+
 void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID);
 void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int rectified, int dXmin, int dXmax, int dYmin, int dYmax);
 void computeMaps(char *impath, char *intr, char *extr, char *settings);
