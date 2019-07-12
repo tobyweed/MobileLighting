@@ -56,6 +56,8 @@ class DirectoryStructure {
     }
     
     
+    
+    
     /*=====================================================================================
      Ambients
      ======================================================================================*/
@@ -206,8 +208,11 @@ class DirectoryStructure {
         return subdir
     }
     
+    
+    
+    
     /*=====================================================================================
-     Misc
+     Calibration
      ======================================================================================*/
 
     var calibration: String {
@@ -249,6 +254,12 @@ class DirectoryStructure {
         }
     }
     
+    
+    
+    /*=====================================================================================
+     Computed
+     ======================================================================================*/
+    
     var computed: String {
         get {
             return self.scene + "/" + "computed"
@@ -273,7 +284,6 @@ class DirectoryStructure {
         }
     }
     
-    
     func decoded(_ rectified: Bool) -> String {
         let subdir = "\(self.decoded)/\(rectified ? "rectified" : "unrectified")"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
@@ -288,6 +298,18 @@ class DirectoryStructure {
     
     func decoded(proj: Int, pos: Int, rectified: Bool) -> String {
         let subdir = "\(self.decoded(proj: proj, rectified: rectified))/pos\(pos)"
+        try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
+        return subdir
+    }
+    
+    var shadowvis: String {
+        get {
+            return self.computed + "/" + "shadowvis"
+        }
+    }
+    
+    func shadowvis(pos: Int) -> String {
+        let subdir = "\(self.shadowvis)/pos\(pos)"
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir
     }

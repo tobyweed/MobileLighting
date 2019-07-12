@@ -36,6 +36,20 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
  */
 }
 
+// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
+// used to help determine projector placement
+func showShadows(projs: [Int32], pos: Int32) {
+    var decodedDir = *dirStruc.decoded(false)
+    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
+    
+    // convert projs Int32 array to a pointer so that it can be passed to the C
+    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
+    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
+    projsPointer.initialize(from: &projs_, count: projs_.count)
+    
+    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+}
+
 //MARK: disparity matching functions
 // uses bridged C++ code from ActiveLighting image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from

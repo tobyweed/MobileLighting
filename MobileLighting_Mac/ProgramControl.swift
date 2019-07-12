@@ -65,6 +65,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case merge2
     
     // debugging
+    case showshadows
     case dispres
     case dispcode
     case clearpackets
@@ -126,6 +127,7 @@ func getUsage(_ command: Command) -> String {
     case .getintrinsics: return "getintrinsics"
     case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
     // debugging
+    case .showshadows: return "showshadows"
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
     case .clearpackets: return "clearpackets"
@@ -1529,6 +1531,33 @@ func processCommand(_ input: String) -> Bool {
             var path = *dirStruc.calibrationSettingsFile
             CalibrateWithSettings(&path)
         }
+        
+        
+    /*=====================================================================================
+     Debugging
+     ======================================================================================*/
+
+    // creates png files meshing images from different projectors to help determine projector placement
+    case .showshadows:
+        guard tokens.count >= 1 && tokens.count <= 3 else {
+            print(usage)
+            break
+        }
+        
+        // later insert functionality to not automatically use all projectors & positions
+        var allproj = true
+        var projs: [Int] = []
+        if allproj {
+            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
+            projs = getIDs(projDirs, prefix: "proj", suffix: "")
+        }
+        
+        var projectors: [Int32] = []
+        // convert Ints to Int32s
+        for proj in projs {
+            projectors.append(Int32(proj))
+        }
+        showShadows(projs: projectors, pos: 0)
         
         // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues
