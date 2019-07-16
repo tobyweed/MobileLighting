@@ -95,7 +95,7 @@ The two apps of the ML system communicate wirelessly using Bonjour / async socke
 ## Communication Between ML Mac and Rosvita server
 The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
 
-They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends  to the server, and that ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp. If it doesn't have the correct IP address, it will try to establish connection for a while before returning a failure message.
+They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends to the server, and that **ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp**. If it doesn't have the correct IP address (and the robot's IP address occasionally changes), it will try to establish connection indefinitely.
 
 The server replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath(), which returns "-1" indicating failure or "x", where x is the number of positions in the loaded path.
 
@@ -165,7 +165,8 @@ Robot positions will be saved onto the robot server directly, where they can be 
 * Scene name: the name of the scene (same as that of the scene directory)
 * Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
 * Lighting conditions: add a listing in here with the lighting and the directory name whenever you take ambients with different lightings. E.g.:
-    Normal:
+  
+  Normal:
     - L0 - Lights on, windows closed
     - L1 - Lights on, windows opened
     - L2 - Lights off, windows opened
@@ -277,9 +278,9 @@ To focus the projectors, it is useful to project a fine checkerboard pattern. Do
 Focus each projector such that the checkerboards projected onto the objects in the scene are crisp.
 
 Now, you can begin taking structured lighting. The command is
-`struclight [id] [projector #] [resolution=high]`
+`struclight [project pos id] [projector #] [resolution=high]`
 Parameters:
-* `id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/projid/pos*`.
+* `projector pos id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/proj[projector pos id]/pos*`.
 * `projector #`: the projector number is the switcher box port to which the projector you want to use is connected. These numbers will be in the range 1–8. This value has no effect on where the images are stored. 
 
 The reason for the distinction between the projector number and id is so that one could capture structured lighting with many different projector positions, but a limited number of projectors. Thus, one could run "struclight 0 1", taking structured light with the projector connected to port 1 and save those photos to the correct robot position directory in `computed/decoded/unrectified/proj0/`, then move the projector and run "struclight 1 1" to save photos in `computed/decoded/unrectified/proj1/`.

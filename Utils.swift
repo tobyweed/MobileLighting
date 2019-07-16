@@ -155,6 +155,27 @@ func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
     return (params, flags)
 }
 
+// expects string in format [1,2,3,4
+// converts to array of integers
+func stringToIntArray(_ string: String ) -> [Int] {
+    // initialize an array of the connected ports on the switcher.
+    let startlist = string.index(string.startIndex, offsetBy: 1)
+    var liststr = string.dropFirst()// cut off the first character
+    // if last character is ], cut it off too
+    // this isn't a requirement because Xcode will sometimes automatically appear to add "]" without actially doing so
+    if( string.hasSuffix("]") ) {
+        liststr = liststr.dropLast()
+    }
+    let strArray = liststr.components(separatedBy: ",") // divide string into array by ","
+    let intArray = strArray.map { Int($0) } // convert [String] to [Int?]
+    // convert [Int?] to [Int], filtering nil values
+    var filteredArray: [Int] = []
+    for int in intArray {
+        int != nil ? filteredArray.append(int!) : ()
+    }
+    return filteredArray
+}
+
 extension CMTime {
     init(exposureDuration: Double) {
         let prefferedExposureDurationTimescale: CMTimeScale = 1000000
