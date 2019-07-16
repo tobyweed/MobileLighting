@@ -468,7 +468,6 @@ func processCommand(_ input: String) -> Bool {
             } else {
                 print("program is in debugMode. skipping robot motion")
             }
-            
             captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
         }
         break
@@ -1557,7 +1556,12 @@ func processCommand(_ input: String) -> Bool {
         for proj in projs {
             projectors.append(Int32(proj))
         }
-        showShadows(projs: projectors, pos: 0)
+        
+        var allpos = true
+        // loop through all positions
+        for i in 0..<nPositions {
+            showShadows(projs: projectors, pos: Int32(i))
+        }
         
         // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues
@@ -1569,7 +1573,8 @@ func processCommand(_ input: String) -> Bool {
     //  useful for verifying the minSW.dat file loaded properly
     case .dispcode:
         displayController.currentWindow!.displayBinaryCode(forBit: 0, system: .MinStripeWidthCode)
-        
+    
+    // toggle debug. Note that this will not affect what path has been loaded on the Rosvita server. 
     case .toggledebug:
         debugMode = !debugMode
         

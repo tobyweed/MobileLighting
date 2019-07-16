@@ -59,37 +59,20 @@ void concatenateImg(CByteImage &destImg, CByteImage imgToAdd) {
     
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
+            // get RGB values of pixels from each image
             int addValB = imgToAdd.Pixel(x, y, 0);
             int addValG = imgToAdd.Pixel(x, y, 1);
             int addValR = imgToAdd.Pixel(x, y, 2);
-            int addValTot = addValB + addValG + addValR;
-            
             int destValB = destImg.Pixel(x, y, 0);
             int destValG = destImg.Pixel(x, y, 1);
             int destValR = destImg.Pixel(x, y, 2);
-            int destValTot = destValB + destValG + destValR;
             
-            int r = 0;
-            int g = 0;
-            int b = 0;
+            // add them
+            int b = addValB + destValB;
+            int g = addValG + destValG;
+            int r = addValR + destValR;
             
-            // if neither value is infinity, add the two.
-            if ( addValTot != 0 && destValTot != 0 ) {
-                b = addValB + destValB;
-                g = addValG + destValG;
-                r = addValR + destValR;
-            } // if only addVal is not infinity, use its value
-            else if ( addValTot != 0 ) {
-                b = addValB;
-                g = addValG;
-                r = addValR;
-            } // if only destVal is not infinity, use its value
-            else if ( destValTot != 0) {
-                b = destValB;
-                g = destValG;
-                r = destValR;
-            } // otherwise the pixel will be set to 0
-            
+            // assign the new pixel values to the destination image
             destImg.Pixel(x, y, 0) = b;
             destImg.Pixel(x, y, 1) = g;
             destImg.Pixel(x, y, 2) = r;

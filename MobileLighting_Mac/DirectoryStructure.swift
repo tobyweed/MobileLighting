@@ -43,6 +43,10 @@ class DirectoryStructure {
         return "\(self.scene)/settings"
     }
     
+    var scenePictures: String {
+        return "\(self.scene)/scenePictures"
+    }
+    
     var sceneSettingsFile: String {
         get {
             return self.settings + "/" + "sceneSettings.yml"

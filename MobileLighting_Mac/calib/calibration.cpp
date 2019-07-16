@@ -1419,7 +1419,7 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
             cout << inCal.objectPoints.size() << endl;
             
             ok = runIntrinsicCalibration(s, inCal);
-            
+                        
             printf("%s for left. Avg reprojection error = %.4f\n",
                    ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
                    inCal.totalAvgErr);

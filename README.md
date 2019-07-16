@@ -154,14 +154,14 @@ The system has a few limitations and caveats to be considered when taking a scen
 * Vibration in the camera can cause problems, particularly during structured lighting capture, so the floor shouldn't be too shaky and there should be little or no movement from bystanders during struclight. This means that places with lots of foot traffic could be problematic. By the same token, nothing in the scene can move during structured lighting capture, which can be tricker than expected -- for example, even a plant wilting slightly during scene capture could cause issues.
 
 #### Projector and camera positions
-Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Also make sure that projects are slightly tilted relative to the camera's axes to avoid moiré patterns from an aliasing effect.
+Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Also make sure that projects are slightly tilted relative to the camera's axes to avoid moiré patterns from an aliasing effect. A useful command is showshadows, which will add decoded unrectified images and output them to /computed/shadowvis. This shows remaining areas with no codes and help determine the next projector positions.
 
-Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory. Note that the images should be stored in JPG format.
+*Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.* Note that the images should be stored in JPG format.
 
 Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
 
 #### Scene description and images
-Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining brielfy the contents of the scene. The keys listed should consist of:
+*Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining briefly the contents of the scene.* The keys listed should consist of:
 * Scene name: the name of the scene (same as that of the scene directory)
 * Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
 * Lighting conditions: add a listing in here with the lighting and the directory name whenever you take ambients with different lightings. E.g.:
@@ -169,16 +169,18 @@ Create a text file (by convention stored in the root of the scene directory and 
     - L0 - Lights on, windows closed
     - L1 - Lights on, windows opened
     - L2 - Lights off, windows opened
+    
     Torch:
     - T0 - No lights on, windows closed
     - T1 - No ceiling lights on, umbrella light turned on in far left (from viewer) corner. Windows closed
+    
     Flash:
     - F0 - No lights on, windows closed
     Also remember to take ambientBall images with the same lighting conditions.
 * Robot motion: Briefly describe the robot views (E.g.: Two lateral views about a foot apart. A little over 12 feet from the wall.)
 * Projector configuration: Briefly describe the projector positions (E.g.: Two large viewsonic projectors from two positions each. Proj0,2 are left projector, proj 1,3 are right projector.)
 
-Also create a scenePictures directory and store images of the projector and robot/camera positions. Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format.
+Also *create a scenePictures directory and store images of the projector and robot/camera positions.* Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format. [This website](https://heictojpg.com/) is an easy place to do that conversion. It is important to have at least one photo of every projector position and every camera position. It is also a good idea to have a photo of the whole scene, including the projectors, robot, and still life.
 
 
 ### Calibration

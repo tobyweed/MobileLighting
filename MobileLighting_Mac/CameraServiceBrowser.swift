@@ -65,16 +65,6 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
             print("Failed to connect to service.")
         }
         
-        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-        guard let data = sender.addresses?.first else { return }
-        data.withUnsafeBytes { (pointer:UnsafePointer<sockaddr>) -> Void in
-            guard getnameinfo(pointer, socklen_t(data.count), &hostname, socklen_t(hostname.count), nil, 0, NI_NUMERICHOST) == 0 else {
-                return
-            }
-        }
-        let ipAddress = String(cString:hostname)
-        print("IP address: \(ipAddress)") //140.233.20.235
-                                          //169.254.114.50
         // if any packets ready to send, begin sending
         writeNextPacket()
     }
