@@ -817,7 +817,7 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
             }
         }
         
-        if ((int) sharedObjectPoints.size() > 10){
+        if ((int) sharedObjectPoints.size() >= 10){
             *oPoints = sharedObjectPoints;
             *oPoints2 = sharedObjectPoints;
             *iPoints = sharedImagePoints;

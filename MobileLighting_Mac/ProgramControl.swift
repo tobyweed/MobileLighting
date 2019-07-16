@@ -90,7 +90,7 @@ func getUsage(_ command: Command) -> String {
     // photo capture
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
     case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
-    case .struclight: return "struclight [id] [projector #] [resolution=high]"
+    case .struclight: return "struclight [projector pos id] [projector #] [resolution=high]"
     case .takeamb: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
     case .readfocus: return "readfocus"
@@ -431,44 +431,114 @@ func processCommand(_ input: String) -> Bool {
     case .struclight:
         let system: BinaryCodeSystem
         
-        guard tokens.count >= 3 else {
+        guard tokens.count >= 4 else {
             print(usage)
             break
         }
-        guard let projPos = Int(tokens[1]) else {
-            print("struclight: invalid projector position number")
-            break
-        }
-        guard let projID = Int(tokens[2]) else {
-            print("struclight: invalid projector id.")
-            break
+        
+        var multiProj = false;
+        var projIDs: [Int] = []
+        let arg1 = tokens[1]
+        if arg1.hasPrefix("[") { // if the string starts with [ assume we're being passed an array of strings
+            multiProj = true
+            projIDs = stringToIntArray(arg1)
+        } else { // otherwise make sure we can conver the arg to an int
+            guard let projPosID = Int(arg1) else {
+                print(usage)
+                break
+            }
+            projIDs.append(projPosID)
+            print("projPosID: \(projPosID)")
         }
         
+        var projNums: [Int] = []
+        let arg2 = tokens[2]
+        if arg2.hasPrefix("[") { // if the string starts with [ assume we're being passed an array of strings
+            if(!multiProj) { // make sure projPosID was also passed an array
+                print(usage)
+                break
+            }
+            projNums = stringToIntArray(arg2)
+        } else { // otherwise make sure we can conver the arg to an int
+            guard let projNum = Int(tokens[2]) else {
+                print(usage)
+                break
+            }
+            projNums.append(projNum)
+            print("projNum: \(projNum)")
+        }
+        
+        var multiPos = false
+        var poses: [Int] = []
+        let arg3 = tokens[3]
+        if arg3.hasPrefix("[") { // if the string starts with [ assume we're being passed an array of strings
+            multiPos = true
+            var poses_ = stringToIntArray(arg3)
+            for pos in poses_ {
+                if pos < 0 || pos >= nPositions {
+                    print("pos \(pos) is not a valid robot position; not including it in poses array.")
+                } else {
+                    poses.append(pos)
+                }
+            }
+        } else if arg3.contains("-a") { // otherwise just use all positiosn
+            poses = Array(0...nPositions)
+        } else { // otherwise make sure we can conver the arg to an int
+            guard let pos = Int(tokens[3]) else {
+                print(usage)
+                break
+            }
+            if pos < 0 || pos >= nPositions {
+                print("pos \(pos) is not a valid robot position.")
+                break
+            }
+            poses.append(pos)
+        }
+        
+        // make sure we have at least one proj in array & both arrays are of the same length
+        if(multiProj) {
+            if(projIDs.count < 1) {
+                print(usage)
+                break
+            }
+            if( projNums.count != projIDs.count ) {
+                print("projector position id array count must be the same as projector number array count")
+                print(usage)
+                break
+            }
+        }
+        
+        print("projIDs: \(projIDs)")
+        print("projNums: \(projNums)")
+        print("poses: \(poses)")
+
         system = .MinStripeWidthCode
         
         let resolution: String
-        if tokens.count == 4 {
+        if tokens.count == 5 {
             resolution = tokens[3]
         } else {
             resolution = defaultResolution
         }
         
-        displayController.switcher?.turnOff(0)   // turns off all projs
-        print("Hit enter when all projectors off.")
-        _ = readLine()  // wait until user hits enter
-        displayController.switcher?.turnOn(projID)
-        print("Hit enter when selected projector ready.") // Turn on the selected projector
-        _ = readLine()  // wait until user hits enter
-        
-        for i in 0..<nPositions {
-            // Tell the Rosvita server to move the arm to the selected position
-            if( !debugMode ) {
-                var posStr = *String(i) // get pointer to pose string
-                GotoView(&posStr) // pass address of pointer
-            } else {
-                print("program is in debugMode. skipping robot motion")
+        for i in 0..<projIDs.count {
+            displayController.switcher?.turnOff(0)   // turns off all projs
+            print("Hit enter when all projectors off.")
+            _ = readLine()  // wait until user hits enter
+            displayController.switcher?.turnOn(projNums[i])
+            print("Hit enter when selected projector ready.") // Turn on the selected projector
+            _ = readLine()  // wait until user hits enter
+            
+            for pos in poses {
+                // Tell the Rosvita server to move the arm to the selected position
+                if( !debugMode ) {
+                    var posStr = *String(pos) // get pointer to pose string
+                    GotoView(&posStr) // pass address of pointer
+                } else {
+                    print("program is in debugMode. skipping robot motion")
+                }
+                captureWithStructuredLighting(system: system, projector: projIDs[i], position: pos, resolution: resolution)
             }
-            captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
         }
         break
         
