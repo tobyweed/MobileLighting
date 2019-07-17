@@ -420,8 +420,28 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     }
                     catch let error { print(error.localizedDescription) }
                 } else {
-                    let settings = cameraController.photoBracketSettings
-                    cameraController.takePhoto(photoSettings: settings)
+                    // Only use photo brackets if the number of exposures does not exceed the max amount for a photo bracket
+                    if(cameraController.photoBracketExposureDurations!.count <= cameraController.maxBracketedPhotoCount) {
+                        let settings = cameraController.photoBracketSettings
+                        cameraController.takePhoto(photoSettings: settings)
+                    } else {
+                        for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
+                            let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
+                            var exposureModeSet = false
+                            do { try cameraController.captureDevice.lockForConfiguration() }
+                            catch { print("capturebracket: cannot lock camera for configuration."); return }
+                            cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
+                            cameraController.captureDevice.unlockForConfiguration()
+                            while !exposureModeSet {}
+        
+                            let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
+                            //                        settings.flashMode = .on
+                            cameraController.takePhoto(photoSettings: settings)
+                            
+                            while cameraController.isCapturingPhoto {}
+                            print("done taking photo.")
+                        }
+                    }
                 }
  
                 break

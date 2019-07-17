@@ -58,15 +58,6 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
 1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
 
-### Scene Setup
-1. Create a directory to store scenes.
-1. Run MobileLighting_Mac with the "init" option. From Xcode:
-    1. Select MobileLighting_Mac from the build target menu in the top left corner.
-    1. Click "Edit Scheme" at the bottom of the same menu.
-    1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
-    1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
-    1. Update the Yaml files with the parameters you will use for the scene. Note that the minSWdataPath parameter is an important one for stereo calibration and is not automatically set. You will need to enter the path to a copy of a file containing minSW data.
-
 ## General Tips
 Use the `help` command to list all possible commands. If you are unsure how to use the `help` command, type `help help`.
 
@@ -116,17 +107,75 @@ ML Mac automatically tries to load path "default" on initialization.
 
 ## Dataset Acquisition
 There are numerous steps to dataset acquisition:
+1. Scene Setup and Description
+    1. Scene directory creation and configuration
+    1. Scene selection
+    1. Projector and camera positions
+    1. Scene description and images
 1. Calibration image capture
     1. Intrinsic calibration
     2. Multiview calibration
-1. Structured lighting image capture
 1. Ambient data capture
-    1. Ambient images at multiple exposures
-    1. Ambient video with IMU data
+    1. Ambient images & videos with mirror ball
+    2. Ambient images at multiple exposures
+    3. Ambient video with IMU data
+1. Structured lighting image capture
     
-All these steps are executed/controlled at the MobileLighting Mac command-line interface.
+These steps are executed/controlled from the MobileLighting Mac command-line interface.
 
-The focus remains fixed for the entire capture session. At the beginning of each session, ML Mac will send the `focus` parameter specified in the scene settings file (0.0 ≤ focus ≤ 1.0, where 0.0 is close and 1.0 is far). This should be initially established by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. 
+### Scene Setup and Description
+#### Scene directory creation and configuration
+First, create a directory to store scenes. Then, run MobileLighting_Mac with the "init" option. 
+Directions to do this from Xcode:
+    1. Select MobileLighting_Mac from the build target menu in the top left corner.
+    1. Click "Edit Scheme" at the bottom of the same menu.
+    1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
+    1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+Next, update the Yaml files with the parameters you will use for the scene. 
+Some important parameters to consider changing:
+1. sceneSettings.yml:
+    * minSWdataPath: enter the path to the min SW data file here. This is important for structured lighting capture, as the program will try to read the data at this path to determine what structured lighting patterns to display on the projectors.
+    * struclight (exposureISOs & exposureDurations): these parameters contain lists of numbers which set the exposures taken for structured lighting. It is good for these to have a wide range, as that'll make the system do better with particularly dark or light surfaces, but it is also important to note that the larger the list of exposures, the longer the already time-consuming structured lighting capture step will take.
+    * ambient (exposureISOs & exposureDurations): another pair of lists which determine the exposures of images to be taken, in this case for ambients. Since ambient image capture doesn't take long, this list can be longer. Note that ISOs may not need to vary (durations are more important to change) and that the durations should be varied on a log scale (e.g. 0.01, 0.1, 1.0 or  Or 0.01, 0.03, 0.1, 0.3, 1).
+    * robotPathName: this will be used to try and automatically load the correct robot path to the Rosvita server. Once you have set the robot path on the server, make sure to enter its name here.
+    * focus: this parameter, ranging from 0.0 to 1.0 where 0.0 is close and 1.0 is far, sets the camera focus when the app starts. The focus then remains fixed for the entire capture session. This should be initially established with both apps running by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. 
+1. calibration.yml:
+    * Alpha parameter: the free scaling factor. If -1, the focal lengths of the camera are kept fixed when computing the projection matrices. If 1, the rectified images are decimated and shifted so that all the pixels from the original image are retained in the rectified image -- focal lengths get reduced in the process. If 0, the received pictures are zoomed and shifted so that only valid pixels are visible -- focal lengths get increased in the process.
+    * Resizing factor: determines how much to resize the image by on rectification. For example, "2" will zoom the image by 100%.
+    * There are also a number of parameters (Num_MarkersX, Marker_Length, Num_of_Boards, Num_MarkersY, First_Marker) which the program uses to generate calibration matrices based on the positions of ArUco or chessboards in calibration images. These need to be changed whenever the board(s) being used for calibration are changed.
+    
+#### Scene selection
+The system has a few limitations and caveats to be considered when taking a scene:
+* The system will sometimes assign faulty (reflected) codes to even slightly reflective surfaces. These will usually get discarded during cross checking, causing those surfaces to appear undefined in the final images.
+* The system can have trouble with particularly dark surfaces, which don't reflect the projected light well. Adding a very high exposure to struclight (listed above) can sometimes solve this, but will add time to scene capture.
+* Structured lighting images should be captured in as dark a setting as possible, so scenes should be taken in places where outside light sources (from windows, for example) can be mostly eliminated.
+* Vibration in the camera can cause problems, particularly during structured lighting capture, so the floor shouldn't be too shaky and there should be little or no movement from bystanders during struclight. This means that places with lots of foot traffic could be problematic. By the same token, nothing in the scene can move during structured lighting capture, which can be tricker than expected -- for example, even a plant wilting slightly during scene capture could cause issues.
+
+#### Projector and camera positions
+Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.
+
+Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
+
+#### Scene description and images
+Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining brielfy the contents of the scene. The keys listed should consist of:
+* Scene name: the name of the scene (same as that of the scene directory)
+* Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
+* Lighting conditions: add a listing in here with the lighting and the directory name whenever you take ambients with different lightings. E.g.:
+    Normal:
+    - L0 - Lights on, windows closed
+    - L1 - Lights on, windows opened
+    - L2 - Lights off, windows opened
+    Torch:
+    - T0 - No lights on, windows closed
+    - T1 - No ceiling lights on, umbrella light turned on in far left (from viewer) corner. Windows closed
+    Flash:
+    - F0 - No lights on, windows closed
+    Also remember to take ambientBall images with the same lighting conditions.
+* Robot motion: Briefly describe the robot views (E.g.: Two lateral views about a foot apart. A little over 12 feet from the wall.)
+* Projector configuration: Briefly describe the projector positions (E.g.: Two large viewsonic projectors from two positions each. Proj0,2 are left projector, proj 1,3 are right projector.)
+
+Also create a scenePictures directory and store images of the projector and robot/camera positions. Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format.
+
 
 ### Calibration
 In order to capture calibration images, the Mac must be connected to the robot arm (and the iPhone).
@@ -142,7 +191,7 @@ ML Mac will automatically set the correct exposure before taking the photos. Thi
 
 ML Mac will ask you to hit enter as soon as you are ready to take the next photo. Each photo is saved at <scene>/orig/calibration/intrinsics with the filename IMG<#>.JPG. It will continue to prompt photo capture until the user tells it to stop with "q" or "quit".
 
-### Stereo Calibration
+#### Stereo Calibration
 To capture extrinsics calibration photos, use the following command:
 `stereocalib (-a)? [resolution=high]`
 Flags:
@@ -152,6 +201,50 @@ Flags:
 ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
 
 This command will first prompt the user to hit enter to take a set or to write "q" to quit. If the user hits enter, ML Mac will move the robot arm to the 0th position. It will then take a photo. It will iterate through all positions in the path loaded on the Rosvita server, taking a picture at each one, and saving those pictures at <scene>/orig/calibration/stereo/posX/IMGn.JPG, where X is the postion number and n is the set number. Then it will prompt the user whether they want to continue taking sets, retake the last set (overwriting the IMGn.JPG photos), or stop running the command.
+
+### Ambient
+In order to capture ambient data, the Mac must be connected to the robot arm (and the iPhone).
+
+Multiple exposures can be used for ambient images. These are specified in the `ambient -> exposureDurations, exposureISOs` lists in the scene settings file.
+
+#### Ambient Still Images
+To capture ambient still images, use the following command:
+`takeamb still (-b)? (-f|-t)? (-a|-d)? [resolution=high]`
+Flags:
+`-b`: save the images to the ambientBall instead of ambient directory. Used to give a rough sense of lighting conditions.
+`-f`: use flash mode. This is the brightest illumination setting.
+`-t`: use torch mode (i.e. turn on flashlight). This is dimmer than flash.
+(none): take a normal ambient photo (with flash/torch off).
+`-a`: append another lighting directory within ambient/ or ambientBall/. Otherwise, the program will simply overwrite the 0th directory of the appropriate setting (L0, T0, or F0). This is generally used to capture another lighting condition.
+`-d`: delete the entire ambient/ or ambientBall/ directory and write into a new one. Use with care!
+
+The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture.
+
+#### Ambient Videos with IMU Data
+Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
+This YML file must contain a `trajectory` key. Under this key is a list of robot poses (either joints or coordinates in space, both 6D vectors).
+Joint positoin: [joint1, joint2, joint3, joint4, joint5, joint6], all in radians
+Coordinates: p[x, y, z, a, b, c], where a, b, c are Euler angles
+
+ML Mac recreates the trajectory by generating a URScript script that it then sends to the robot. Additional parameters than can be tweaked in `trajectory.yml` are
+* `timestep`: directly proportional to how long the robot takes to move between positions
+* `blendRadius`: increases the smoothness of the trajectory.
+
+To capture ambient videos, use the following command:
+`takeamb video (-f|-t)? [exposure#=1]`
+Flags:
+* `-t`: take video with torch mode (flashlight) on.
+* `-f`: same as `-t` (flash can only be enabled when taking a photo)
+* (none): take a normal video (w/ flashlight off)
+Parameters:
+* `[exposure#=1]`: the exposure number is the index of the exposure in the list of exposures specified under  `ambient -> exposureDurations, exposureISOs`. If this parameter is not provided, it defaults to 1.
+
+ML Mac first moves the robot arm to the first position and waits for the user to hit enter. Then, it sends the trajectory script to the robot and waits for the user to hit enter once the trajectory has been completed.
+
+After the trajectory is completed, the iPhone sends the Mac two files:
+* the video (a .mp4 file)
+* the IMU data, saved as a Yaml list of IMU samples (a .yml file)
+Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
 
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
@@ -189,49 +282,6 @@ Before starting capture, ML Mac will move the arm to the position and ask you to
 After that, capture begins. It projects first vertical, then horizontal binary code images. After each direction, the Mac should receive 2 files: a "metadata" file that simply contains the direction of the stripes and the decoded PFM file. It saves the PFM file to "computed/decoded/projX/posA". It then refines the decoded image.
 
 
-### Ambient
-In order to capture ambient data, the Mac must be connected to the robot arm (and the iPhone).
-
-Multiple exposures can be used for ambient images. These are specified in the `ambient -> exposureDurations, exposureISOs` lists in the scene settings file.
-
-#### Ambient Still Images
-To capture ambient still images, use the following command:
-`takeamb still (-f|-t)? [resolution=high]`
-Flags:
-`-f`: use flash mode. This is the brightest illumination setting.
-`-t`: use torch mode (i.e. turn on flashlight). This is dimmer than flash.
-(none): take a normal ambient photo (with flash/torch off).
-
-First, ML Mac moves the robot arm to the first position and then prompts the user to hit enter when in position.
-Next, it takes still images with multiple exposures from all positions. It saves the photos to the directory orig/ambient/(normal | flash | torch).
-
-#### Ambient Videos with IMU Data
-Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
-This YML file must contain a `trajectory` key. Under this key is a list of robot poses (either joints or coordinates in space, both 6D vectors).
-Joint positoin: [joint1, joint2, joint3, joint4, joint5, joint6], all in radians
-Coordinates: p[x, y, z, a, b, c], where a, b, c are Euler angles
-
-ML Mac recreates the trajectory by generating a URScript script that it then sends to the robot. Additional parameters than can be tweaked in `trajectory.yml` are
-* `timestep`: directly proportional to how long the robot takes to move between positions
-* `blendRadius`: increases the smoothness of the trajectory.
-
-To capture ambient videos, use the following command:
-`takeamb video (-f|-t)? [exposure#=1]`
-Flags:
-* `-t`: take video with torch mode (flashlight) on.
-* `-f`: same as `-t` (flash can only be enabled when taking a photo)
-* (none): take a normal video (w/ flashlight off)
-Parameters:
-* `[exposure#=1]`: the exposure number is the index of the exposure in the list of exposures specified under  `ambient -> exposureDurations, exposureISOs`. If this parameter is not provided, it defaults to 1.
-
-ML Mac first moves the robot arm to the first position and waits for the user to hit enter. Then, it sends the trajectory script to the robot and waits for the user to hit enter once the trajectory has been completed.
-
-After the trajectory is completed, the iPhone sends the Mac two files:
-* the video (a .mp4 file)
-* the IMU data, saved as a Yaml list of IMU samples (a .yml file)
-Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
-
-
 ## Image Processing
 Here is the approximate outline of the image processing pipeline:
 1. Compute intrinsics
@@ -263,7 +313,7 @@ Flags:
 * `-a`: compute extrinsics for all adjacent stereo pairs (pos0 & pos1, pos1 & pos2, etc.)
 The extrinsics files are saved at <scene>/computed/calibration/extrinsics/extrinsicsAB.yml.
 
-### Rectification
+### Rectify Decoded Images
 To rectify decoded images, use one of the following commands:
 _for one position pair, one projector:_
 `rectify [proj] [left] [right]`
@@ -276,6 +326,7 @@ where `[left]` & `[right]` are positions
 _for all projectors, all position pairs_:
 `rectify -a -a`
 
+### Rectify Ambient Images
 To rectify ambient images, use the following command:
 `rectifyamb`
 This will rectify all ambient images. This is the only processing that ambient images need to go through.
