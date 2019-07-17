@@ -935,12 +935,11 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
 }
 
 void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoard> currentBoard){
-
-
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
 
-    //detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX;
-    detectorParams-> doCornerRefinement = true; // do corner refinement in markers
+    // doCornerRefinement is deprecated in some versions of opencv. use cornerRefinementMethod if you get an error on compilation
+    detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX;
+//    detectorParams-> doCornerRefinement = true; // do corner refinement in markers
     detectorParams-> cornerRefinementWinSize = 4;
     detectorParams->  minMarkerPerimeterRate = 0.01;
     detectorParams->  maxMarkerPerimeterRate = 4 ;

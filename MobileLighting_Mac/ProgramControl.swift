@@ -25,19 +25,19 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case printsettings
     
     // photo capture
-    case calibrate
-    case stereocalib
-    case struclight
-    case takeamb
+    case calibrate, c
+    case stereocalib, sc
+    case struclight, sl
+    case takeamb, ta
     
     // camera control
-    case readfocus, keepfocus, autofocus, setfocus, lockfocus
+    case readfocus, rf, keepfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
     case lockwhitebalance
     case focuspoint
     
     // projector control
-    case proj
+    case proj, p
     case cb     // displays checkerboard
     case black, white
     case diagonal, verticalbars   // displays diagonal stripes (for testing 'diagonal' DLP chip)
@@ -52,20 +52,20 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case setvelocity
     
     // camera calibration
-    case getintrinsics
-    case getextrinsics
+    case getintrinsics, gi
+    case getextrinsics, ge
     
     // image processing
-    case refine
-    case rectify
-    case rectifyamb
-    case disparity
-    case merge
-    case reproject
-    case merge2
+    case refine, ref
+    case rectify, rect
+    case rectifyamb, ra
+    case disparity, d
+    case merge, m
+    case reproject, rp
+    case merge2, m2
     
     // debugging
-    case showshadows
+    case showshadows, ss
     case dispres
     case dispcode
     case clearpackets
@@ -88,12 +88,13 @@ func getUsage(_ command: Command) -> String {
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
     // photo capture
-    case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
-    case .struclight: return "struclight [projector pos id] [projector #] [resolution=high]"
-    case .takeamb: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
+    case .calibrate, .c:
+        return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
+    case .stereocalib, .sc: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
+    case .struclight, .sl: return "struclight [projector pos id(s)] [projector #(s)] [position #(s)] [resolution=high]\n"
+    case .takeamb, .ta: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
-    case .readfocus: return "readfocus"
+    case .readfocus, .rf: return "readfocus"
     case .keepfocus: return "keepfocus"
     case .autofocus: return "autofocus"
     case .lockfocus: return "lockfocus"
@@ -105,7 +106,7 @@ func getUsage(_ command: Command) -> String {
     case .lockexposure: return "lockexposure"
     case .setexposure: return "setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)"
     // projector control
-    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
+    case .proj, .p: return "proj ([projector_#]|all) (on/1|off/0)"
     case .cb: return "cb [squareSize=2]"
     case .black: return "black"
     case .white: return "white"
@@ -116,18 +117,18 @@ func getUsage(_ command: Command) -> String {
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .setvelocity: return "setvelocity [velocity]\n"
     // image processing
-    case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
-    case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
-    case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
-    case .rectifyamb: return "rectifyamb (-a|-n|-t|-f]\n"
-    case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
-    case .reproject: return "reproject [left] [right]\n       reproject -a"
-    case .merge2: return "merge2 [left] [right]\n       merge2 -a"
+    case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
+    case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
+    case .rectify, .rect: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .rectifyamb, .ra: return "rectifyamb (-a|-n|-t|-f]\n"
+    case .merge, .m: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
+    case .reproject, .rp: return "reproject [left] [right]\n       reproject -a"
+    case .merge2, .m2: return "merge2 [left] [right]\n       merge2 -a"
     // camera calibration
-    case .getintrinsics: return "getintrinsics"
-    case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .getintrinsics, .gi: return "getintrinsics"
+    case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
     // debugging
-    case .showshadows: return "showshadows"
+    case .showshadows, .ss: return "showshadows"
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
     case .clearpackets: return "clearpackets"
@@ -309,7 +310,7 @@ func processCommand(_ input: String) -> Bool {
         displayController.switcher?.endConnection()
         
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
-    case .calibrate:
+    case .calibrate, .c:
         guard tokens.count == 1 || tokens.count == 2 else {
             print(usage)
             break
@@ -385,7 +386,7 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-    case .stereocalib:
+    case .stereocalib, .sc:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         // Make sure we have the right number of tokens
         guard params.count <= 1, flags.count <= 1 else {
@@ -428,7 +429,7 @@ func processCommand(_ input: String) -> Bool {
         break
         
     // captures scene using structured lighting from specified projector
-    case .struclight:
+    case .struclight, .sl:
         let system: BinaryCodeSystem
         
         guard tokens.count >= 4 else {
@@ -548,7 +549,7 @@ func processCommand(_ input: String) -> Bool {
               -a: append to existing photos
               -d: delete ALL contents of the ambient/photos directory
         if neither -a nor -d is given, photos will be written to IMG0.JPG, overwriting any previous file with the same name */
-    case .takeamb:
+    case .takeamb, .ta:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         guard params.count >= 1 else {
@@ -746,7 +747,7 @@ func processCommand(_ input: String) -> Bool {
         
         
     // requests current lens position from iPhone camera, prints it
-    case .readfocus:
+    case .readfocus, .rf:
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
         
@@ -979,7 +980,7 @@ func processCommand(_ input: String) -> Bool {
     //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
     //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
-    case .proj:
+    case .proj, .p:
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -1012,7 +1013,7 @@ func processCommand(_ input: String) -> Bool {
         //    -direction argument specifies which axis to refine in, where 0 <-> x-axis
         // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
-    case .refine:
+    case .refine, .ref:
         guard tokens.count > 1 else {
             print(usage)
             break cmdSwitch
@@ -1147,7 +1148,7 @@ func processCommand(_ input: String) -> Bool {
         //  -'disparity': computes disparities for all projectors & all consecutive positions
         //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
-    case .disparity:
+    case .disparity, .d:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         var curParam = 0
         
@@ -1217,7 +1218,7 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-    case .rectify:
+    case .rectify, .rect:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var allproj = false
@@ -1287,7 +1288,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
     // rectify ambient images of all positions and exposures
-    case .rectifyamb:
+    case .rectifyamb, .ra:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var ball = false
@@ -1347,7 +1348,7 @@ func processCommand(_ input: String) -> Bool {
             }
         }
         
-    case .merge:
+    case .merge, .m:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var rectified = false, allpos = false
@@ -1400,7 +1401,7 @@ func processCommand(_ input: String) -> Bool {
             merge(left: left, right: right, rectified: rectified)
         }
         
-    case .reproject:
+    case .reproject, .rp:
         // implement -a functionality
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
@@ -1455,7 +1456,7 @@ func processCommand(_ input: String) -> Bool {
             reproject(left: left, right: right)
         }
         
-    case .merge2:
+    case .merge2, .m2:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         var allpos = false
@@ -1510,7 +1511,7 @@ func processCommand(_ input: String) -> Bool {
         // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
         // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
     // ABSOLUTE PATHS NOT REQUIRED
-    case .getintrinsics:
+    case .getintrinsics, .gi:
         guard tokens.count <= 2 else {
             //            print("usage: \(commandUsage[command]!)")
             print(usage)
@@ -1543,7 +1544,7 @@ func processCommand(_ input: String) -> Bool {
         break
         
     // do stereo calibration
-    case .getextrinsics:
+    case .getextrinsics, .ge:
         let (params, flags) = partitionTokens(tokens)
         
         var all = false
@@ -1607,7 +1608,7 @@ func processCommand(_ input: String) -> Bool {
      ======================================================================================*/
 
     // creates png files meshing images from different projectors to help determine projector placement
-    case .showshadows:
+    case .showshadows, .ss:
         guard tokens.count >= 1 && tokens.count <= 3 else {
             print(usage)
             break
@@ -1667,6 +1668,7 @@ func processCommand(_ input: String) -> Bool {
     
     return true
 }
+
 
 /* The following extension could be implemented to suggest similar commands on unrecognized input,
  but is buggy:

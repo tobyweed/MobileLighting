@@ -285,10 +285,11 @@ To focus the projectors, it is useful to project a fine checkerboard pattern. Do
 Focus each projector such that the checkerboards projected onto the objects in the scene are crisp.
 
 Now, you can begin taking structured lighting. The command is
-`struclight [project pos id] [projector #] [resolution=high]`
+`struclight [project pos id] [projector #]  [positon #] [resolution=high]`
 Parameters:
 * `projector pos id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/proj[projector pos id]/pos*`.
 * `projector #`: the projector number is the switcher box port to which the projector you want to use is connected. These numbers will be in the range 1–8. This value has no effect on where the images are stored. 
+Note that each number (proj id, proj #, & pos #) can also be passed as an array, formatted like: `[1,2,3]`. Arrays passed to proj id and proj # must have the same number of elements.
 
 The reason for the distinction between the projector number and id is so that one could capture structured lighting with many different projector positions, but a limited number of projectors. Thus, one could run "struclight 0 1", taking structured light with the projector connected to port 1 and save those photos to the correct robot position directory in `computed/decoded/unrectified/proj0/`, then move the projector and run "struclight 1 1" to save photos in `computed/decoded/unrectified/proj1/`.
 
