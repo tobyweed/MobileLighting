@@ -69,6 +69,10 @@ class DirectoryStructure {
         return (photo) ? ((ball) ? ambientBallPhotos : ambientPhotos) : ambientVideos
     }
     
+    var ambientDefault: String {
+        return "\(ambients(ball: false, photo: true))/default"
+    }
+    
     // gets the right index to write ambients to
     // appending: whether we're adding another directory or writing to the 0th directory
     // photo: whether we're in photo or video mode

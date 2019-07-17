@@ -116,9 +116,10 @@ There are numerous steps to dataset acquisition:
     1. Intrinsic calibration
     2. Multiview calibration
 1. Ambient data capture
-    1. Ambient images & videos with mirror ball
-    2. Ambient images at multiple exposures
-    3. Ambient video with IMU data
+    1. Ambient images with mirror ball
+    2. Ambient images at multiple exposures and lightings
+    3. Default images
+    4. Ambient video with IMU data
 1. Structured lighting image capture
     
 These steps are executed/controlled from the MobileLighting Mac command-line interface.
@@ -225,7 +226,13 @@ Flags:
 `-a`: append another lighting directory within ambient/ or ambientBall/. Otherwise, the program will simply overwrite the 0th directory of the appropriate setting (L0, T0, or F0). This is generally used to capture another lighting condition.
 `-d`: delete the entire ambient/ or ambientBall/ directory and write into a new one. Use with care!
 
-The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture.
+The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
+
+### Ambient Ball Images
+Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
+
+### Default Images
+Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
 
 #### Ambient Videos with IMU Data
 Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.

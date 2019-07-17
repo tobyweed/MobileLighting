@@ -143,6 +143,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
         }
     }
     
+    
+    
     // called when packet has been fully received
     func handlePacket(_ packet: CameraInstructionPacket) {
         print("CameraService: received camera instruction: \(packet.cameraInstruction!) — \(timestampToString(date: Date()))")
@@ -381,45 +383,8 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     return
                 }
                 
-                if packet.flashMode == .on {
-                    let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
-                    settings.flashMode = .on
-                    cameraController.takePhoto(photoSettings: settings)
-                } else if packet.torchMode == .on {
-                    do {
-                        try cameraController.captureDevice.lockForConfiguration()
-                        try cameraController.captureDevice.setTorchModeOn(level: 1.0)
-                        cameraController.captureDevice.unlockForConfiguration()
-                    } catch {
-                        print("capture image bracket: could not turn on torch.")
-                    }
-                    
-                    for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
-                        let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
-                        var exposureModeSet = false
-                        do { try cameraController.captureDevice.lockForConfiguration() }
-                        catch { print("capturebracket: cannot lock camera for configuration."); return }
-                        cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
-                        cameraController.captureDevice.unlockForConfiguration()
-
-                        while !exposureModeSet {}
-                        
-                        let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
-                        //                        settings.flashMode = .on
-                        cameraController.takePhoto(photoSettings: settings)
-                        
-                        while cameraController.isCapturingPhoto {}
-                        print("done taking photo.")
-                    }
-                    
-                    
-                    do {
-                        try cameraController.captureDevice.lockForConfiguration()
-                        cameraController.captureDevice.torchMode = .off
-                        cameraController.captureDevice.unlockForConfiguration()
-                    }
-                    catch let error { print(error.localizedDescription) }
-                } else {
+                // capture photos of all exposures. do not exceed the number of photos allowed in a single bracket; capture multiple brackets if necessary
+                func capturePhotoBracket() {
                     // take photos in brackets not exceeding the maxBracketedPhotoCount
                     let numExposures = min(cameraController.photoBracketExposureDurations!.count, cameraController.photoBracketExposureISOs!.count)
                     let numBrackets = (numExposures - 1 + cameraController.maxBracketedPhotoCount)/(cameraController.maxBracketedPhotoCount)
@@ -439,42 +404,33 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                         while cameraController.isCapturingPhoto {}
                         print("done taking photo bracket.")
                     }
-                    
-//                    // only use photo brackets if the number of exposures does not exceed the max amount for a photo bracket
-//                    if(cameraController.photoBracketExposureDurations!.count <= cameraController.maxBracketedPhotoCount) {
-//                        let settings = cameraController.photoBracketSettings
-//                        cameraController.takePhoto(photoSettings: settings)
-//                    } else {
-//                        // loop through the exposure durations and take a photo with each
-//                        for (exposureDuration, exposureISO) in zip(exposureDurations, exposureISOs) {
-//                            let time = CMTime(seconds: exposureDuration, preferredTimescale: CameraController.preferredExposureTimescale)
-//                            var exposureModeSet = false
-//
-//                            // try to lock the capture device for configuration (enabling changing its properties)
-//                            do { try cameraController.captureDevice.lockForConfiguration() }
-//                            catch { print("capturebracket: cannot lock camera for configuration."); return }
-//
-//                            // set the correct exposure
-//                            cameraController.captureDevice.setExposureModeCustom(duration: time, iso: Float(exposureISO), completionHandler: { (_) -> Void in exposureModeSet = true })
-//
-//                            // unlock the capture device (sets changes)
-//                            cameraController.captureDevice.unlockForConfiguration()
-//
-//                            // wait for changes to propagate
-//                            while !exposureModeSet {}
-//
-//                            // get the correct photo settings
-//                            let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
-//
-//                            cameraController.takePhoto(photoSettings: settings)
-//
-//                            // wait for photo capture completion
-//                            while cameraController.isCapturingPhoto {}
-//                            print("done taking photo.")
-//                        }
-//                    }
                 }
- 
+                
+                if packet.flashMode == .on {
+                    let settings = AVCapturePhotoSettings(format: [AVVideoCodecKey : AVVideoCodecType.jpeg, AVVideoCompressionPropertiesKey : [AVVideoQualityKey : jpegQuality]])
+                    settings.flashMode = .on
+                    cameraController.takePhoto(photoSettings: settings)
+                } else if packet.torchMode == .on {
+                    // turn torch mode on
+                    do {
+                        try cameraController.captureDevice.lockForConfiguration()
+                        try cameraController.captureDevice.setTorchModeOn(level: 1.0)
+                        cameraController.captureDevice.unlockForConfiguration()
+                    } catch {
+                        print("capture image bracket: could not turn on torch.")
+                    }
+                    // take the photos
+                    capturePhotoBracket()
+                    // turn torch mode off
+                    do {
+                        try cameraController.captureDevice.lockForConfiguration()
+                        cameraController.captureDevice.torchMode = .off
+                        cameraController.captureDevice.unlockForConfiguration()
+                    }
+                    catch let error { print(error.localizedDescription) }
+                } else {
+                    capturePhotoBracket()
+                }
                 break
             
             case .StartVideoCapture:
