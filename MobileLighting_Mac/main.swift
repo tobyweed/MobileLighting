@@ -208,7 +208,7 @@ if focus != nil {
 let mainQueue = DispatchQueue(label: "mainQueue")
 //let mainQueue = DispatchQueue.main    // for some reason this causes the NSSharedApp (which manages the windwos for displaying binary codes, etc) to block! But the camera calibration functions must be run from the DisplatchQueue.main, so async them whenever they are called
 
-mainQueue.async {
+mainQueue.async { 
     while nextCommand() {}
     
     NSApp.terminate(nil)    // terminates shared application
