@@ -23,14 +23,20 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case quit
     case reloadsettings
     
+    // photo capture
+    case calibrate
+    case stereocalib
     case struclight
     case takeamb
     
-    // camera settings
+    // camera control
     case readfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
     case lockwhitebalance
     case focuspoint
+    
+    // projector control
+    case proj
     case cb     // displays checkerboard
     case black, white
     case diagonal, verticalbars   // displays diagonal stripes (for testing 'diagonal' DLP chip)
@@ -38,35 +44,33 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // communications & serial control
     case connect
     case disconnect, disconnectall
-    case proj
     
     // robot control
     case loadpath
     case movearm
+    case setvelocity
+    
+    // camera calibration
+    case getintrinsics
+    case getextrinsics
     
     // image processing
     case refine
     case rectify
+    case rectifyamb
     case disparity
     case merge
     case reproject
     case merge2
     
-    // camera calibration
-    case calibrate  // 'x'
-    case calibrate2pos
-    case stereocalib
-    case getintrinsics
-    case getextrinsics
-    
     // take ambient photos
     
-    // for debugging
+    // debugging
     case dispres
     case dispcode
     case clearpackets
     
-    // for scripting
+    // scripting
     case sleep
 }
 
@@ -77,14 +81,16 @@ func getUsage(_ command: Command) -> String {
     case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
+    // communications
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
+    // photo capture
     case .calibrate: return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .calibrate2pos: return "calibrate2pos [leftPos: Int] [rightPos: Int] [photosCountPerPos: Int] [resolution=high]"
-    case .stereocalib: return "stereocalib [nPhotos: Int] [resolution=high]"
-    case .struclight: return "struclight [id] [projector #] [position #] [resolution=high]"
-    case .takeamb: return "takeamb still (-f|-t)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
+    case .stereocalib: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
+    case .struclight: return "struclight [id] [projector #] [resolution=high]"
+    case .takeamb: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
+    // camera control
     case .readfocus: return "readfocus"
     case .autofocus: return "autofocus"
     case .lockfocus: return "lockfocus"
@@ -95,26 +101,33 @@ func getUsage(_ command: Command) -> String {
     case .autoexposure: return "autoexposure"
     case .lockexposure: return "lockexposure"
     case .setexposure: return "setexposure [exposureDuration] [exposureISO]\n       (set either parameter to 0 to leave unchanged)"
+    // projector control
+    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
     case .cb: return "cb [squareSize=2]"
     case .black: return "black"
     case .white: return "white"
     case .diagonal: return "diagonal [stripe width]"
     case .verticalbars: return "verticalbars [width]"
+    // robot control
     case .loadpath: return "loadpath [pathname]"
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
-    case .proj: return "proj ([projector_#]|all) (on/1|off/0)"
+    case .setvelocity: return "setvelocity [velocity]\n"
+    // image processing
     case .refine: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .rectifyamb: return "rectifyamb (-a|-n|-t|-f]\n"
     case .merge: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject: return "reproject [left] [right]\n       reproject -a"
     case .merge2: return "merge2 [left] [right]\n       merge2 -a"
+    // camera calibration
     case .getintrinsics: return "getintrinsics"
     case .getextrinsics: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    // debugging
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
-    case .sleep: return "sleep [secs: Float]"
     case .clearpackets: return "clearpackets"
+    case .sleep: return "sleep [secs: Float]"
     }
 }
 
@@ -186,7 +199,6 @@ func processCommand(_ input: String) -> Bool {
             if let calibDuration = sceneSettings.calibrationExposureDuration, let calibISO = sceneSettings.calibrationExposureISO {
                 calibrationExposure = (calibDuration, calibISO)
             }
-            trajectory = sceneSettings.trajectory
         } catch let error {
             print("Fatal error: could not load init settings, \(error.localizedDescription)")
             break
@@ -311,12 +323,14 @@ func processCommand(_ input: String) -> Bool {
         // Insert photos starting at the right index, stopping on user prompt
         var i: Int = startIndex;
         while(true) {
-            print("Hit enter to take a photo or write q to finish taking photos.")
+            print("Enter to take a photo, q to finish taking photos, or r to retake the last photo.")
             guard let input = readLine() else {
                 fatalError("Unexpected error in reading stdin.")
             }
             if ["q", "quit"].contains(input) {
                 break
+            } else if ["r"].contains(input) {
+                i -= 1
             }
             
             // take calibration photo
@@ -330,33 +344,6 @@ func processCommand(_ input: String) -> Bool {
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
-        break
-        
-        // captures calibration images from two viewpoints
-        // viewpoints specified as integers corresponding to the position along the linear
-        //    robot arm's axis
-        // NOTE: requires user to hit 'enter' to indicate robot arm has finished moving to
-    //     proper location
-    case .calibrate2pos:
-        guard tokens.count >= 4 && tokens.count <= 5 else {
-            print(usage)
-            break
-        }
-        guard let left = Int(tokens[1]),
-            let right = Int(tokens[2]),
-            let nPhotos = Int(tokens[3]),
-            nPhotos > 0 else {
-                print("calibrate2pos: invalid argument(s).")
-                break
-        }
-        
-        if calibrationExposure != (0, 0) {
-            let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
-            cameraServiceBrowser.sendPacket(packet)
-        }
-        
-        let resolution = (tokens.count == 5) ? tokens[4] : defaultResolution   // high is default res
-        captureStereoCalibration(left: left, right: right, nPhotos: nPhotos, resolution: resolution)
         break
         
     case .stereocalib:
@@ -397,18 +384,15 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        let posIDs = [Int](0..<positions.count)
+        var posIDs: [Int] = Array(0..<nPositions)
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         
-    // captures scene using structured lighting from specified projector and position number
-    // - code system to use is an optional parameter: can either be 'gray' or 'minSW' (default is 'minSW')
-    //  NOTE: this command does not move the arm; it must already be in the correct positions
-    //      BUT it does configure the projectors
+    // captures scene using structured lighting from specified projector
     case .struclight:
         let system: BinaryCodeSystem
         
-        guard tokens.count >= 4 else {
+        guard tokens.count >= 3 else {
             print(usage)
             break
         }
@@ -420,23 +404,12 @@ func processCommand(_ input: String) -> Bool {
             print("struclight: invalid projector id.")
             break
         }
-        guard let armPos = Int(tokens[3]) else {
-            print("struclight: invalid position number \(tokens[2]).")
-            break
-        }
-        guard armPos >= 0, armPos < positions.count else {
-            print("struclight: position \(armPos) out of range.")
-            break
-        }
-        
-        // currentPos = armPos       // update current position
-        // currentProj = projPos     // update current projector
         
         system = .MinStripeWidthCode
         
         let resolution: String
-        if tokens.count == 5 {
-            resolution = tokens[4]
+        if tokens.count == 4 {
+            resolution = tokens[3]
         } else {
             resolution = defaultResolution
         }
@@ -448,15 +421,23 @@ func processCommand(_ input: String) -> Bool {
         print("Hit enter when selected projector ready.") // Turn on the selected projector
         _ = readLine()  // wait until user hits enter
         
-        // Tell the Rosvita server to move the arm to the selected position
-        var posStr = *String(armPos) // get pointer to pose string
-        GotoView(&posStr) // pass address of pointer
-        usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
-        
-        captureWithStructuredLighting(system: system, projector: projPos, position: armPos, resolution: resolution)
+        for i in 0..<nPositions {
+            // Tell the Rosvita server to move the arm to the selected position
+            if( !debugMode ) {
+                var posStr = *String(i) // get pointer to pose string
+                GotoView(&posStr) // pass address of pointer
+            }
+            
+            captureWithStructuredLighting(system: system, projector: projPos, position: i, resolution: resolution)
+        }
         break
         
-        
+    /* take ambient images from all positions at all exposures
+       flags: -t: use torch mode
+              -f: use flash mode
+              -a: append to existing photos
+              -d: delete ALL contents of the ambient/photos directory
+        if neither -a nor -d is given, photos will be written to IMG0.JPG, overwriting any previous file with the same name */
     case .takeamb:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
@@ -467,11 +448,6 @@ func processCommand(_ input: String) -> Bool {
         
         switch params[0] {
         case "still":
-            guard params.count >= 1 else {
-                print("usage: takeamb still [resolution]?")
-                break cmdSwitch
-            }
-            
             let resolution: String
             if params.count == 2 {
                 resolution = params[1]
@@ -479,31 +455,89 @@ func processCommand(_ input: String) -> Bool {
                 resolution = defaultResolution
             }
             
+            // set torch, flash mode, and determine whether we're appending photos to existing ones based on flags
             var mode = DirectoryStructure.PhotoMode.normal
             var flashMode = AVCaptureDevice.FlashMode.off
             var torchMode = AVCaptureDevice.TorchMode.off
+            var appending = false
+            var ball = false
             for flag in flags {
                 switch flag {
                 case "-f":
-                    print("takeamb still: using flash mode...")
+                    print("using flash mode...")
                     flashMode = .on
                     mode = .flash
                 case "-t":
-                    print("takeamb still: using torch mode...")
+                    print("using torch mode...")
                     mode = .torch
                     torchMode = .on
+                // save photos to ambientBall instead of ambient. used for taking ambients with a ball
+                case "-b":
+                    print("taking ambients with mirror ball...")
+                    ball = true
+                // create a new directory with a higher index. used for taking photos under different lighting conditions
+                case "-a":
+                    print("appending another ambient image directory...")
+                    appending = true
+                // delete all contents of ambient or ambientBall. note that the -b must precede the -d to successfully delete ambientBall instead of ambient
+                case "-d":
+                    print("deleting all ambient photos...")
+                    // delete ALL contents of the ambient/photos directory
+                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                        return "\(dirStruc.ambientPhotos(ball))/\($0)"
+                    }
+                    for item in photoDirectoryContents {
+                        do { try FileManager.default.removeItem(atPath: item) }
+                        catch { print("could not remove \(item)") }
+                    }
                 default:
-                    print("takeamb still: flag \(flag) not recognized.")
+                    print("flag \(flag) not recognized.")
                 }
             }
-                        
+            
+            // make the camera intruction packet
             let packet = CameraInstructionPacket(cameraInstruction: .CapturePhotoBracket, resolution: resolution, photoBracketExposureDurations: sceneSettings.ambientExposureDurations, torchMode: torchMode, flashMode: flashMode, photoBracketExposureISOs: sceneSettings.ambientExposureISOs)
             
+            // gets the right index to write photos to
+            // packaged as a function for cleanliness & possible future repeated use
+            func getStartIndex(mode: DirectoryStructure.PhotoMode) -> Int {
+                var startIndex = 0
+                if(appending) {
+                    // create an array of paths to all the files in the pos, exp ambient photo directory
+                    // include exposure directory for all modes but flash
+                    
+                    
+                    let photoDirs = ((try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                        return "\(dirStruc.ambientPhotos(ball))/\($0)"
+                    })
+                    
+                    // collect all the photo IDs, ignoring all files not in the format IMGx.JPG
+                    var ids: [Int]
+                    switch mode {
+                    case .flash:
+                        ids = getIDs(photoDirs, prefix: "F", suffix: "")
+                        break
+                    case .torch:
+                        ids = getIDs(photoDirs, prefix: "T", suffix: "")
+                        break
+                    default:
+                        ids = getIDs(photoDirs, prefix: "L", suffix: "")
+                    }
+                    
+                    // set startIndex to one greater than the largest collected ID
+                    if(ids.max() != nil) { startIndex = ids.max()! + 1 }
+                }
+                return startIndex
+            }
+            
+            let startIndex = getStartIndex(mode: mode)
+            
             // Move the robot to the correct position and prompt photo capture
-            for pos in 0..<positions.count {
-                var posStr = *String(pos)
-                GotoView(&posStr)
-                usleep(UInt32(robotDelay * 1.0e6)) // pause for a moment
+            for pos in 0..<nPositions {
+                if ( !debugMode ) {
+                    var posStr = *String(pos)
+                    GotoView(&posStr)
+                }
             
                 // take photo bracket
                 cameraServiceBrowser.sendPacket(packet)
@@ -511,24 +545,17 @@ func processCommand(_ input: String) -> Bool {
                 func receivePhotos() {
                     var nReceived = 0
                     let completionHandler = { nReceived += 1 }
-                    for exp in 0..<sceneSettings.ambientExposureDurations!.count {
-                        let path = dirStruc.ambientPhotos(pos: pos, exp: exp, mode: mode) + "/IMG\(exp).JPG"
+                    let numExps = (mode == .flash) ? (1) : (sceneSettings.ambientExposureDurations!.count)
+                    for exp in 0..<numExps {
+                        
+                        let path = (dirStruc.ambientPhotos(ball: ball, pos: pos, mode: mode, lighting: startIndex) + "/exp\(exp).JPG")
                         let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
                         photoReceiver.dataReceivers.insertFirst(ambReceiver)
                     }
-                    while nReceived != sceneSettings.ambientExposureDurations!.count {}
+                    while nReceived != numExps {}
                 }
                 
                 switch mode {
-                case .flash:
-                    var received = false
-                    let completionHandler = { received = true }
-                    let path = dirStruc.ambientPhotos(pos: pos, mode: .flash) + "/IMG.JPG"
-                    let ambReceiver = AmbientImageReceiver(completionHandler, path: path)
-                    photoReceiver.dataReceivers.insertFirst(ambReceiver)
-                    while !received {}
-                    break
-                    
                 case .torch:
                     let torchPacket = CameraInstructionPacket(cameraInstruction: .ConfigureTorchMode, torchMode: .on, torchLevel: torchModeLevel)
                     cameraServiceBrowser.sendPacket(torchPacket)
@@ -538,12 +565,10 @@ func processCommand(_ input: String) -> Bool {
                     cameraServiceBrowser.sendPacket(torchPacket)
                     break
                     
-                case .normal:
+                default:
                     receivePhotos()
-                    break
                 }
             }
-            
             break
             
         case "video":
@@ -576,9 +601,10 @@ func processCommand(_ input: String) -> Bool {
                 }
             }
             
-            trajectory.moveToStart()
-            print("takeamb video: hit enter when camera in position.")
-            _ = readLine()
+            if( !debugMode ) {
+                var startPos = *String(0)
+                GotoView(&startPos)
+            }
             
             print("takeamb video: starting recording...")
             var packet = CameraInstructionPacket(cameraInstruction: .StartVideoCapture, photoBracketExposureDurations: [sceneSettings.ambientExposureDurations![exp]], torchMode: torchMode, photoBracketExposureISOs: [sceneSettings.ambientExposureISOs![exp]])
@@ -592,7 +618,8 @@ func processCommand(_ input: String) -> Bool {
             let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(exp: exp, mode: mode))/imu.yml")
             photoReceiver.dataReceivers.insertFirst(imuReceiver)
             
-            trajectory.executeScript()
+            // Insert code for smooth trajectory execution here once Guanghan has it
+            // trajectory.executeScript()
             print("takeamb video: hit enter when trajectory completed.")
             _ = readLine()
             packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
@@ -764,65 +791,69 @@ func processCommand(_ input: String) -> Bool {
         let path: String = tokens[1] // the first argument should specify a pathname
         var pathPointer = *path // get pointer to the string
         var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
-        if status != 0 { // print a message if the LoadPath doesn't return 0
+        
+        if status == -1 { // print a message if the LoadPath doesn't return 0
             print("Could not load path \"\(path)\"")
+        } else {
+            nPositions = Int(status)
+            print("Succesfully loaded path with \(nPositions) positions")
         }
         break
         
-    // moves linear robot arm to specified position using VXM controller box
-    //   *the specified position can be either an integer or 'MIN'/'MAX', where 'MIN' resets the arm
-    //      (and zeroes out the coordinate system)*
+    // moves robot arm to specified position ID by communicating with Rosvita server
     case .movearm:
         switch tokens.count {
         case 2:
-            let posStr: String
-            if let posID = Int(tokens[1]) {
-                posStr = positions[posID]
-            } else if tokens[1].hasPrefix("p[") && tokens[1].hasSuffix("]") {
-                posStr = tokens[1]
+            if let posInt = Int(tokens[1]) {
+                if( posInt >= 0 && posInt < nPositions ) {
+                    print("Moving arm to position \(posInt)")
+                    DispatchQueue.main.async {
+                        // Tell the Rosvita server to move the arm to the selected position
+                        if (!debugMode) {
+                            var posStr = *String(posInt)
+                            GotoView(&posStr)
+                        }
+                    }
+                } else if (!(posInt >= 0)) {
+                    print("Please enter a positive number.")
+                } else {
+                    print("\(posInt) is not a position ID. There are only \(nPositions) in the path currently loaded.")
+                }
             } else {
-                print("movearm: \(tokens[1]) is not a valid position string or index.")
-                break
+                print("\(tokens[1]) is not a valid position ID string.")
             }
-            print("Moving arm to position \(posStr)")
-            var cStr = posStr.cString(using: .ascii)!
-            DispatchQueue.main.async {
-                // Tell the Rosvita server to move the arm to the selected position
-                GotoView(&cStr)
-                print("Moved arm to position \(posStr)")
-            }
-        case 3:
-            guard let ds = Float(tokens[2]) else {
-                print("movearm: \(tokens[2]) is not a valid distance.")
-                break
-            }
-            switch tokens[1] {
-            case "x":
-                DispatchQueue.main.async {
-//                    MoveLinearX(ds, 0, 0)
-                }
-            case "y":
-                DispatchQueue.main.async {
-//                    MoveLinearY(ds, 0, 0)
-                }
-            case "z":
-                DispatchQueue.main.async {
-//                    MoveLinearZ(ds, 0, 0)
-                }
-            default:
-                print("moevarm: \(tokens[1]) is not a recognized direction.")
-            }
-            
         default:
             print(usage)
             break
         }
-        
         break
         
-        // used to turn projectors on or off
-        //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
-        //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
+    // Set robot arm velocity. Expects a float from 0 to 1. Note that higher velocities correspond to less repetition (eg precision) in positions.
+    case .setvelocity:
+        switch tokens.count {
+        case 2:
+            if let vFloat = Float(tokens[1]) {
+                if( vFloat >= 0.0 && vFloat <= 1.0 ) {
+                    print("Setting velocity to \(vFloat)")
+                    DispatchQueue.main.async {
+                        // Tell the Rosvita server to set the velocity to the specified Float
+                        SetVelocity(vFloat)
+                    }
+                } else {
+                    print("Please enter a Float between 0.0 and 1.0.")
+                } 
+            } else {
+                print("\(tokens[1]) is not a valid Float.")
+            }
+        default:
+            print(usage)
+            break
+        }
+        break
+        
+    // used to turn projectors on or off
+    //  -argument 1: either projector # (1–8) or 'all', which addresses all of them at once
+    //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj:
         guard tokens.count == 3 else {
@@ -1127,7 +1158,68 @@ func processCommand(_ input: String) -> Bool {
                 posIDpairs = [singlePosPair!]
             }
             for (left, right) in posIDpairs {
-                rectify(left: left, right: right, proj: proj)
+                rectifyDec(left: left, right: right, proj: proj)
+            }
+        }
+        
+    // rectify ambient images of all positions and exposures
+    case .rectifyamb:
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        
+        var ball = false
+        for flag in flags {
+            switch flag {
+            case "-b":
+                print("rectifying ball images...")
+                ball = true
+            default:
+                print("flag \(flag) not recognized.")
+            }
+        }
+        
+        let modes: [DirectoryStructure.PhotoMode] = [.normal, .flash, .torch]
+        
+        // loop though all modes & rectify them
+        for mode in modes {
+            let dirNames = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
+                return "\(dirStruc.ambientPhotos)/\($0)"
+            }
+            var prefix: String
+            switch mode {
+            case .flash:
+                prefix = "F"
+                break
+            case .torch:
+                prefix = "T"
+                break
+            case .normal:
+                prefix = "L"
+            }
+            let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
+            for lighting in lightings {
+                print("\nrectifying directory: \(prefix)\(lighting)");
+                
+                //assign the correct position pairs to posIDpairs
+                let posIDpairs: [(Int,Int)]
+                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball: ball, mode: mode, lighting: lighting)), prefix: "pos", suffix: "")
+                guard posIDs.count > 1 else {
+                    print("rectifyamb: not enough positions.")
+                    break
+                }
+                posIDs.sort()
+                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
+                
+                // loop through all pos pairs and rectify them
+                for (left, right) in posIDpairs {
+                    print("rectifying position pair: \(left) (left) and \(right) (right)");
+                    // set numExp to zero if in flash mode
+                    let numExp: Int = (mode == .flash) ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
+                    // loop through all exposures
+                    for exp in 0..<numExp {
+                        print("rectifying exposure: \(exp)");
+                        rectifyAmb(ball: ball, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
+                    }
+                }
             }
         }
         
@@ -1348,7 +1440,7 @@ func processCommand(_ input: String) -> Bool {
                 print(usage)
                 break
             }
-            let posIDs = [Int](0..<positions.count)
+            let posIDs = [Int](0..<nPositions)
             positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
             curParam = 1
         } else {

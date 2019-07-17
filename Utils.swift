@@ -1,9 +1,8 @@
 //
-//  Utils.swift
-//  MobileLighting
+// Utils.swift
+// MobileLighting
 //
-//  Created by Nicholas Mosier on 7/18/17.
-//  Copyright © 2017 Nicholas Mosier. All rights reserved.
+// Utility functions
 //
 
 import Foundation
@@ -24,16 +23,17 @@ func getptr<T>(_ obj: inout [T]) -> UnsafeMutablePointer<T>? {
     return UnsafeMutablePointer<T>(&obj)
 }
 
+// get an array of Integers from an array of paths "strs" to files or directories with the format [prefix]x[suffix]
 func getIDs(_ strs: [String], prefix: String, suffix: String) -> [Int] {
-    return strs.map {
+    return strs.map { // convert the array to contain only the filenames (not whole paths)
         return String($0.split(separator: "/").last!)
-    }.map {
+    }.map { // collect all the IDs, returning nil for all files not in the format [prefix]x[suffix]
         guard $0.hasPrefix(prefix), $0.hasSuffix(suffix) else {
             return nil
         }
         let base = $0.dropFirst(prefix.count).dropLast(suffix.count)
         return Int(base)
-    }.filter{
+    }.filter{ // remove nil values from array
         return $0 != nil
         }.map{ return $0!}
 }
@@ -194,44 +194,4 @@ extension Dictionary where Key == Yaml, Value == Yaml {
         let key = Yaml.string(string)
         return self[key]
     }
-}
-
-
-
-
-
-
-
-
-// setLensPosition
-// -Parameters
-//      - lensPosition: Float -> what to set the camera's lens position to
-// -Return value: Float -> camera's lens position directly after done adjusting focus
-// NOTE: return value seems to be inaccurate - just ignore it for now
-func setLensPosition(_ lensPosition: Float) -> Float {
-    let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
-    cameraServiceBrowser.sendPacket(packet)
-    let lensPos = photoReceiver.receiveLensPositionSync()
-    return lensPos
-}
-
-
-// creates the camera service browser (for sending instructions to iPhone) and
-//    the photo receiver (for receiving photos, updates, etc from iPhone)
-// NOTE: returns immediately; doens't wait for connection with iPhone to be established.
-func initializeIPhoneCommunications() {
-    cameraServiceBrowser = CameraServiceBrowser()
-    photoReceiver = PhotoReceiver(scenesDirectory)
-    
-    photoReceiver.startBroadcast()
-    cameraServiceBrowser.startBrowsing()
-}
-
-// waits for both photo receiver & camera service browser communications
-// to be established (synchronous)
-// NOTE: only call if you're sure it won't seize control of the program / cause it to hang
-//    e.g. it should be executed within a DispatchQueue
-func waitForEstablishedCommunications() {
-    while !cameraServiceBrowser.readyToSendPacket {}
-    while !photoReceiver.readyToReceive {}
 }

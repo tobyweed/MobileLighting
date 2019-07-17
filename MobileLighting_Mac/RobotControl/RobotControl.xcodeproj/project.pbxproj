@@ -51,10 +51,10 @@
 		E1A2171520C9B50F0016DFC6 /* RobotControl */ = {
 			isa = PBXGroup;
 			children = (
+				AAA0AA1622AEB76900002E78 /* RobotControl.h */,
 				AAA0AA1722AEB76900002E78 /* LoadPath_client.cpp */,
 				AAA0AA1822AEB76A00002E78 /* LoadPath_client.h */,
 				AAA0AA1922AEB76A00002E78 /* RobotControl.cpp */,
-				AAA0AA1622AEB76900002E78 /* RobotControl.h */,
 			);
 			path = RobotControl;
 			sourceTree = "<group>";

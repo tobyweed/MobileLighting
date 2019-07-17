@@ -1292,7 +1292,6 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
 
     printf("\nStereo reprojection error = %.4f\n", err);
 
-
     // Rectify the images using these extrinsic results
     stereoRectify(inCal.cameraMatrix, inCal.distCoeffs,
                   inCal2.cameraMatrix, inCal2.distCoeffs,

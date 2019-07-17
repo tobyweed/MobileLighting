@@ -8,25 +8,41 @@
 
 #include <stdio.h>
 #include <iostream>
-//#include "activeLighting.h"
 #include "Rectify.hpp"
 #include "Utils.h"
 #include "Disparities.h"
 #include "Reproject.h"
 #include "Decode.h"
 #include <assert.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
 
 extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID) {
     refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
 }
 
 extern "C" void computeMaps(char *impath, char *intr, char *extr, char *settings) {
+    //get the file extension
+    char* extension = strrchr(impath, '.');
+
     printf("%s\n%s\n%s\n", impath, intr, extr);
-    CFloatImage im;
-    ReadImage(im, impath);
-    CShape sh = im.Shape();
-    printf("decoded image dimensions: [%d x %d]\n", sh.width, sh.height);
-    computemaps(sh.width, sh.height, intr, extr, settings);
+    
+    //check whether the file is a pfm (imread does not support pfms)
+    if(strcmp(extension,".pfm") == 0) {
+        printf("sdfas");
+        CFloatImage im;
+        ReadImage(im, impath);
+        CShape s = im.Shape();
+        printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
+        computemaps(s.width, s.height, intr, extr, settings);
+    } else {
+        cv::Mat im;
+        im = cv::imread(impath);
+        cv::Size s = im.size();
+        printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
+        computemaps(s.width, s.height, intr, extr, settings);
+    }
 }
 
 extern "C" void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int rectified, int dXmin, int dXmax, int dYmin, int dYmax) {
@@ -134,7 +150,6 @@ extern "C" void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, in
 //    }
 }
 
-// CFloatImage runFilter(CFloatImage img, float ythresh, int kx, int ky, int mincompsize, int maxholesize);
 extern "C" void filterDisparities(char *dispx, char *dispy, char *outx, char *outy, int pos0, int pos1, float ythresh, int kx, int ky, int mincompsize, int maxholesize) {
     assert (dispx != NULL);
     assert (outx != NULL);
@@ -159,7 +174,6 @@ extern "C" void filterDisparities(char *dispx, char *dispy, char *outx, char *ou
         WriteImageVerb(y, outy, 1);
 }
 
-//CFloatImage mergeDisparityMaps(CFloatImage images[], int count, int mingroup, float maxdiff)
 extern "C" void mergeDisparities(char *imgsx[], char *imgsy[], char *outx, char *outy, int count, int mingroup, float maxdiff) {
     CFloatImage images[count];
     for (int i = 0; i < count; ++i) {
@@ -178,7 +192,6 @@ extern "C" void mergeDisparities(char *imgsx[], char *imgsy[], char *outx, char 
     pair<CFloatImage,CFloatImage> flo = splitFloImage(result);
     WriteImageVerb(flo.first, outx, 1);
     WriteImageVerb(flo.second, outy, 1);
-//    WriteImageVerb(result, out, 1);
 }
 
 //CFloatImage reproject(CFloatImage dispflo, CFloatImage codeflo, char* outFile, char* errFile, char* matfile);

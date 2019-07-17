@@ -193,10 +193,10 @@
         //MARK: Entry-point capture functions
         
         func takePhoto(photoSettings: AVCapturePhotoSettings) {
-            guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
-                print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
-                return
-            }
+//            guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
+//                print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
+//                return
+//            }
             print("Capturing photo: \(self.capturePhotoOutput)")
             capturingNormalInvertedPair = false
             capturingInverted = false

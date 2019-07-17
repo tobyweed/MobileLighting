@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E1682DAF20F947C700DF0FD4"
-               BuildableName = "MobileLighting_Mac"
-               BlueprintName = "MobileLighting_Mac"
+               BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+               BuildableName = "MobileLighting_iPhone.app"
+               BlueprintName = "MobileLighting_iPhone"
                ReferencedContainer = "container:MobileLighting.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E1682DAF20F947C700DF0FD4"
-            BuildableName = "MobileLighting_Mac"
-            BlueprintName = "MobileLighting_Mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -55,29 +55,12 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E1682DAF20F947C700DF0FD4"
-            BuildableName = "MobileLighting_Mac"
-            BlueprintName = "MobileLighting_Mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "/Users/tobyweed/Desktop/scenes/test6/settings/sceneSettings.yml"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "init"
-            isEnabled = "NO">
-         </CommandLineArgument>
-      </CommandLineArguments>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "CG_CONTEXT_SHOW_BACKTRACE"
-            value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>
@@ -91,9 +74,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E1682DAF20F947C700DF0FD4"
-            BuildableName = "MobileLighting_Mac"
-            BlueprintName = "MobileLighting_Mac"
+            BlueprintIdentifier = "E11F1FAF1EE1B521008F9F0F"
+            BuildableName = "MobileLighting_iPhone.app"
+            BlueprintName = "MobileLighting_iPhone"
             ReferencedContainer = "container:MobileLighting.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

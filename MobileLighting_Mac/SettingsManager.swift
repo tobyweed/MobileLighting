@@ -20,20 +20,17 @@ enum YamlError: Error {
 // read from YML file
 // -consists of required and optional settings
 class SceneSettings {
+    var yml: Yaml
+    var filepath: String
+    
     var scenesDirectory: String
     var sceneName: String
     var minSWfilepath: String
-    var trajectoryPath: String
-    
-    // other settings
-    var trajectory: Trajectory
+    var robotPathName: String
     
     // structured lighting
     var strucExposureDurations: [Double]
     var strucExposureISOs: [Double]
-    
-    // robot arm movement
-//    var positionCoords: [String]
     
     // calibration
     var focus: Double?
@@ -47,10 +44,10 @@ class SceneSettings {
     static var format: Yaml {
         get {
             var maindict = [Yaml : Yaml]()
-            maindict[Yaml.string("scenesDir")] = Yaml.string("")
-            maindict[Yaml.string("sceneName")] = Yaml.string("")
-            maindict[Yaml.string("minSWdataPath")] = Yaml.string("")
-            maindict[Yaml.string("trajectoryPath")] = Yaml.string("")
+            maindict[Yaml.string("scenesDir")] = Yaml.string("(value uninitialized)")
+            maindict[Yaml.string("sceneName")] = Yaml.string("(value uninitialized)")
+            maindict[Yaml.string("minSWdataPath")] = Yaml.string("(value uninitialized)")
+            maindict[Yaml.string("robotPathName")] = Yaml.string("(value uninitialized)")
             var struclight = [Yaml : Yaml]()
             struclight[Yaml.string("exposureDurations")] = Yaml.array([0.01,0.03,0.10].map{return Yaml.double($0)})
             struclight[Yaml.string("exposureISOs")] = Yaml.array([50.0,150.0,500.0].map{ return Yaml.double($0)})
@@ -64,28 +61,40 @@ class SceneSettings {
             ambient[Yaml.string("exposureDurations")] = Yaml.array([0.035,0.045,0.055].map{return Yaml.double($0)})
             ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,60.0,70.0].map{ return Yaml.double($0)})
             maindict[Yaml.string("ambient")] = Yaml.dictionary(ambient)
-            return Yaml.dictionary(maindict)
+            return Yaml.dictionary([Yaml.string("Settings") : Yaml.dictionary(maindict)])
         }
     }
     
-    init(_ filepath: String) throws {
-        let settingsStr = try String(contentsOfFile: filepath)
-        let settings: Yaml = try Yaml.load(settingsStr)
+    // Load a SceneSettings dictionary for manipulation from a preexisting Yaml file
+    init(_ path: String) throws {
+        self.filepath = path
         
-        // init settings file should be dictionary at top level
-        guard let mainDict = settings.dictionary else {
+        // Load and read the preexisting yaml file
+        let ymlStr = try String(contentsOfFile: self.filepath)
+        let tmp = try Yaml.load(ymlStr)
+        guard let dict = tmp.dictionary else {
+            throw YamlError.InvalidFormat
+        }
+        guard dict[Yaml.string("Settings")] != nil else {
+            throw YamlError.MissingRequiredKey
+        }
+        self.yml = dict[Yaml.string("Settings")]!
+        guard let mainDict = dict[Yaml.string("Settings")]!.dictionary else {
             throw YamlError.InvalidFormat
         }
         
         // process required properties:
         guard let scenesDirectory = mainDict[Yaml.string("scenesDir")]?.string,
             let sceneName = mainDict[Yaml.string("sceneName")]?.string,
-            let minSWfilepath = mainDict[Yaml.string("minSWdataPath")]?.string else {
+            let minSWfilepath = mainDict[Yaml.string("minSWdataPath")]?.string,
+            let robotPathName = mainDict[Yaml.string("robotPathName")]?.string else {
                 throw YamlError.MissingRequiredKey
         }
+        
         self.scenesDirectory = scenesDirectory
         self.sceneName = sceneName
         self.minSWfilepath = minSWfilepath
+        self.robotPathName = robotPathName
         
         self.strucExposureDurations = (mainDict[Yaml.string("struclight")]?.dictionary?[Yaml.string("exposureDurations")]?.array?.filter({return $0.double != nil}).map{
             (val: Yaml) -> Double in
@@ -95,10 +104,6 @@ class SceneSettings {
             (val: Yaml) -> Double in
             return val.double!
             })!
-//        self.positionCoords = (mainDict[Yaml.string("positions")]?.array?.filter({return $0.string != nil}).map{
-//            (val: Yaml) -> String in
-//            return val.string!
-//            })!
         self.focus = mainDict[Yaml.string("focus")]?.double
         
         if let calibrationDict = mainDict[Yaml.string("calibration")]?.dictionary {
@@ -109,7 +114,7 @@ class SceneSettings {
                 self.calibrationExposureDuration = duration
             }
         }
-        
+            
         if let ambientDict = mainDict[Yaml.string("ambient")] {
             self.ambientExposureISOs = ambientDict[Yaml.string("exposureISOs")].array?.compactMap {
                 return $0.double
@@ -118,31 +123,36 @@ class SceneSettings {
                 return $0.double
             }
         }
-        
-        guard let trajectoryPath = mainDict[Yaml.string("trajectoryPath")]?.string else {
-            print("path to trajectory.yml missing from scene settings file.")
-            fatalError()
-        }
-        self.trajectoryPath = trajectoryPath
-        
+
         guard self.strucExposureDurations.count == self.strucExposureISOs.count else {
             fatalError("invalid initsettings file: mismatch in number of exposure durations & ISOs.")
         }
-        
-        self.trajectory = Trajectory(trajectoryPath)
     }
     
+    // Set a value on the yaml settings dictionary
+    func set(key: String, value: Yaml) {
+        guard var dict = self.yml.dictionary else { return }
+        dict[Yaml.string(key)] = value
+        self.yml = Yaml.dictionary(dict)
+    }
+    
+    // Set the yaml settings dictionary
+    func save(){
+        try! Yaml.save(Yaml.dictionary([Yaml.string("Settings") : self.yml]), toFile: filepath)
+    }
+    
+    // Generate a sceneSettings file in the appropriate directory with default values from SceneSettings.format
     static func create(_ dirStruc: DirectoryStructure) throws {
         let path = "\(dirStruc.settings)/sceneSettings.yml"
         let dir = ((path.first == "/") ? "/" : "") + path.split(separator: "/").dropLast().joined(separator: "/")
-        //print("path: \(dir)")
-        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
-        let yml = try SceneSettings.format.save()
-        try yml.write(toFile: path, atomically: true, encoding: .ascii)
-        
-        try Trajectory.create(dirStruc)
+        do {
+            try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+            let yml = try SceneSettings.format.save()
+            try yml.write(toFile: path, atomically: true, encoding: .ascii)
+        } catch let error {
+            print(error.localizedDescription)
+        }
     }
-    
 }
 
 
@@ -159,17 +169,15 @@ func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, ou
         }
         return true
     }
-    //var yml: Yaml = Yaml(dictionaryLiteral: "images")
+
     var imgList: [Yaml] = [Yaml]()
     for path in imgs {
         imgList.append(Yaml.string("\(imgsdir)/\(path)"))
     }
     let ymlList = Yaml.array(imgList)
     let ymlDict = Yaml.dictionary([Yaml.string("images") : ymlList])
-//    let ymlStr = try! ymlDict.save()
-//    print(outpath)
+
     try! Yaml.save(ymlDict, toFile: outpath)
-//    try! ymlStr.write(to: URL(fileURLWithPath: outpath), atomically: true, encoding: .utf8)
 }
 
 func generateStereoImageList(left ldir: String, right rdir: String, outpath: String = dirStruc.stereoImageList) {
@@ -198,7 +206,6 @@ func generateStereoImageList(left ldir: String, right rdir: String, outpath: Str
     let ymlList = Yaml.array(imgList)
     let ymlDict = Yaml(dictionaryLiteral: (Yaml(stringLiteral: "images"), ymlList))
     try! Yaml.save(ymlDict, toFile: outpath)
-//    try! ymlDict.save().write(to: URL(fileURLWithPath: outpath), atomically: true, encoding: .utf8)
 }
 
 class CalibrationSettings {
@@ -259,8 +266,6 @@ class CalibrationSettings {
     
     func save() {
         try! Yaml.save(Yaml.dictionary([Yaml.string("Settings") : self.yml]), toFile: filepath)
-//        let out = try! Yaml.dictionary([Yaml.string("Settings") : self.yml]).save()
-//        try! out.write(to: URL(fileURLWithPath: filepath), atomically: true, encoding: .utf8)
     }
     
     static var format: Yaml {
@@ -271,19 +276,19 @@ class CalibrationSettings {
             settingsDict["Num_of_Boards"] = Yaml.int(2)
             settingsDict["ChessboardSize_Width"] = Yaml.int(17)
             settingsDict["ChessboardSize_Height"] = Yaml.int(12)
-            settingsDict["Calibration_Pattern"] = Yaml.string("(automatically configured)")
+            settingsDict["Calibration_Pattern"] = Yaml.string("ARUCO_SINGLE")
             settingsDict["Calibrate_AssumeZeroTangentialDistortion"] = Yaml.int(1)
-            settingsDict["ImageList_Filename"] = Yaml.string("(automatically configured)")
-            settingsDict["ExtrinsicOutput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["ImageList_Filename"] = Yaml.string("(value uninitialized)")
+            settingsDict["ExtrinsicOutput_Filename"] = Yaml.string("(value uninitialized)")
             settingsDict["Show_UndistortedImages"] = Yaml.int(0)
             settingsDict["Wait_NextDetectedImage"] = Yaml.int(0)
-            settingsDict["IntrinsicInput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["IntrinsicInput_Filename"] = Yaml.string("(value uninitialized)")
             settingsDict["Calibrate_FixPrincipalPointAtTheCenter"] = Yaml.int(0)
             settingsDict["UndistortedImages_Path"] = Yaml.string("0")
             settingsDict["DetectedImages_Path"] = Yaml.string("0")
             settingsDict["Show_RectifiedImages"] = Yaml.int(1)
             settingsDict["Square size"] = Yaml.double(25.4)
-            settingsDict["IntrinsicOutput_Filename"] = Yaml.string("(automatically configured)")
+            settingsDict["IntrinsicOutput_Filename"] = Yaml.string("(value uninitialized)")
             settingsDict["Dictionary"] = Yaml.int(11)
             settingsDict["Calibrate_FixAspectRatio"] = Yaml.int(0)
             settingsDict["RectifiedImages_Path"] = Yaml.string("0")
@@ -291,7 +296,7 @@ class CalibrationSettings {
             settingsDict["Calibrate_FixDistCoeffs"] = Yaml.string("00111")
             settingsDict["First_Marker"] = Yaml.array([113,516].map{return Yaml.int($0)})
             settingsDict["Mode"] = Yaml.string(CalibrationMode.STEREO.rawValue)
-            settingsDict["Alpha parameters"] = Yaml.int(-1)
+            settingsDict["Alpha parameter"] = Yaml.int(-1)
             settingsDict["Resizing factor"] = Yaml.int(2)
             let mainDict = Yaml.dictionary(settingsDict)
             return Yaml.dictionary([Yaml.string("Settings") : mainDict])

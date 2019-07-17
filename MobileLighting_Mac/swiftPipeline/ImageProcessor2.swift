@@ -34,7 +34,6 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
         SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
     )
  */
-
 }
 
 //MARK: disparity matching functions
@@ -46,16 +45,8 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
 // NOW: also refines disparity maps
 func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var refinedDirLeft: [CChar], refinedDirRight: [CChar]
-//    if rectified {
-//        refinedDirLeft = (dirStruc.subdir(dirStruc.refined, proj: proj, pos: leftpos) + "/left").cString(using: .ascii)!
-//        refinedDirRight = (dirStruc.subdir(dirStruc.refined, proj: proj, pos: rightpos) + "/right").cString(using: .ascii)!
-        refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
-        refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
-//    } else {
-////        refinedDirLeft = dirStruc.subdir(dirStruc.refined, proj: proj, pos: leftpos).cString(using: .ascii)!
-////        refinedDirRight = dirStruc.subdir(dirStruc.refined, proj: proj, pos: rightpos).cString(using: .ascii)!
-//        refinedDirLeft = *dirStruc
-//    }
+    refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
+    refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
     var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: leftpos)
     var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: rightpos)
     let l = Int32(leftpos)
@@ -84,7 +75,7 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var out_suffix = "1crosscheck1".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 0, 0, &in_suffix, &out_suffix)
     
-    // if images are rectified, do not perform filter disparities
+    // if images are not rectified, do not perform filter disparities
     if !rectified {
         return
     }
@@ -96,30 +87,35 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     
     var dispx, dispy, outx, outy: [CChar]
     
+    // Filter the LEFT disparities
     dispx = disparityDirLeft + in_suffix_x
     dispy = disparityDirLeft + in_suffix_y
     outx = disparityDirLeft + out_suffix_x
     outy = disparityDirLeft + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 0.75, 3, 0, 20, 200)
-    
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+
+    // Filter the RIGHT disparities
     dispx = disparityDirRight + in_suffix_x
     dispy = disparityDirRight + in_suffix_y
     outx = disparityDirRight + out_suffix_x
     outy = disparityDirRight + out_suffix_y
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
     
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 0.75, 3, 0, 20, 200)
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
 
 }
 
-func rectify(left: Int, right: Int, proj: Int) {
+//rectify decoded images
+func rectifyDec(left: Int, right: Int, proj: Int) {
     var intr = *dirStruc.intrinsicsYML
     var extr = *dirStruc.extrinsicsYML(left: left, right: right)
     var settings = *dirStruc.calibrationSettingsFile
+    //paths for storing output
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
+    //paths for retreiving input
     var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm"
     var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm"
     var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm"
@@ -143,6 +139,36 @@ func rectify(left: Int, right: Int, proj: Int) {
     rectifyDecoded(0, &result1l, &coutpaths[1])
     rectifyDecoded(1, &result0r, &coutpaths[2])
     rectifyDecoded(1, &result1r, &coutpaths[3])
+}
+
+
+//rectify ambient images
+func rectifyAmb(ball: Bool, left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
+    var intr = *dirStruc.intrinsicsYML
+    var extr = *dirStruc.extrinsicsYML(left: left, right: right)
+    var settings = *dirStruc.calibrationSettingsFile
+    
+    var resultl = *"\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
+    var resultr = *"\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
+
+    if(exp == 0) { //maps only need to be computed once per stereo pair
+        computeMaps(&resultl, &intr, &extr, &settings)
+    }
+    
+    //paths for storing output
+    var outpaths: [String] = [dirStruc.ambientComputed(ball: ball, mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
+        dirStruc.ambientComputed(ball: ball, mode: mode, pos: right, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png"
+    ]
+    
+    var coutpaths = outpaths.map {
+        return $0.cString(using: .ascii)!
+    }
+    
+    //rectify both poses
+    print("trying to save rectified image to path: \(outpaths[0])");
+    rectifyAmbient(0, &resultl, &coutpaths[0])
+    print("trying to save rectified image to path: \(outpaths[1])");
+    rectifyAmbient(1, &resultr, &coutpaths[1])
 }
 
 // merge disparity maps for one stereo pair across all projectors
