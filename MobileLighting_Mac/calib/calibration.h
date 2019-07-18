@@ -186,4 +186,4 @@ void arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoa
 void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2);
 void chessboardDetect(Settings s, Mat &img, intrinsicCalibration &inCal);
 int calibrateWithSettings( const string inputSettingsFile );
-vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1  );
+vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1 );
