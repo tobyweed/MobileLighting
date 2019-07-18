@@ -92,6 +92,7 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
             x.read(node);
 };
 
+// this funciont set up aruco for detection check
 void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, int n){
 
     // Clear these temporary storage vectors (decleared globally)
@@ -116,10 +117,38 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
                    processedImagePoints1, processedObjectPoints1, currentBoard);
 
     inCal.objectPoints = processedObjectPoints1;
-    inCal.imagePoints =processedImagePoints1;
+    inCal.imagePoints = processedImagePoints1;
+
+    int total_corners = 4 * s.markersX[n] * s.markersY[n];
+
+    if(s.mode == Settings::INTRINSIC) {
+
+        int detected0;
+        cout<<inCal.objectPoints.size();
+
+        //if the image is not detected
+        if (inCal.objectPoints.size() <= 0)
+            detected0 = 0;
+        else
+            detected0 = inCal.objectPoints[0].size();
+
+        float percentage = detected0 / (float)total_corners;
+
+        //prints out the number of detected corners of this image
+        cout << " Number of detected corners for this image"
+        << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
+        << " with marker size " << s.markerLength[n]
+        << " is "
+        << detected0 << endl
+        << "Percentage of corners detected:"
+        << percentage << endl;
+
+        returnVector_.push_back(detected0);
+
+    }
 
     // If stereo mode, repeat the process for the second viewpoint
-    if(s.mode == Settings::STEREO){
+    else if(s.mode == Settings::STEREO){
 
         // Clear these temporary storage vectors (decleared globally)
         allCornersConcatenated2_.clear();
@@ -136,38 +165,44 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
         }
 
         vector< vector < Point2f >>  processedImagePoints2;
-        vector< vector<Point3f>> processedObjectPoints2;
+        vector< vector < Point3f >> processedObjectPoints2;
 
         processPoints(s, allCornersConcatenated2_,
                        allIdsConcatenated2_, markerCounterPerFrame2_,
                        processedImagePoints2, processedObjectPoints2, currentBoard);
 
         inCal2.objectPoints = processedObjectPoints2;
-        inCal2.imagePoints =processedImagePoints2;
+        inCal2.imagePoints = processedImagePoints2;
 
 
         int detected0;
         int detected1;
+
         if (processedObjectPoints1[0][0] == Point3f(-1,-1,0)
             && processedObjectPoints2[0][0] == Point3f(-1,-1,0))
         {
             detected0 = 0;
             detected1 = 0;
         }
+
         else
         {
             detected0 = inCal.objectPoints[0].size();
             detected1 = inCal2.objectPoints[0].size();
         }
 
-        cout << " Number of objectPoints for image0"
+        //print out the number of detected corners for each image
+        cout << " Number of detected corners for image0"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
+        << " and a total of " << total_corners << " corners"
         << " is "
         << detected0 << endl;
-        cout << " Number of objectPoints for image1"
+
+        cout << " Number of detected corners for image1"
         << " and the " << s.markersX[n] << "x" << s.markersY[n] << " board"
         << " with marker size " << s.markerLength[n]
+        << " and a total of " << total_corners << " corners"
         << " is "
         << detected1 << endl;
 
@@ -175,16 +210,19 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
         returnVector_.push_back(detected1);
 
     }
+
 }
 
 // Main function. Detects patterns on images
-vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1  ) {
+vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1) {
     string inputSettingsFile = settingsFile;
 
     Mat img0;
-    img0 = imread( filename0, CV_LOAD_IMAGE_COLOR );
     Mat img1;
-    img1 = imread( filename1, CV_LOAD_IMAGE_COLOR );
+    img0 = imread( filename0, CV_LOAD_IMAGE_COLOR );
+
+    if (filename1)
+        img1 = imread( filename1, CV_LOAD_IMAGE_COLOR );
 
     Settings s;
     FileStorage fs(inputSettingsFile, FileStorage::READ);   // Read the settings
@@ -279,25 +317,36 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             Mat currentImg;
             if (i == 0)
                 currentImg = img0;
-            else if ( i == 1)
-                currentImg = img1;
+            else if ( i == 1 ){
+                if ( filename1 )
+                    currentImg = img1;
+                else
+                    currentImg = Mat();
+            }
             else
                 currentImg = Mat();
 
             // Print the number of detected shared object points, along with warnings if there are not enough
             if(!currentImg.data) {
-                for(int n = 0; n< s.numberOfBoards; n++){
+
+                for(int n = 0; n < s.numberOfBoards; n++){
                     setUpAruco_(s, inCalList[n][0], inCalList[n][1], boardsList[n], n);
 
-                    getSharedPoints(inCalList[n][0],  inCalList[n][1]);
+                    // if stereo, then print out the number of shared object Points
+                    if (s.mode == Settings::STEREO){
 
-                    cout << "Number of shared objectPoints for this board is "
-                    << inCalList[n][0].objectPoints[0].size() << endl;
+                        getSharedPoints(inCalList[n][0],  inCalList[n][1]);
 
-                    if (inCalList[n][0].objectPoints[0].size() < 10)
-                        cout << "Not enough object points! This set should be retaken." << endl;
+                        cout << "Number of shared objectPoints for this board is "
+                            << inCalList[n][0].objectPoints[0].size() << endl;
 
-                    returnVector_.push_back((int)inCalList[n][0].objectPoints[0].size());
+                        if (inCalList[n][0].objectPoints[0].size() < 10)
+                            cout << "Not enough object points! This set should be retaken." << endl;
+
+                        returnVector_.push_back((int)inCalList[n][0].objectPoints[0].size());
+
+                    }
+
                 }
 
                 break;
@@ -306,7 +355,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             s.imageSize = currentImg.size();
             Mat imgCopy;
 
-            for(int n = 0; n< s.numberOfBoards; n++){
+            for(int n = 0; n < s.numberOfBoards; n++){
                 arucoDetect(s, currentImg, *currentInCal, boardsList[n]);
                 currentInCal = &inCalList[(i+1)% s.numberOfBoards][value];
                 if(save) {
