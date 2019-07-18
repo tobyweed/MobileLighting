@@ -136,6 +136,4 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
         socket.write(dataToSend, withTimeout: -1, tag: 0)   // send packet to Mac
         self.readyToSendPacket = false
     }
-
-    
 }

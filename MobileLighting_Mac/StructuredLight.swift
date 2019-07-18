@@ -23,7 +23,9 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var currentCodeBit: Int
     let codeBitCount: Int = 10
     var horizontal = false
-    let decodedDir = dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.decoded, proj: projector, pos: position)
+    
+    let decodedDir = dirStruc.decoded(proj: projector, pos: position, rectified: false)
+    
     var packet: CameraInstructionPacket
     
     var imgpath: String
@@ -151,12 +153,24 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
     var metadataCompletionHandler: ()->Void = {
         //        if rectificationMode == .NONE || rectificationMode == .ON_PHONE {
         let direction: Int = horizontal ? 1 : 0
-        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position)
+        let filepath = dirStruc.metadataFile(direction, proj: projector, pos: position)
+        if !pathExists(filepath) {
+            print("path \(filepath) does not exist.")
+            return
+        }
         do {
             let metadataStr = try String(contentsOfFile: filepath)
             let metadata: Yaml = try Yaml.load(metadataStr)
-            var decodedImPath = *"\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(direction == 0 ? "u" : "v")-0initial.pfm" // dirStruc.decodedFile(direction, proj: projector, pos: position).cString(using: .ascii)!
-            var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.refined, proj: projector, pos: position).cString(using: .ascii)!
+            
+            var decodedImPath: [CChar]
+            var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false)
+            do {
+                try decodedImPath = safePath("\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(direction == 0 ? "u" : "v")-0initial.pfm")
+            } catch let err {
+                print(err.localizedDescription)
+                return
+            }
+            
             if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
                 var posID = *"\(position)"
                 refineDecodedIm(&outdir, Int32(direction), &decodedImPath, angle, &posID)
@@ -200,24 +214,24 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         DecodedImageReceiver(completionHandler, path: imgpath, horizontal: true)
     )
     
-    metadataCompletionHandler  = {
-        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position)
-        do {
-            let metadataStr = try String(contentsOfFile: filepath)
-            let metadata: Yaml = try Yaml.load(metadataStr)
-            var decodedImPath = *"\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(horizontal ? "v" : "u")-0initial.pfm" //dirStruc.decodedFile(horizontal ? 1 : 0, proj: projector, pos: position).cString(using: .ascii)!
-            var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.refined, proj: projector, pos: position).cString(using: .ascii)!
-            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
-                var posID = *"\(position)"
-                refineDecodedIm(&outdir, horizontal ? 1:0, &decodedImPath, angle, &posID)
-            } else {
-                print("refine error: could not load angle (double) from YML file.")
-            }
-        } catch {
-            print("refine error: could not load metadata file.")
-        }
-        received = true
-    }
+//    metadataCompletionHandler  = {
+//        let filepath = dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position)
+//        do {
+//            let metadataStr = try String(contentsOfFile: filepath)
+//            let metadata: Yaml = try Yaml.load(metadataStr)
+//            var decodedImPath = *"\(dirStruc.decoded(proj: projector, pos: position, rectified: false))/result\(position)\(horizontal ? "v" : "u")-0initial.pfm" //dirStruc.decodedFile(horizontal ? 1 : 0, proj: projector, pos: position).cString(using: .ascii)!
+//            var outdir = *dirStruc.decoded(proj: projector, pos: position, rectified: false) //dirStruc.subdir(dirStruc.refined, proj: projector, pos: position).cString(using: .ascii)!
+//            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+//                var posID = *"\(position)"
+//                refineDecodedIm(&outdir, horizontal ? 1:0, &decodedImPath, angle, &posID)
+//            } else {
+//                print("refine error: could not load angle (double) from YML file.")
+//            }
+//        } catch {
+//            print("refine error: could not load metadata file.")
+//        }
+//        received = true
+//    }
     photoReceiver.dataReceivers.insertFirst(
         SceneMetadataReceiver(metadataCompletionHandler, path: dirStruc.metadataFile(horizontal ? 1 : 0, proj: projector, pos: position))
     )

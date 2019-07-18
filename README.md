@@ -54,7 +54,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
         1. Some of the libraries will be in /usr/lib, and others will be in /usr/local/lib. To navigate to these folders in the dialog, click "Add Other..." and then the command ⌘+Shift+G. Enter in one of those paths, hit enter, and search for the libraries you need to re-add.
         1. After re-adding, the libraries should all have reappaeared under MobileLighting/Frameworks in the left sidebar, and there should no longer be any red ones.
 1. You may also encounter code signing errors — these can generally be resolved by opening the Xcode project's settings (in the left sidebar where all the files are listed, click on the blue Xcode project icon with the name <project>.xcodeproj). Select the target, and then open the "General" tab. Check the "Automatically manage signing" box under the "signing" section. [Here's a visual guide](readme_images/codesign.png)
-1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it.
+1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it from Xcode. To run it from a non-Xcode command line, first build the project (the easiest way to do that is ⌘-b from within Xcode). This should write all necessary products into a bin/ directory within MobileLighting/. Then run "bin/MobileLighting_Mac" with any tokens (init or a path to a sceneSettings.yml file) to run the app.
 1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
 
@@ -95,7 +95,7 @@ The two apps of the ML system communicate wirelessly using Bonjour / async socke
 ## Communication Between ML Mac and Rosvita server
 The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
 
-They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends  to the server, and that ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp. If it doesn't have the correct IP address, it will try to establish connection for a while before returning a failure message.
+They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends to the server, and that **ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp**. If it doesn't have the correct IP address (and the robot's IP address occasionally changes), it will try to establish connection indefinitely.
 
 The server replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath(), which returns "-1" indicating failure or "x", where x is the number of positions in the loaded path.
 
@@ -116,9 +116,10 @@ There are numerous steps to dataset acquisition:
     1. Intrinsic calibration
     2. Multiview calibration
 1. Ambient data capture
-    1. Ambient images & videos with mirror ball
-    2. Ambient images at multiple exposures
-    3. Ambient video with IMU data
+    1. Ambient images with mirror ball
+    2. Ambient images at multiple exposures and lightings
+    3. Default images
+    4. Ambient video with IMU data
 1. Structured lighting image capture
     
 These steps are executed/controlled from the MobileLighting Mac command-line interface.
@@ -126,11 +127,13 @@ These steps are executed/controlled from the MobileLighting Mac command-line int
 ### Scene Setup and Description
 #### Scene directory creation and configuration
 First, create a directory to store scenes. Then, run MobileLighting_Mac with the "init" option. 
+
 Directions to do this from Xcode:
-    1. Select MobileLighting_Mac from the build target menu in the top left corner.
-    1. Click "Edit Scheme" at the bottom of the same menu.
-    1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
-    1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+1. Select MobileLighting_Mac from the build target menu in the top left corner.
+1. Click "Edit Scheme" at the bottom of the same menu.
+1. Under "Arguments Passed on Launch", enter (or select, if it's already there) "init" and make sure that is the only checked argument.
+1. Hit close and then build MobileLighting_Mac. The program will prompt, asking for the path to the scenes directory and the new scene name. After you enter those values, the program should create the appropriately named scene directory, along with sceneSettings and calibration Yaml files. 
+
 Next, update the Yaml files with the parameters you will use for the scene. 
 Some important parameters to consider changing:
 1. sceneSettings.yml:
@@ -152,29 +155,34 @@ The system has a few limitations and caveats to be considered when taking a scen
 * Vibration in the camera can cause problems, particularly during structured lighting capture, so the floor shouldn't be too shaky and there should be little or no movement from bystanders during struclight. This means that places with lots of foot traffic could be problematic. By the same token, nothing in the scene can move during structured lighting capture, which can be tricker than expected -- for example, even a plant wilting slightly during scene capture could cause issues.
 
 #### Projector and camera positions
-Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.
+Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Also make sure that projects are slightly tilted relative to the camera's axes to avoid moiré patterns from an aliasing effect. A useful command is showshadows, which will add decoded unrectified images and output them to /computed/shadowvis. This shows remaining areas with no codes and help determine the next projector positions.
+
+*Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.* Note that the images should be stored in JPG format.
 
 Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
 
 #### Scene description and images
-Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining brielfy the contents of the scene. The keys listed should consist of:
+*Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining briefly the contents of the scene.* The keys listed should consist of:
 * Scene name: the name of the scene (same as that of the scene directory)
 * Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
 * Lighting conditions: add a listing in here with the lighting and the directory name whenever you take ambients with different lightings. E.g.:
-    Normal:
+  
+  Normal:
     - L0 - Lights on, windows closed
     - L1 - Lights on, windows opened
     - L2 - Lights off, windows opened
+    
     Torch:
     - T0 - No lights on, windows closed
     - T1 - No ceiling lights on, umbrella light turned on in far left (from viewer) corner. Windows closed
+    
     Flash:
     - F0 - No lights on, windows closed
     Also remember to take ambientBall images with the same lighting conditions.
 * Robot motion: Briefly describe the robot views (E.g.: Two lateral views about a foot apart. A little over 12 feet from the wall.)
 * Projector configuration: Briefly describe the projector positions (E.g.: Two large viewsonic projectors from two positions each. Proj0,2 are left projector, proj 1,3 are right projector.)
 
-Also create a scenePictures directory and store images of the projector and robot/camera positions. Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format.
+Also *create a scenePictures directory and store images of the projector and robot/camera positions.* Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format. [This website](https://heictojpg.com/) is an easy place to do that conversion. It is important to have at least one photo of every projector position and every camera position. It is also a good idea to have a photo of the whole scene, including the projectors, robot, and still life.
 
 
 ### Calibration
@@ -202,6 +210,7 @@ ML Mac automatically sets the correct exposure before taking the photos. This ex
 
 This command will first prompt the user to hit enter to take a set or to write "q" to quit. If the user hits enter, ML Mac will move the robot arm to the 0th position. It will then take a photo. It will iterate through all positions in the path loaded on the Rosvita server, taking a picture at each one, and saving those pictures at <scene>/orig/calibration/stereo/posX/IMGn.JPG, where X is the postion number and n is the set number. Then it will prompt the user whether they want to continue taking sets, retake the last set (overwriting the IMGn.JPG photos), or stop running the command.
 
+
 ### Ambient
 In order to capture ambient data, the Mac must be connected to the robot arm (and the iPhone).
 
@@ -218,7 +227,13 @@ Flags:
 `-a`: append another lighting directory within ambient/ or ambientBall/. Otherwise, the program will simply overwrite the 0th directory of the appropriate setting (L0, T0, or F0). This is generally used to capture another lighting condition.
 `-d`: delete the entire ambient/ or ambientBall/ directory and write into a new one. Use with care!
 
-The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture.
+The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
+
+#### Ambient Ball Images
+Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
+
+#### Default Images
+Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
 
 #### Ambient Videos with IMU Data
 Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
@@ -246,6 +261,7 @@ After the trajectory is completed, the iPhone sends the Mac two files:
 * the IMU data, saved as a Yaml list of IMU samples (a .yml file)
 Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
 
+
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
 
@@ -271,15 +287,17 @@ To focus the projectors, it is useful to project a fine checkerboard pattern. Do
 Focus each projector such that the checkerboards projected onto the objects in the scene are crisp.
 
 Now, you can begin taking structured lighting. The command is
-`struclight [id] [projector #] [resolution=high]`
+`struclight [project pos id] [projector #]  [positon #] [resolution=high]`
 Parameters:
-* `id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/projid/pos*`.
+* `projector pos id`: this specifies the projector position identifier. All code images will be saved in a folder according to this identifier, e.g. at `computed/decoded/unrectified/proj[projector pos id]/pos*`.
 * `projector #`: the projector number is the switcher box port to which the projector you want to use is connected. These numbers will be in the range 1–8. This value has no effect on where the images are stored. 
+Note that each number (proj id, proj #, & pos #) can also be passed as an array, formatted like: `[1,2,3]`. Arrays passed to proj id and proj # must have the same number of elements.
 
 The reason for the distinction between the projector number and id is so that one could capture structured lighting with many different projector positions, but a limited number of projectors. Thus, one could run "struclight 0 1", taking structured light with the projector connected to port 1 and save those photos to the correct robot position directory in `computed/decoded/unrectified/proj0/`, then move the projector and run "struclight 1 1" to save photos in `computed/decoded/unrectified/proj1/`.
 
 Before starting capture, ML Mac will move the arm to the position and ask you to hit "enter" once it reaches that position.
 After that, capture begins. It projects first vertical, then horizontal binary code images. After each direction, the Mac should receive 2 files: a "metadata" file that simply contains the direction of the stripes and the decoded PFM file. It saves the PFM file to "computed/decoded/projX/posA". It then refines the decoded image.
+
 
 
 ## Image Processing

@@ -31,7 +31,7 @@ int client()
     serv_addr.sin_port = htons(PORT);
     
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, "140.233.20.227", &serv_addr.sin_addr)<=0)
+    if(inet_pton(AF_INET, "192.168.1.3", &serv_addr.sin_addr)<=0)
     {
         printf("Invalid address/ Address not supported \n");
         return -1;
@@ -66,16 +66,6 @@ int sendCommand(char *script){
     
 }
 
-int gotoView(string num){
-    string script = num;
-    int n = script.length();
-    char command[n+1];
-    strcpy(command, script.c_str());
-    if(sendCommand(command)<0)
-        return -1;
-    return 0;
-}
-
 // Load the path to the Rosvita server. Return -1 if unsuccessful, number of positions if successful
 int loadPath(string pathName){
     string script = "load " + pathName + ".obj";
@@ -88,7 +78,7 @@ int loadPath(string pathName){
     char buffer[1024] = {0};
     if(client_sock<1)
         return -1;
-    send(client_sock,command,strlen(command),0);
+    result = send(client_sock,command,strlen(command),0);
     if (result<0){
         printf("Sending Failed\n");
         return -1;
@@ -99,6 +89,27 @@ int loadPath(string pathName){
     int numViews = std::stoi(buffer);
 
     return numViews;
+}
+
+int gotoVideoStart(){
+    string script = "s";
+    int n = script.length();
+    char command[n+1];
+    strcpy(command, script.c_str());
+    if(sendCommand(command)<0)
+        return -1;
+    return 0;
+}
+
+
+int gotoView(string num){
+    string script = num;
+    int n = script.length();
+    char command[n+1];
+    strcpy(command, script.c_str());
+    if(sendCommand(command)<0)
+        return -1;
+    return 0;
 }
 
 int executePath(){

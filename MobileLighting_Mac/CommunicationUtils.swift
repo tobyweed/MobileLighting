@@ -7,17 +7,16 @@
 //
 
 import Foundation
-
+import AVFoundation
 
 /*=====================================================================================
- Setup/capture routines and utility functions
+ Setup/capture routines and utils
  ======================================================================================*/
 
-// setLensPosition
 // -Parameters
 //      - lensPosition: Float -> what to set the camera's lens position to
 // -Return value: Float -> camera's lens position directly after done adjusting focus
-// NOTE: return value seems to be inaccurate - just ignore it for now
+// Note that the focus apparently cannot be set perfectly -- there are only some values which the camera focus can be set to, so the camera will default to the closest possible
 func setLensPosition(_ lensPosition: Float) -> Float {
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
@@ -25,6 +24,13 @@ func setLensPosition(_ lensPosition: Float) -> Float {
     return lensPos
 }
 
+// lock the lens position
+func lockLensPosition() -> Float {
+    let packet = CameraInstructionPacket(cameraInstruction: .LockLensPosition)
+    cameraServiceBrowser.sendPacket(packet)
+    let lensPos = photoReceiver.receiveLensPositionSync()
+    return lensPos
+}
 
 // creates the camera service browser (for sending instructions to iPhone) and
 //    the photo receiver (for receiving photos, updates, etc from iPhone)

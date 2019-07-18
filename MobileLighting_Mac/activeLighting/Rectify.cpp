@@ -57,7 +57,6 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     Mat image, im_linear, im_nearest, image2;
     Mat mapx, mapy;
     const float maxdiff = 1.0; // changed from 0.5 to 1.0 on 6/25/19
-    printf("\nherereRE\n");
     const int imtype = CV_32FC1;
     
     mapx = (camera == 0) ? mapx0 : mapx1;

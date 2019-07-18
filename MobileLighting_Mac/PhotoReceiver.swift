@@ -282,6 +282,7 @@ class AmbientVideoReceiver: DataWriter, DataReceiver {
     let path: String
     func handle(packet: PhotoDataPacket) {
         print("Received video.")
+        // var data = cropVideo(packet.photoData)
         write(data: packet.photoData, path: path)
         completionHandler()
     }

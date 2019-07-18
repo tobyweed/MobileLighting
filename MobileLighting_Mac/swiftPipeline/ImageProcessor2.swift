@@ -36,6 +36,20 @@ func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: I
  */
 }
 
+// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
+// used to help determine projector placement
+func showShadows(projs: [Int32], pos: Int32) {
+    var decodedDir = *dirStruc.decoded(false)
+    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
+    
+    // convert projs Int32 array to a pointer so that it can be passed to the C
+    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
+    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
+    projsPointer.initialize(from: &projs_, count: projs_.count)
+    
+    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+}
+
 //MARK: disparity matching functions
 // uses bridged C++ code from ActiveLighting image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from
@@ -52,12 +66,18 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     let l = Int32(leftpos)
     let r = Int32(rightpos)
     
+    // get the maximum allowable y disparities from scene settings
+    let ythresh = sceneSettings.yDisparityThreshold
+    
     let xmin, xmax, ymin, ymax: Int32
     if (rectified) {
         xmin = -1080
         xmax = 1080
-        ymin = -1
-        ymax = 1
+//        ymin = -1
+//        ymax = 1
+        // will round ythresh to nearest int
+        ymin = -Int32(ythresh)
+        ymax = Int32(ythresh)
     } else {
         xmin = 0
         xmax = 0
@@ -92,20 +112,23 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     dispy = disparityDirLeft + in_suffix_y
     outx = disparityDirLeft + out_suffix_x
     outy = disparityDirLeft + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+//    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
 
     // Filter the RIGHT disparities
     dispx = disparityDirRight + in_suffix_x
     dispy = disparityDirRight + in_suffix_y
     outx = disparityDirRight + out_suffix_x
     outy = disparityDirRight + out_suffix_y
-    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
-    
+//    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
+    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
+
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
-
 }
+
+
 
 //rectify decoded images
 func rectifyDec(left: Int, right: Int, proj: Int) {
@@ -116,10 +139,19 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
     //paths for retreiving input
-    var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm"
-    var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm"
-    var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm"
-    var result1r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm"
+    var result0l: [CChar]
+    var result0r: [CChar]
+    var result1l: [CChar]
+    var result1r: [CChar]
+    do {
+        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm")
+        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm")
+        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm")
+        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm")
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     computeMaps(&result0l, &intr, &extr, &settings)
 
     var outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
@@ -143,14 +175,23 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 
 
 //rectify ambient images
-func rectifyAmb(ball: Bool, left: Int, right: Int, mode: DirectoryStructure.PhotoMode, exp: Int, lighting: Int) {
-    var intr = *dirStruc.intrinsicsYML
-    var extr = *dirStruc.extrinsicsYML(left: left, right: right)
-    var settings = *dirStruc.calibrationSettingsFile
+func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, lighting: Int) {
+    var intr: [CChar]
+    var extr: [CChar]
+    var settings: [CChar]
+    var resultl: [CChar]
+    var resultr: [CChar]
+    do {
+        try intr = safePath(dirStruc.intrinsicsYML)
+        try extr = safePath(dirStruc.extrinsicsYML(left: left, right: right))
+        try settings = safePath(dirStruc.calibrationSettingsFile)
+        try resultl = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG")
+        try resultr = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG")
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     
-    var resultl = *"\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
-    var resultr = *"\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
-
     if(exp == 0) { //maps only need to be computed once per stereo pair
         computeMaps(&resultl, &intr, &extr, &settings)
     }

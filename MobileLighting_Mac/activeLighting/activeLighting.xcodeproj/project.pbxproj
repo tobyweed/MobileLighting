@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA81620822D8ECA100322B93 /* ShowShadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AA81620622D8ECA100322B93 /* ShowShadows.cpp */; };
+		AA81620922D8ECA100322B93 /* ShowShadows.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AA81620722D8ECA100322B93 /* ShowShadows.hpp */; };
+		AAAF15BD22DE6E3B006AEB79 /* Decode_OLD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */; };
 		E114D51820CF0F9E00020017 /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E114D51720CF0F9D00020017 /* libpfm.a */; };
 		E114D51A20CF106600020017 /* Rectify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E114D51920CF106600020017 /* Rectify.cpp */; };
 		E1694A6420E6B3D900AC3FF9 /* Disparities.h in Headers */ = {isa = PBXBuildFile; fileRef = E1694A6320E6B3D900AC3FF9 /* Disparities.h */; };
@@ -35,6 +38,9 @@
 
 /* Begin PBXFileReference section */
 		AA6961EB22BAB09A00C21D61 /* imageLib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = imageLib; sourceTree = "<group>"; };
+		AA81620622D8ECA100322B93 /* ShowShadows.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShowShadows.cpp; sourceTree = "<group>"; };
+		AA81620722D8ECA100322B93 /* ShowShadows.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ShowShadows.hpp; sourceTree = "<group>"; };
+		AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decode_OLD.cpp; sourceTree = "<group>"; };
 		E1052C4F20C81328004A65C0 /* libactiveLighting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libactiveLighting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E114D51720CF0F9D00020017 /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = pfmLib/libpfm.a; sourceTree = "<group>"; };
 		E114D51920CF106600020017 /* Rectify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectify.cpp; sourceTree = "<group>"; };
@@ -87,6 +93,9 @@
 		E1052C4620C81328004A65C0 = {
 			isa = PBXGroup;
 			children = (
+				AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */,
+				AA81620622D8ECA100322B93 /* ShowShadows.cpp */,
+				AA81620722D8ECA100322B93 /* ShowShadows.hpp */,
 				AA6961EB22BAB09A00C21D61 /* imageLib */,
 				E1694A6320E6B3D900AC3FF9 /* Disparities.h */,
 				E186054E20C813E800206D40 /* activeLighting_wrapper.cpp */,
@@ -148,6 +157,7 @@
 				E1A57AE321093B9C00C208C6 /* Decode.h in Headers */,
 				E186057020C813E900206D40 /* flowIO.h in Headers */,
 				E186058C20C813E900206D40 /* Utils.h in Headers */,
+				AA81620922D8ECA100322B93 /* ShowShadows.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -214,6 +224,8 @@
 				E186058B20C813E900206D40 /* Utils.cpp in Sources */,
 				E1FD591220EE9B3000EB04AA /* Reproject.cpp in Sources */,
 				E186057320C813E900206D40 /* Decode.cpp in Sources */,
+				AA81620822D8ECA100322B93 /* ShowShadows.cpp in Sources */,
+				AAAF15BD22DE6E3B006AEB79 /* Decode_OLD.cpp in Sources */,
 				E186058D20C813E900206D40 /* Disparities.cpp in Sources */,
 				E114D51A20CF106600020017 /* Rectify.cpp in Sources */,
 			);

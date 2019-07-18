@@ -66,37 +66,11 @@
         var photoBracketExposureDurations: [Double]?
         var photoBracketExposureISOs: [Double]?
         
+        // get photobracketsettings including all exposures
         var photoBracketSettings: AVCapturePhotoBracketSettings {
             get {
                 if let photoBracketExposureDurations = self.photoBracketExposureDurations, let photoBracketExposureISOs = self.photoBracketExposureISOs {
-                    var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
-                    //for exposure in photoBracketExposureDurations {
-                    for i in 0..<min(photoBracketExposureDurations.count, photoBracketExposureISOs.count) {
-                        var duration: Double = photoBracketExposureDurations[i]
-                        var iso: Float = Float(photoBracketExposureISOs[i])
-                        // make sure duration within bounds
-                        if duration < minExposureDuration.seconds || duration > maxExposureDuration.seconds {
-                            print("Exposure duration not within allowed range.\nExposure must be between \(minExposureDuration.seconds) and \(maxExposureDuration.seconds).")
-                            duration = max(min(maxExposureDuration.seconds, duration), minExposureDuration.seconds)
-                        }
-                        if iso < minISO || iso > maxISO {
-                            print("Exposure ISO not within allowed range. Exposure must be between \(minISO) and \(maxISO)")
-                            iso = max(min(maxISO, iso), minISO)
-                        }
-                        
-                        let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
-                        bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(exposureDuration: exposureTime, iso: iso))
-                    }
-                    let pixelFormat = kCVPixelFormatType_32BGRA
-                    let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
-                    print("Available types: \(capturePhotoOutput.availablePhotoPixelFormatTypes)")
-                    
-                    guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(OSType(truncating: NSNumber(value: pixelFormat))) else {
-                        fatalError("Does not contain \(pixelFormat)")
-                    }
-                    let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
-                    settings.isAutoStillImageStabilizationEnabled = false
-                    return settings
+                    return photoBracketSettings(durations: photoBracketExposureDurations, isos: photoBracketExposureISOs)
                 } else {
                     // use default exposure settings
                     let bracketSettings = [AVCaptureAutoExposureBracketedStillImageSettings.autoExposureSettings(exposureTargetBias: -3.0),
@@ -127,6 +101,36 @@
             
             // capture session should be configured, now start it running
             self.captureSession.startRunning()
+        }
+        
+        // return photo bracket settings with the exposures given
+        func photoBracketSettings( durations: [Double], isos: [Double] ) -> AVCapturePhotoBracketSettings {
+            var bracketSettings = [AVCaptureManualExposureBracketedStillImageSettings]()
+            for i in 0..<min( durations.count, isos.count ) {
+                var duration: Double = durations[i]
+                var iso: Float = Float(isos[i])
+                // make sure duration within bounds
+                if duration < minExposureDuration.seconds || duration > maxExposureDuration.seconds {
+                    print("Exposure duration not within allowed range.\nExposure must be between \(minExposureDuration.seconds) and \(maxExposureDuration.seconds).")
+                    duration = max(min(maxExposureDuration.seconds, duration), minExposureDuration.seconds)
+                }
+                if iso < minISO || iso > maxISO {
+                    print("Exposure ISO not within allowed range. Exposure must be between \(minISO) and \(maxISO)")
+                    iso = max(min(maxISO, iso), minISO)
+                }
+                
+                let exposureTime = CMTime(seconds: duration, preferredTimescale: CameraController.preferredExposureTimescale)
+            bracketSettings.append(AVCaptureManualExposureBracketedStillImageSettings.manualExposureSettings(exposureDuration: exposureTime, iso: iso))
+            }
+            let pixelFormat = kCVPixelFormatType_32BGRA
+            let format: [String : Any] = [kCVPixelBufferPixelFormatTypeKey as String : NSNumber(value: pixelFormat)]  //_32BGRA
+            
+            guard capturePhotoOutput.availablePhotoPixelFormatTypes.contains(OSType(truncating: NSNumber(value: pixelFormat))) else {
+                fatalError("Does not contain \(pixelFormat)")
+            }
+            let settings = AVCapturePhotoBracketSettings(rawPixelFormatType: 0, processedFormat: format, bracketedSettings: bracketSettings)
+            settings.isAutoStillImageStabilizationEnabled = false
+            return settings
         }
         
         func configureNewSession(sessionPreset: String) {
@@ -193,16 +197,14 @@
         //MARK: Entry-point capture functions
         
         func takePhoto(photoSettings: AVCapturePhotoSettings) {
-//            guard photoBracketExposureDurations == nil || photoBracketExposureDurations!.count <= maxBracketedPhotoCount else {
-//                print("Error: cannot capture photo bracket — number of bracketed photos exceeds limit for device.")
-//                return
-//            }
-            print("Capturing photo: \(self.capturePhotoOutput)")
+            print("Capturing photo: \(String(describing: self.capturePhotoOutput))")
             capturingNormalInvertedPair = false
             capturingInverted = false
             photoSettings.isAutoStillImageStabilizationEnabled = false
+            
             self.capturePhotoOutput.connection(with: .video)?.videoOrientation = orientation
             self.capturePhotoOutput.capturePhoto(with: photoSettings, delegate: self)
+            // set isCapturingPhoto to true to wait until capturePhoto sets it to false
             self.isCapturingPhoto = true
         }
         
@@ -223,6 +225,7 @@
             
             settings.isAutoStillImageStabilizationEnabled = false
             self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
             self.isCapturingPhoto = true
         }
         
@@ -247,6 +250,8 @@
             
             settings.isAutoStillImageStabilizationEnabled = false
             self.capturePhotoOutput.capturePhoto(with: settings, delegate: self)
+            
+            // set isCapturingPhoto to true to wait until cpaturePhoto sets it to false
             self.isCapturingPhoto = true
         }
         
@@ -395,7 +400,13 @@
          }
          */
         
+//        func photoOutput(_ captureOutput: AVCapturePhotoOutput, willBeginCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+//            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
+//        }
+        
+        // called after a photo has been processed by capturePhotoOutput.capturePhoto
         func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+//            print("metadata: \(String(describing: (photo.metadata["{Exif}"]! as AnyObject)["ExposureTime"]))")
             //            guard let photoSampleBuffer = photoSampleBuffer else {
             //                print("photo sample buffer is nil — likely because AVCaptureSessionPreset is incompatible with device camera.")
             //                print("ERROR: \(error!.localizedDescription)")
@@ -435,8 +446,6 @@
                     pixelBuffers_normal.append(pixelBuffer)
                 }
                 
-                
-                
             } else {
                 //                print("flash mode enabled = \(resolvedSettings.isFlashEnabled)")
                 
@@ -444,10 +453,9 @@
                 self.capturePhotos.append(photo)
                 self.lensPositions.append(self.captureDevice.lensPosition)
             }
-            
         }
         
-        
+        // called after a photo has been captured by capturePhotoOutput.capturePhoto
         func photoOutput(_ captureOutput: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
             if let error = error {
                 print("ERROR: \(error.localizedDescription)")
@@ -471,7 +479,6 @@
                 }
                 capturingInverted = !capturingInverted
             } else {
-                
                 for index in 0..<capturePhotos.count {
                     let photo = self.capturePhotos[index]
                     let jpegData: Data
@@ -507,6 +514,7 @@
             }, completionHandler: completionHandler(_:_:))
         }
         
+        // create a default device
         // based on code from Apple's Photo Capture Programming Guide
         // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/PhotoCaptureGuide/index.html#//apple_ref/doc/uid/TP40017511
         func defaultDevice() -> AVCaptureDevice {

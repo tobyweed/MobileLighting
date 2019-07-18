@@ -365,9 +365,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA9486B222D5061800BE7A0E /* bin */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = bin;
+			sourceTree = "<group>";
+		};
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
+				AA9486B222D5061800BE7A0E /* bin */,
 				E1AE6D90210AA4FD00B6E3C6 /* README.md */,
 				E17AC76D20FE38860007EF77 /* Yaml.xcodeproj */,
 				E196122120D1AC9100D85EDB /* extrinsics.yml */,
@@ -569,6 +577,7 @@
 				E1682DAC20F947C700DF0FD4 /* Sources */,
 				E1682DAD20F947C700DF0FD4 /* Frameworks */,
 				E1682DAE20F947C700DF0FD4 /* CopyFiles */,
+				AA9486B322D5064B00BE7A0E /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -755,6 +764,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AA9486B322D5064B00BE7A0E /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# copy all files from the Products directory to the bin directory, so the program can be run from bin. -r makes it recursive (copying contents of directories), -u makes it update (not overwriting things that don't need to be changed).\nrsync -r -u ${BUILT_PRODUCTS_DIR}/ ${PROJECT_DIR}/bin\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		E11F1FAC1EE1B521008F9F0F /* Sources */ = {
@@ -1069,7 +1098,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/MobileLighting_Mac @executable_path";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/MobileLighting_Mac @executable_path @rpath @executable_path/Frameworks /Library/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/Cellar/opencv/3.4.1_5/lib,
@@ -1112,7 +1141,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_UNUSED_VALUE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/MobileLighting_Mac @executable_path";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks $(PROJECT_DIR)/MobileLighting_Mac @executable_path @rpath @executable_path/Frameworks /Library/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/Cellar/opencv/3.4.1_5/lib,

@@ -11,6 +11,58 @@ import CoreMedia
 import Yaml
 
 
+/*=====================================================================================
+ String operators & extensions to support passing of [CChar]s to C
+ ======================================================================================*/
+ 
+// properly add C strings together (removes null byte from first)
+func +(left: [CChar], right: [CChar]) -> [CChar] {
+    var result = [CChar](left.dropLast())
+    result.append(contentsOf: right)
+    return result
+}
+
+prefix operator *
+extension String {
+    static prefix func * (swiftString: String) -> [CChar] {
+        return swiftString.cString(using: .ascii)!
+    }
+}
+
+prefix func * (swiftStringArray: [String]) -> [[CChar]] {
+    return swiftStringArray.map {
+        return *$0
+    }
+}
+
+prefix operator **
+prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
+    var ptrs = [UnsafeMutablePointer<CChar>?]()
+    for i in 0..<cStringArray.count { ptrs.append(getptr(&cStringArray[i])) }
+    return ptrs
+}
+
+func pathExists(_ path: String) -> Bool {
+    return FileManager.default.fileExists(atPath: path);
+}
+
+enum PathError: Error {
+    case invalidPath
+}
+
+func safePath(_ path: String) throws -> [CChar] {
+    if(!pathExists(path)) {
+        print( "path \(path) does not exist." )
+        throw PathError.invalidPath
+    }
+    return *path
+}
+
+
+/*=====================================================================================
+ Misc
+ ======================================================================================*/
+
 func makeDir(_ str: String) -> Void {
     do {
         try FileManager.default.createDirectory(atPath: str, withIntermediateDirectories: true, attributes: nil)
@@ -27,20 +79,18 @@ func getptr<T>(_ obj: inout [T]) -> UnsafeMutablePointer<T>? {
 func getIDs(_ strs: [String], prefix: String, suffix: String) -> [Int] {
     return strs.map { // convert the array to contain only the filenames (not whole paths)
         return String($0.split(separator: "/").last!)
-    }.map { // collect all the IDs, returning nil for all files not in the format [prefix]x[suffix]
-        guard $0.hasPrefix(prefix), $0.hasSuffix(suffix) else {
-            return nil
-        }
-        let base = $0.dropFirst(prefix.count).dropLast(suffix.count)
-        return Int(base)
-    }.filter{ // remove nil values from array
-        return $0 != nil
+        }.map { // collect all the IDs, returning nil for all files not in the format [prefix]x[suffix]
+            guard $0.hasPrefix(prefix), $0.hasSuffix(suffix) else {
+                return nil
+            }
+            let base = $0.dropFirst(prefix.count).dropLast(suffix.count)
+            return Int(base)
+        }.filter{ // remove nil values from array
+            return $0 != nil
         }.map{ return $0!}
 }
 
 let lockFlags = CVPixelBufferLockFlags(rawValue: 0) // read & write
-
-
 
 // because the Swift standard library doesn't have a built-in linked list class,
 // I wrote a minimalistic one. i'll add to it as needed
@@ -110,34 +160,7 @@ class List<T> {
     }
 }
 
-// properly add C strings together (removes null byte from first)
-func +(left: [CChar], right: [CChar]) -> [CChar] {
-    var result = [CChar](left.dropLast())
-    result.append(contentsOf: right)
-    return result
-}
-
-prefix operator *
-extension String {
-    static prefix func * (swiftString: String) -> [CChar] {
-        return swiftString.cString(using: .ascii)!
-    }
-}
-
-prefix func * (swiftStringArray: [String]) -> [[CChar]] {
-    return swiftStringArray.map {
-        return *$0
-    }
-}
-
-prefix operator **
-prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
-    var ptrs = [UnsafeMutablePointer<CChar>?]()
-    for i in 0..<cStringArray.count { ptrs.append(getptr(&cStringArray[i])) }
-    return ptrs
-}
-
-
+// empty directory
 func removeFiles(dir: String) -> Void {
     guard let paths = try? FileManager.default.contentsOfDirectory(atPath: dir) else {
         print("Could not remove files at directory \(dir).")
@@ -149,10 +172,33 @@ func removeFiles(dir: String) -> Void {
     }
 }
 
+// divide command tokens into params and flags
 func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
     let params = tokens.filter { return !$0.starts(with: "-") }
     let flags = tokens.filter { return $0.starts(with: "-") }
     return (params, flags)
+}
+
+// expects string in format [1,2,3,4
+// converts to array of integers
+// used for supporting arrays as command line arguments
+func stringToIntArray(_ string: String ) -> [Int] {
+    // initialize an array of the connected ports on the switcher.
+    let startlist = string.index(string.startIndex, offsetBy: 1)
+    var liststr = string.dropFirst()// cut off the first character
+    // if last character is ], cut it off too
+    // this isn't a requirement because Xcode will sometimes automatically appear to add "]" without actially doing so
+    if( string.hasSuffix("]") ) {
+        liststr = liststr.dropLast()
+    }
+    let strArray = liststr.components(separatedBy: ",") // divide string into array by ","
+    let intArray = strArray.map { Int($0) } // convert [String] to [Int?]
+    // convert [Int?] to [Int], filtering nil values
+    var filteredArray: [Int] = []
+    for int in intArray {
+        int != nil ? filteredArray.append(int!) : ()
+    }
+    return filteredArray
 }
 
 extension CMTime {
@@ -161,8 +207,6 @@ extension CMTime {
         self.init(seconds: exposureDuration, preferredTimescale: prefferedExposureDurationTimescale)
     }
 }
-
-
 
 // from https://stackoverflow.com/questions/32952248/get-all-enum-values-as-an-array
 // temporary implementation of getting all cases of an Enum

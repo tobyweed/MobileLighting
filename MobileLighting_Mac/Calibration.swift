@@ -89,8 +89,15 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             
             if i > 0 {
                 print("\nDetecting objectPoints...")
-                var leftpath = *"\(stereoDirDict[i]!)/IMG\(photoID).JPG"
-                var rightpath = *"\(stereoDirDict[i-1]!)/IMG\(photoID).JPG"
+                var leftpath: [CChar]
+                var rightpath: [CChar]
+                do {
+                    try leftpath = safePath("\(stereoDirDict[i]!)/IMG\(photoID).JPG")
+                    try rightpath = safePath("\(stereoDirDict[i-1]!)/IMG\(photoID).JPG")
+                } catch let err {
+                    print(err.localizedDescription)
+                    break
+                }
                 // generate image lists for DetectionCheck to read later
                 generateStereoImageList(left: stereoDirDict[i]!, right: stereoDirDict[i-1]!)
                 // make sure DetectionCheck will read from the right image list

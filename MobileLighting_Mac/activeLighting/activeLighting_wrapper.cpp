@@ -13,10 +13,15 @@
 #include "Disparities.h"
 #include "Reproject.h"
 #include "Decode.h"
+#include "ShowShadows.hpp"
 #include <assert.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+
+extern "C" void writeShadowImgs(char *decodedDir, char *outDir, int projs[], int nProjs, int pos) {
+    writeshadowimgs(decodedDir, outDir, projs, nProjs, pos);
+}
 
 extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID) {
     refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
@@ -25,12 +30,9 @@ extern "C" void refineDecodedIm(char *outdir, int direction, char* decodedIm, do
 extern "C" void computeMaps(char *impath, char *intr, char *extr, char *settings) {
     //get the file extension
     char* extension = strrchr(impath, '.');
-
-    printf("%s\n%s\n%s\n", impath, intr, extr);
     
     //check whether the file is a pfm (imread does not support pfms)
     if(strcmp(extension,".pfm") == 0) {
-        printf("sdfas");
         CFloatImage im;
         ReadImage(im, impath);
         CShape s = im.Shape();
