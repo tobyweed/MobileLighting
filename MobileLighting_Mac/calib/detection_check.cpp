@@ -214,7 +214,7 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
 }
 
 // Main function. Detects patterns on images
-vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1) {
+vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1 = NULL) {
     string inputSettingsFile = settingsFile;
 
     Mat img0;
