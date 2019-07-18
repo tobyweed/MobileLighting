@@ -533,7 +533,7 @@ func processCommand(_ input: String) -> Bool {
             for pos in poses {
                 // Tell the Rosvita server to move the arm to the selected position
                 if( !debugMode ) {
-                    var posStr = *String(pos) // get pointer to pose string
+                    var posStr = *String(pos) // get cchar version of pose string
                     GotoView(&posStr) // pass address of pointer
                 } else {
                     print("program is in debugMode. skipping robot motion")
@@ -614,7 +614,7 @@ func processCommand(_ input: String) -> Bool {
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
                 if ( !debugMode ) {
-                    var posStr = *String(pos)
+                    var posStr = *String(pos) // get cchar version of pos string
                     GotoView(&posStr)
                 } else {
                     print("program is in debugMode. skipping robot motion")
@@ -914,7 +914,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         let path: String = tokens[1] // the first argument should specify a pathname
-        var pathPointer = *path // get pointer to the string
+        var pathPointer = *path // get cchar version of the string
         var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
         
         if status == -1 { // print a message if the LoadPath doesn't return 0
@@ -1101,8 +1101,16 @@ func processCommand(_ input: String) -> Bool {
             if !rectified {
                 for pos in positions {
                     for direction: Int32 in [0, 1] {
-                        var imgpath = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm"
-                        var outdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: false)
+                        var imgpath: [CChar]
+                        var outdir: [CChar]
+                        do {
+                            try imgpath = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm")
+                            try outdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: false))
+                        } catch let err {
+                            print(err.localizedDescription)
+                            break
+                        }
+                        
                         let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
                         do {
                             let metadataStr = try String(contentsOfFile: metadatapath)
@@ -1121,8 +1129,15 @@ func processCommand(_ input: String) -> Bool {
                 for (leftpos, rightpos) in positionPairs {
                     for direction: Int in [0, 1] {
                         for pos in [leftpos, rightpos] {
-                            var cimg = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm"
-                            var coutdir = *dirStruc.decoded(proj: proj, pos: pos, rectified: true)
+                            var cimg: [CChar]
+                            var coutdir: [CChar]
+                            do {
+                                try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
+                                try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
+                            } catch let err {
+                                print(err.localizedDescription)
+                                break
+                            }
                             
                             let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
                             do {
@@ -1536,7 +1551,15 @@ func processCommand(_ input: String) -> Bool {
         calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
         calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
         calib.save()
-        var path = dirStruc.calibrationSettingsFile.cString(using: .ascii)!
+        
+        
+        var path: [CChar]
+        do {
+            try path = safePath(dirStruc.calibrationSettingsFile)
+        } catch let err {
+            print(err.localizedDescription)
+            break
+        }
         
         DispatchQueue.main.async {
             CalibrateWithSettings(&path)
@@ -1598,7 +1621,13 @@ func processCommand(_ input: String) -> Bool {
             calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
             calib.save()
             
-            var path = *dirStruc.calibrationSettingsFile
+            var path: [CChar]
+            do {
+                try path = safePath(dirStruc.calibrationSettingsFile)
+            } catch let err {
+                print(err.localizedDescription)
+                break
+            }
             CalibrateWithSettings(&path)
         }
         

@@ -13,34 +13,6 @@ import AVFoundation
  Setup/capture routines and utils
  ======================================================================================*/
 
-// crop videos to path endpoints
-
-// crop videos given two images
-// write a video to outpath
-//func cropVideoToImages() {
-//    // extract images
-//    do {
-////        let path = URL(fileURLWithPath: "/Users/tobyweed/Desktop/exp1video.mp4")
-////        let videoFile = AVAsset(url: path)
-////        AVAssetReader *reader = [[AVAssetReader alloc] initWithAsset:videoFile error:&error];
-////        AVAssetTrack *songTrack = [audioTrackArray objectAtIndex:0];
-////        AVAssetReaderTrackOutput *output = [[AVAssetReaderTrackOutput alloc] initWithTrack:songTrack outputSettings:outputSettingsDict];
-//
-////        let path = URL(fileURLWithPath: "/Users/tobyweed/Desktop/exp1video.mp4")
-////        let videoFile = AVAsset(url: path)
-////        let videoFileReader = try AVAssetReader(asset: videoFile)
-////        let assetReadOutput = AVAssetReaderTrackOutput(track: videoFileReader.outputs[0])
-//        //    AVAssetReaderTrackOutput * assetReaderOutput = [videoFileReader.outputs objectAtIndex:0];
-//        //    CMSampleBuffer sampleBuffer = [assetReaderOutput copyNextSampleBuffer];
-//        //
-//        //    CMTime frameTime = CMSampleBufferGetOutputPresentationTimeStamp(sampleBuffer);
-//        //    double frameTimeMillisecs = CMTimeGetSeconds(frameTime);
-//
-//    } catch let err {
-//        print(err.localizedDescription)
-//    }
-//}
-
 // -Parameters
 //      - lensPosition: Float -> what to set the camera's lens position to
 // -Return value: Float -> camera's lens position directly after done adjusting focus

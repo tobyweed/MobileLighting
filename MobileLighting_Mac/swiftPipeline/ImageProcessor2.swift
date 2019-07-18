@@ -139,10 +139,19 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
     //paths for retreiving input
-    var result0l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm"
-    var result0r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm"
-    var result1l = *"\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm"
-    var result1r = *"\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm"
+    var result0l: [CChar]
+    var result0r: [CChar]
+    var result1l: [CChar]
+    var result1r: [CChar]
+    do {
+        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm")
+        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm")
+        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm")
+        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm")
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     computeMaps(&result0l, &intr, &extr, &settings)
 
     var outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
@@ -167,13 +176,22 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 
 //rectify ambient images
 func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, lighting: Int) {
-    var intr = *dirStruc.intrinsicsYML
-    var extr = *dirStruc.extrinsicsYML(left: left, right: right)
-    var settings = *dirStruc.calibrationSettingsFile
+    var intr: [CChar]
+    var extr: [CChar]
+    var settings: [CChar]
+    var resultl: [CChar]
+    var resultr: [CChar]
+    do {
+        try intr = safePath(dirStruc.intrinsicsYML)
+        try extr = safePath(dirStruc.extrinsicsYML(left: left, right: right))
+        try settings = safePath(dirStruc.calibrationSettingsFile)
+        try resultl = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG")
+        try resultr = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG")
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     
-    var resultl = *"\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG"
-    var resultr = *"\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG"
-
     if(exp == 0) { //maps only need to be computed once per stereo pair
         computeMaps(&resultl, &intr, &extr, &settings)
     }

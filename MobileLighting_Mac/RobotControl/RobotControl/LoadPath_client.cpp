@@ -78,7 +78,7 @@ int loadPath(string pathName){
     char buffer[1024] = {0};
     if(client_sock<1)
         return -1;
-    send(client_sock,command,strlen(command),0);
+    result = send(client_sock,command,strlen(command),0);
     if (result<0){
         printf("Sending Failed\n");
         return -1;

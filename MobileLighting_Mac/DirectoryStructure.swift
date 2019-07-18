@@ -33,6 +33,14 @@ class DirectoryStructure {
         return [scenesDir, currentScene].joined(separator: "/")
     }
     
+    var ambientDefault: String {
+        return "\(self.scene)/defaultAmbient"
+    }
+    
+    func ambientDefault(rectified: Bool) -> String {
+        return "\(self.scene)/defaultAmbient/\( rectified ? "rectified" : "unrectified" )"
+    }
+    
     var orig: String {
         get {
             return self.scene + "/" + "orig"
@@ -67,10 +75,6 @@ class DirectoryStructure {
      ======================================================================================*/
     func ambients(ball: Bool, photo: Bool) -> String {
         return (photo) ? ((ball) ? ambientBallPhotos : ambientPhotos) : ambientVideos
-    }
-    
-    var ambientDefault: String {
-        return "\(ambients(ball: false, photo: true))/default"
     }
     
     // gets the right index to write ambients to

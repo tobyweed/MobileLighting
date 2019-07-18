@@ -1170,7 +1170,7 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
                    intrinsicCalibration &inCal2, stereoCalibration &sterCal)
 {
     Mat rmap[2][2];
-
+    
     //Precompute maps for remap()
     initUndistortRectifyMap(inCal.cameraMatrix, inCal.distCoeffs, sterCal.R1,
                             sterCal.P1, s.imageSize * s.rf, CV_16SC2, rmap[0][0], rmap[0][1]);
@@ -1181,11 +1181,11 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
     vector<vector<int>> vectorROIs;
     bool crop = false;
     vector<int> dfs;
-
+    
     // buffer for image filename
     char imgSave[1000];
     const char *view;
-
+    
     bool save = false;
     if(s.rectifiedPath != "0")
     {
@@ -1195,7 +1195,6 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
             printf("\nRectified images could not be saved. Invalid path: %s\n", s.rectifiedPath.c_str());
     }
 
-
     for( int i = 0; i <  s.nImages/2; i++ )
     {
         vectorROIs.clear();
@@ -1203,10 +1202,8 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
         for( int k = 0; k < 2; k++ )
         {
             //Mat img = imread(s.imageList[i*2+k], 0), rimg, cimg;
-
             Mat img = s.imageSetup(i*2+k), rimg;
-            remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
-
+            
             // If a valid path for rectified images has been provided, save them to this path
             if (save)
             {
@@ -1225,6 +1222,8 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
 
         if (crop)
             dfs =cropImage(vectorRimgs, vectorROIs, i);
+
+        printf("7");
 
     }
 
@@ -1298,7 +1297,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
                   sterCal.P1, sterCal.P2, sterCal.Q,
                   CALIB_ZERO_DISPARITY, s.alpha, s.imageSize * s.rf,
                   &sterCal.validRoi[0], &sterCal.validRoi[1]);
-
+    
     rectifyImages(s, inCal, inCal2, sterCal);
     return sterCal;
 }
@@ -1310,13 +1309,11 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
     if (s.mode == Settings::STEREO) {         // stereo calibration
         if (!s.useIntrinsicInput)
         {
-
             // Stereo calibration requires both images to have the same # of image and object points;
             //  getSharedPoints limits the points lists to only those points shared between each image
             if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
                 getSharedPoints(inCal, inCal2);
             }
-            cout << inCal.objectPoints.size() << endl;
 
             ok = runIntrinsicCalibration(s, inCal);
 
@@ -1330,7 +1327,7 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
                    inCal2.totalAvgErr);
         } else
             ok = true;
-
+        
         stereoCalibration sterCal = runStereoCalibration(s, inCal, inCal2);
         s.saveExtrinsics(sterCal);
 
@@ -1402,7 +1399,7 @@ int calibrateWithSettings( const string inputSettingsFile )
                                                        s.markerLength[n], s.markerLength[n],
                                                        dictionary, s.type[n]);
             boardsList.push_back(board);
-
+            
             // make intrinsicCalibration structs,
             //  two for each board.
             intrinsicCalibration inCalAruCo;
@@ -1424,6 +1421,7 @@ int calibrateWithSettings( const string inputSettingsFile )
         //  between intrinsic calibration structs for stereo mode.
         int value = 0;
 
+
         for(int i = 0;;i++)
         {
             // Switches between intrinsic calibration structs for stereo mode
@@ -1437,7 +1435,7 @@ int calibrateWithSettings( const string inputSettingsFile )
 
             // Set up the image
             Mat img = s.imageSetup(i);
-
+            
             if(!img.data) {
 
                 for(int n = 0; n< s.numberOfBoards; n++){
@@ -1481,12 +1479,11 @@ int calibrateWithSettings( const string inputSettingsFile )
 
             s.imageSize = img.size();
             Mat imgCopy;
-
+            
             for(int n = 0; n< s.numberOfBoards; n++){
                 arucoDetect(s, img, *currentInCal, boardsList[n]);
                 currentInCal = &inCalList[(i+1)% s.numberOfBoards][value];
-
-
+                
                 if(save) {
                     sprintf(imgSave, "%sdetected_%d.jpg", s.detectedPath.c_str(), i);
                     imwrite(imgSave, imgCopy);
@@ -1495,11 +1492,9 @@ int calibrateWithSettings( const string inputSettingsFile )
 
         }
     }
-
+    
     /*-----------Calibration using Standard Chessboard--------------*/
     else if(s.calibrationPattern == Settings::CHESSBOARD){
-
-
         // For each image in the image list
         for(int i = 0;;i++)
         {
@@ -1530,10 +1525,7 @@ int calibrateWithSettings( const string inputSettingsFile )
                 sprintf(imgSave, "%sdetected_%d.jpg", s.detectedPath.c_str(), i);
                 imwrite(imgSave, img);
             }
-
         }
-
     }
-
     return 0;
 }

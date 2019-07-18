@@ -210,6 +210,7 @@ ML Mac automatically sets the correct exposure before taking the photos. This ex
 
 This command will first prompt the user to hit enter to take a set or to write "q" to quit. If the user hits enter, ML Mac will move the robot arm to the 0th position. It will then take a photo. It will iterate through all positions in the path loaded on the Rosvita server, taking a picture at each one, and saving those pictures at <scene>/orig/calibration/stereo/posX/IMGn.JPG, where X is the postion number and n is the set number. Then it will prompt the user whether they want to continue taking sets, retake the last set (overwriting the IMGn.JPG photos), or stop running the command.
 
+
 ### Ambient
 In order to capture ambient data, the Mac must be connected to the robot arm (and the iPhone).
 
@@ -228,10 +229,10 @@ Flags:
 
 The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
 
-### Ambient Ball Images
+#### Ambient Ball Images
 Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
 
-### Default Images
+#### Default Images
 Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
 
 #### Ambient Videos with IMU Data
@@ -259,6 +260,7 @@ After the trajectory is completed, the iPhone sends the Mac two files:
 * the video (a .mp4 file)
 * the IMU data, saved as a Yaml list of IMU samples (a .yml file)
 Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
+
 
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
@@ -295,6 +297,7 @@ The reason for the distinction between the projector number and id is so that on
 
 Before starting capture, ML Mac will move the arm to the position and ask you to hit "enter" once it reaches that position.
 After that, capture begins. It projects first vertical, then horizontal binary code images. After each direction, the Mac should receive 2 files: a "metadata" file that simply contains the direction of the stripes and the decoded PFM file. It saves the PFM file to "computed/decoded/projX/posA". It then refines the decoded image.
+
 
 
 ## Image Processing
