@@ -939,8 +939,8 @@ void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBo
 
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
 
-    //detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX;
-    detectorParams-> doCornerRefinement = true; // do corner refinement in markers
+    detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX;
+    //detectorParams-> doCornerRefinement = true; // do corner refinement in markers
     detectorParams-> cornerRefinementWinSize = 4;
     detectorParams->  minMarkerPerimeterRate = 0.01;
     detectorParams->  maxMarkerPerimeterRate = 4 ;
@@ -1206,6 +1206,7 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
             //Mat img = imread(s.imageList[i*2+k], 0), rimg, cimg;
 
             Mat img = s.imageSetup(i*2+k), rimg;
+            cout << "M = "<< endl << " "  << rmap[k][1] << endl << endl;
             remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
 
             // If a valid path for rectified images has been provided, save them to this path
@@ -1246,6 +1247,7 @@ bool runIntrinsicCalibration(Settings s, intrinsicCalibration &inCal)
     {
         inCal.cameraMatrix = s.intrinsicInput.cameraMatrix;
         inCal.distCoeffs = s.intrinsicInput.distCoeffs;
+
         calibrateCamera(inCal.objectPoints, inCal.imagePoints, s.imageSize,
                         inCal.cameraMatrix, inCal.distCoeffs,
                         inCal.rvecs, inCal.tvecs, s.flag | CV_CALIB_USE_INTRINSIC_GUESS);
@@ -1257,6 +1259,7 @@ bool runIntrinsicCalibration(Settings s, intrinsicCalibration &inCal)
         calibrateCamera(inCal.objectPoints, inCal.imagePoints, s.imageSize,
                         inCal.cameraMatrix, inCal.distCoeffs,
                         inCal.rvecs, inCal.tvecs, s.flag);
+
     }
 
     bool ok = checkRange(inCal.cameraMatrix) && checkRange(inCal.distCoeffs);
@@ -1292,6 +1295,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
 
     printf("\nStereo reprojection error = %.4f\n", err);
 
+
     // Rectify the images using these extrinsic results
     stereoRectify(inCal.cameraMatrix, inCal.distCoeffs,
                   inCal2.cameraMatrix, inCal2.distCoeffs,
@@ -1308,6 +1312,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
 void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
 {
     bool ok;
+
     if (s.mode == Settings::STEREO) {         // stereo calibration
         if (!s.useIntrinsicInput)
         {
@@ -1317,13 +1322,20 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
             if (s.calibrationPattern != Settings::CHESSBOARD) {     //ArUco pattern
                 getSharedPoints(inCal, inCal2);
             }
-            cout << inCal.objectPoints.size() << endl;
+
+            if (inCal.objectPoints.size() <= 0){
+                cout<<" The number of detected images is " << inCal.objectPoints.size()<<endl;
+                cout<<" Unbale to calibrate due to invalid number of object points.";
+                cout<<" Check your settings!" << endl;
+                return;
+            }
 
             ok = runIntrinsicCalibration(s, inCal);
 
             printf("%s for left. Avg reprojection error = %.4f\n",
                    ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
                    inCal.totalAvgErr);
+
             ok = runIntrinsicCalibration(s, inCal2);
 
             printf("%s for right. Avg reprojection error = %.4f\n",
@@ -1337,6 +1349,13 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
 
 
     } else {                        // intrinsic calibration
+        if (inCal.objectPoints.size() <= 0){
+            cout<<" The number of detected images is " << inCal.objectPoints.size()<<endl;
+            cout<<" Unbale to calibrate due to invalid number of object points.";
+            cout<<" Check your settings!" << endl;
+            return;
+        }
+
         ok = runIntrinsicCalibration(s, inCal);
         printf("%s. Avg reprojection error = %.4f\n",
                ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
