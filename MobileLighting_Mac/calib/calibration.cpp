@@ -96,9 +96,8 @@ vector<  int  > returnVector;
 Settings::Settings() : goodInput(false) {};
 
 //Reads settings serialization
-void Settings::read(const FileNode& node)
+void Settings::read(const FileNode& node, bool isStereoMode)
 {
-    node["Mode"] >> modeInput;
     node["Calibration_Pattern"] >> patternInput;
 
     node["ChessboardSize_Width" ] >> boardSize.width;
@@ -128,15 +127,15 @@ void Settings::read(const FileNode& node)
     node["Calibrate_AssumeZeroTangentialDistortion"] >> assumeZeroTangentDist;
     node["Calibrate_FixPrincipalPointAtTheCenter"] >> fixPrincipalPoint;
 
-    node["Alpha_parameter"] >> alpha;
-    node["Resizing_factor"] >> rf;
+    node["Alpha_Parameter"] >> alpha;
+    node["Resizing_Factor"] >> rf;
     node["Cropping_After_Rectification"] >> crop;
 
     node["Show_UndistortedImages"] >> showUndistorted;
     node["Show_RectifiedImages"] >> showRectified;
     node["Wait_NextDetectedImage"] >> wait;
 
-    Settings::interprate();
+    Settings::interprate(isStereoMode);
 }
 
 //Writes settings serialization to a file. Uncomment the other write() function
@@ -145,7 +144,6 @@ void Settings::write(  FileStorage& fs) const
 {
   fs << "{"
 
-	 << "Mode" << modeInput
 	 << "Calibration_Pattern" <<  patternInput
 
 	 << "ChessboardSize_Width"  <<  boardSize.width
@@ -167,8 +165,8 @@ void Settings::write(  FileStorage& fs) const
 	 << "Calibrate_AssumeZeroTangentialDistortion" <<  assumeZeroTangentDist
 	 << "Calibrate_FixPrincipalPointAtTheCenter" <<  fixPrincipalPoint
 
-	 << "Alpha_parameter" << alpha
-	 << "Resizing_factor" << rf
+	 << "Alpha_Parameter" << alpha
+	 << "Resizing_Factor" << rf
 	 << "Cropping_After_Rectification" << crop
 
 	 << "Show_UndistortedImages" <<  showUndistorted
@@ -219,12 +217,12 @@ bool Settings::readIntrinsicInput( const string& filename) {
 }
 
 //Interprets the settings and checks for valid input
-void Settings::interprate()
+void Settings::interprate(bool isStereoMode)
 {
     goodInput = true;
 
-    if (!modeInput.compare("INTRINSIC")) mode = INTRINSIC;
-    if (!modeInput.compare("STEREO")) mode = STEREO;
+//    if (!modeInput.compare("INTRINSIC")) mode = INTRINSIC;
+//    if (!modeInput.compare("STEREO")) mode = STEREO;
 
     if (mode == INVALID)
         {
@@ -380,7 +378,7 @@ void Settings::interprate()
     if (readImageList(imageListFilename))
     {
         nImages = (int)imageList.size();
-        if (mode == STEREO)
+        if (isStereoCalib)
             if (nImages % 2 != 0) {
             	cout << "Image list must have even # of elements for stereo calibration" << endl;
             	goodInput = false;
@@ -829,9 +827,9 @@ void getObjectAndImagePoints( vector< vector< Point2f > >  detectedCorners, vect
     }
 }
 
-void processPoints(Settings s, vector< vector< Point2f > > corners, vector<int> ids,
+void processPoints(vector< vector< Point2f > > corners, vector<int> ids,
                    vector<int> counter, vector< vector < Point2f >> &processedImagePoints,
-                   vector< vector<Point3f>> &processedObjectPoints, Ptr<ChessBoard> &currentBoard) {
+                   vector< vector<Point3f>> &processedObjectPoints, Ptr<ChessBoard> &currentBoard, bool isStereoMode) {
 
     // For each frame, get properly processed imagePoints and objectPoints
     //  for the calibrateCamera function
@@ -864,7 +862,7 @@ void processPoints(Settings s, vector< vector< Point2f > > corners, vector<int> 
         }
 
         else if (currentImgPoints.size() < 1 && currentObjPoints.size() < 1
-                 && s.mode == Settings::STEREO) {
+                 && isStereoMode) {
 
             for (int i=0; i < 4; i++){
                 currentImgPoints.push_back(Point2f(-1,-1));
@@ -876,8 +874,8 @@ void processPoints(Settings s, vector< vector< Point2f > > corners, vector<int> 
     }
 }
 
-void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2,
-                Ptr<ChessBoard> &currentBoard){
+void setUpAruco( intrinsicCalibration &inCal, intrinsicCalibration &inCal2,
+                Ptr<ChessBoard> &currentBoard, bool isStereoMode){
 
     // Clear these temporary storage vectors (decleared globally)
     allCornersConcatenated1.clear();
@@ -897,17 +895,16 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
     vector< vector<Point3f>> processedObjectPoints1 ;
 
     // prepares data for aruco calibration
-    processPoints(s, allCornersConcatenated1,
+    processPoints(allCornersConcatenated1,
                   allIdsConcatenated1, markerCounterPerFrame1,
-                  processedImagePoints1, processedObjectPoints1, currentBoard);
+                  processedImagePoints1, processedObjectPoints1, currentBoard, isStereoMode);
 
     inCal.objectPoints = processedObjectPoints1;
     inCal.imagePoints =processedImagePoints1;
 
 
     // If stereo mode, repeat the process for the second viewpoint
-    if(s.mode == Settings::STEREO){
-
+    if(isStereoMode){
         // Clear these temporary storage vectors (decleared globally)
         allCornersConcatenated2.clear();
         allIdsConcatenated2.clear();
@@ -925,16 +922,16 @@ void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &
         vector< vector < Point2f >>  processedImagePoints2;
         vector< vector<Point3f>> processedObjectPoints2;
 
-        processPoints(s, allCornersConcatenated2,
+        processPoints(allCornersConcatenated2,
                       allIdsConcatenated2, markerCounterPerFrame2,
-                      processedImagePoints2, processedObjectPoints2, currentBoard);
+                      processedImagePoints2, processedObjectPoints2, currentBoard, isStereoMode);
 
         inCal2.objectPoints = processedObjectPoints2;
         inCal2.imagePoints =processedImagePoints2;
     }
 }
 
-void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoard> currentBoard){
+void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoard> currentBoard, bool isStereoMode){
     Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
 
     // doCornerRefinement is deprecated in some versions of opencv. use cornerRefinementMethod if you get an error on compilation
@@ -957,7 +954,7 @@ void  arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBo
         InCal.allIds.push_back(currentBoard->ids);
         s.imageSize = img.size();
     }
-    else if (currentBoard->ids.size() == 0 && s.mode == Settings::STEREO) {
+    else if (currentBoard->ids.size() == 0 && isStereoMode) {
 
         vector < Point2f > temp;
 
@@ -1223,10 +1220,7 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
         }
 
         if (crop)
-            dfs =cropImage(vectorRimgs, vectorROIs, i);
-
-        printf("7");
-
+            dfs = cropImage(vectorRimgs, vectorROIs, i);
     }
 
     if (crop){
@@ -1308,11 +1302,11 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
 }
 
 // Runs the appropriate calibration based on the mode and saves the results
-void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2)
+void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, bool isStereoMode)
 {
     bool ok;
 
-    if (s.mode == Settings::STEREO) {         // stereo calibration
+    if (isStereoMode) {         // stereo calibration
         if (!s.useIntrinsicInput)
         {
             // Stereo calibration requires both images to have the same # of image and object points;
@@ -1367,7 +1361,7 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
 }
 
 // Main function. Detects patterns on images, runs calibration and saves results
-int calibrateWithSettings( const string inputSettingsFile )
+int calibrateWithSettings( const string inputSettingsFile, bool isStereoMode )
 {
     Settings s;
     FileStorage fs(inputSettingsFile, FileStorage::READ);   // Read the settings
@@ -1390,7 +1384,7 @@ int calibrateWithSettings( const string inputSettingsFile )
     intrinsicCalibration *currentInCal = &inCal;
 
     // size for stereo calibration
-    int size = (s.mode == Settings::STEREO) ? s.nImages/2 : s.nImages;
+    int size = (isStereoMode) ? s.nImages/2 : s.nImages;
 
     // variables to save photos after detection
     char imgSave[1000];
@@ -1449,7 +1443,7 @@ int calibrateWithSettings( const string inputSettingsFile )
             if (i%2 == 0) {
                 currentInCal = &inCalList[0][0];
                 value = 0;
-            } else if (s.mode == Settings::STEREO){
+            } else if (isStereoMode){
                 currentInCal = &inCalList[ s.numberOfBoards-1][1];
                 value = 1;
             }
@@ -1461,7 +1455,7 @@ int calibrateWithSettings( const string inputSettingsFile )
 
                 for(int n = 0; n< s.numberOfBoards; n++){
 
-                    setUpAruco(s, inCalList[n][0], inCalList[n][1], boardsList[n]);
+                    setUpAruco(inCalList[n][0], inCalList[n][1], boardsList[n], isStereoMode);
 
                     // inCal is the final structure used for the calibration.
                     //  Thus, move all the processed objectPoints from the first viewpoint
@@ -1475,7 +1469,7 @@ int calibrateWithSettings( const string inputSettingsFile )
                                              inCalList[n][0].imagePoints.begin(),
                                              inCalList[n][0].imagePoints.end());
 
-                    if (s.mode == Settings::STEREO){
+                    if (isStereoMode){
 
                         // inCal2 is the final structure used for stereo calibration.
                         //  Thus, move all the processed objectPoints from the second viewpoint
@@ -1492,7 +1486,7 @@ int calibrateWithSettings( const string inputSettingsFile )
 
                 }
 
-                runCalibrationAndSave(s, inCal, inCal2);
+                runCalibrationAndSave(s, inCal, inCal2, isStereoMode);
 
                 break;
 
@@ -1502,7 +1496,7 @@ int calibrateWithSettings( const string inputSettingsFile )
             Mat imgCopy;
             
             for(int n = 0; n< s.numberOfBoards; n++){
-                arucoDetect(s, img, *currentInCal, boardsList[n]);
+                arucoDetect(s, img, *currentInCal, boardsList[n], isStereoMode);
                 currentInCal = &inCalList[(i+1)% s.numberOfBoards][value];
                 
                 if(save) {
@@ -1522,7 +1516,7 @@ int calibrateWithSettings( const string inputSettingsFile )
             // Switches between intrinsic calibration structs for stereo mode
             if (i%2 == 0) {
                 currentInCal = &inCal;
-            } else if (s.mode == Settings::STEREO){
+            } else if (isStereoMode){
                 currentInCal = &inCal2;
             }
 
@@ -1533,7 +1527,7 @@ int calibrateWithSettings( const string inputSettingsFile )
             // If there is no data, the photos have run out
             if(!img.data)
             {
-                runCalibrationAndSave(s, inCal, inCal2);
+                runCalibrationAndSave(s, inCal, inCal2, isStereoMode);
                 break;
             }
 

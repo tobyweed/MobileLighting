@@ -93,7 +93,7 @@ static void read(const FileNode& node, Settings& x, const Settings& default_valu
 };
 
 // this funciont set up aruco for detection check
-void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, int n){
+void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, int n, bool isStereoMode){
 
     // Clear these temporary storage vectors (decleared globally)
     allCornersConcatenated1_.clear();
@@ -112,16 +112,16 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
     vector< vector < Point2f >>  processedImagePoints1;
     vector< vector<Point3f>> processedObjectPoints1;
 
-    processPoints(s, allCornersConcatenated1_,
+    processPoints(allCornersConcatenated1_,
                    allIdsConcatenated1_, markerCounterPerFrame1_,
-                   processedImagePoints1, processedObjectPoints1, currentBoard);
+                   processedImagePoints1, processedObjectPoints1, currentBoard, isStereoMode);
 
     inCal.objectPoints = processedObjectPoints1;
     inCal.imagePoints = processedImagePoints1;
 
     int total_corners = 4 * s.markersX[n] * s.markersY[n];
 
-    if(s.mode == Settings::INTRINSIC) {
+    if(!isStereoMode) {
 
         int detected0;
         cout<<inCal.objectPoints.size();
@@ -148,7 +148,7 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
     }
 
     // If stereo mode, repeat the process for the second viewpoint
-    else if(s.mode == Settings::STEREO){
+    else if(isStereoMode){
 
         // Clear these temporary storage vectors (decleared globally)
         allCornersConcatenated2_.clear();
@@ -167,9 +167,9 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
         vector< vector < Point2f >>  processedImagePoints2;
         vector< vector < Point3f >> processedObjectPoints2;
 
-        processPoints(s, allCornersConcatenated2_,
+        processPoints(allCornersConcatenated2_,
                        allIdsConcatenated2_, markerCounterPerFrame2_,
-                       processedImagePoints2, processedObjectPoints2, currentBoard);
+                       processedImagePoints2, processedObjectPoints2, currentBoard, isStereoMode);
 
         inCal2.objectPoints = processedObjectPoints2;
         inCal2.imagePoints = processedImagePoints2;
@@ -214,7 +214,7 @@ void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration 
 }
 
 // Main function. Detects patterns on images
-vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1 = NULL) {
+vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1, bool isStereoMode) {
     string inputSettingsFile = settingsFile;
 
     Mat img0;
@@ -247,7 +247,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     intrinsicCalibration *currentInCal = &inCal;
 
     // size of vectors for stereo calibration
-    int size = (s.mode == Settings::STEREO) ? s.nImages/2 : s.nImages;
+    int size = (isStereoMode) ? s.nImages/2 : s.nImages;
 
     char imgSave[1000];
     bool save = false;
@@ -309,7 +309,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             if (i % 2 == 0) {
                 currentInCal = &inCalList[0][0];
                 value = 0;
-            } else if (s.mode == Settings::STEREO){
+            } else if (isStereoMode){
                 currentInCal = &inCalList[ s.numberOfBoards-1][1];
                 value = 1;
             }
@@ -330,10 +330,10 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             if(!currentImg.data) {
 
                 for(int n = 0; n < s.numberOfBoards; n++){
-                    setUpAruco_(s, inCalList[n][0], inCalList[n][1], boardsList[n], n);
+                    setUpAruco_(s, inCalList[n][0], inCalList[n][1], boardsList[n], n, isStereoMode);
 
                     // if stereo, then print out the number of shared object Points
-                    if (s.mode == Settings::STEREO){
+                    if (isStereoMode){
 
                         getSharedPoints(inCalList[n][0],  inCalList[n][1]);
 
@@ -356,7 +356,7 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
             Mat imgCopy;
 
             for(int n = 0; n < s.numberOfBoards; n++){
-                arucoDetect(s, currentImg, *currentInCal, boardsList[n]);
+                arucoDetect(s, currentImg, *currentInCal, boardsList[n], isStereoMode);
                 currentInCal = &inCalList[(i+1)% s.numberOfBoards][value];
                 if(save) {
                     sprintf(imgSave, "%sdetected_%d.jpg", s.detectedPath.c_str(), i);

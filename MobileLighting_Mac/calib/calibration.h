@@ -177,13 +177,13 @@ void getSharedPoints(intrinsicCalibration &inCal, intrinsicCalibration &inCal2);
 void getObjectAndImagePoints( vector< vector< Point2f > >  detectedCorners, vector< int > detectedIds,
 			      vector< Point3f > &objPoints, vector< Point2f > &imgPoints,
 			      Ptr<ChessBoard> &currentBoard);
-void processPoints(Settings s, vector< vector< Point2f > > corners, vector<int> ids,
+void processPoints(vector< vector< Point2f > > corners, vector<int> ids,
 		   vector<int> counter, vector< vector < Point2f >> &processedImagePoints,
-		   vector< vector<Point3f>> &processedObjectPoints, Ptr<ChessBoard> &currentBoard);
-void setUpAruco( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard);
-void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, int n);
-void arucoDetect(Settings s, Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoard> currentBoard);
-void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2);
+		   vector< vector<Point3f>> &processedObjectPoints, Ptr<ChessBoard> &currentBoard, bool isStereoMode);
+void setUpAruco( intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, bool isStereoMode);
+void setUpAruco_( Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, Ptr<ChessBoard> &currentBoard, int n, bool isStereoMode);
+void arucoDetect(Settings s,Mat &img, intrinsicCalibration &InCal, Ptr<ChessBoard> currentBoard, bool isStereoMode);
+void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCalibration &inCal2, bool isStereoMode);
 void chessboardDetect(Settings s, Mat &img, intrinsicCalibration &inCal);
-int calibrateWithSettings( const string inputSettingsFile );
+int calibrateWithSettings( const string inputSettingsFile, bool isStereoMode );
 vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1 );
