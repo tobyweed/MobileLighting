@@ -10,12 +10,13 @@
 #define MobileLighting_Mac_Bridging_Header_h
 
 #include "Parameters.h"
+#include <stdbool.h>
 
 //MARK: Image Processor
 #include "activeLighting/activeLighting.h"
 
 // calibration functions
-int calibrateWithSettings(char *settingspath);
+int calibrateWithSettings(char *settingspath, bool isStereoMode);
 
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
 
@@ -23,7 +24,7 @@ void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, ch
 #include "RobotControl/RobotControl/RobotControl.h"
 
 //MARK: Calibration
-int CalibrateWithSettings(const char *inputSettingsFile);
-int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
+int CalibrateWithSettings(const char *inputSettingsFile, bool isStereoMode);
+int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright, bool isStereoMode);
 
 #endif

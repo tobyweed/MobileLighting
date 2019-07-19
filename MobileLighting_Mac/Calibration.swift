@@ -52,7 +52,13 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
     }
     
     let settingsPath = dirStruc.calibrationSettingsFile
-    var cSettingsPath = settingsPath.cString(using: .ascii)!
+    var cSettingsPath: [CChar]
+    do {
+        try cSettingsPath = safePath(settingsPath)
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     let settings = CalibrationSettings(settingsPath)
     settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
     settings.set(key: .Mode, value: Yaml.string("STEREO"))
@@ -98,13 +104,13 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
                     print(err.localizedDescription)
                     break
                 }
-                // generate image lists for DetectionCheck to read later
+                // generate image lists for DetectionCheck to read
                 generateStereoImageList(left: stereoDirDict[i]!, right: stereoDirDict[i-1]!)
                 // make sure DetectionCheck will read from the right image list
                 settings.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
                 settings.save()
                 // now perform check what patterns were detected
-                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
+                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath, true)
             }
             i += 1
         }

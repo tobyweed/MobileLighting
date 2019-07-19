@@ -358,7 +358,6 @@ func processCommand(_ input: String) -> Bool {
             startIndex = 0
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
-        let subpath = dirStruc.intrinsicsPhotos
         
         // Insert photos starting at the right index, stopping on user prompt
         var i: Int = startIndex;
@@ -378,9 +377,35 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
             let completionHandler = { receivedCalibrationImage = true }
             photoReceiver.dataReceivers.insertFirst(
-                CalibrationImageReceiver(completionHandler, dir: subpath, id: i)
+                CalibrationImageReceiver(completionHandler, dir: dirStruc.intrinsicsPhotos, id: i)
             )
             while !receivedCalibrationImage {}
+            
+            // make sure we have the right image list
+            generateIntrinsicsImageList()
+            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
+            calib.save()
+            
+            print("\nDetecting objectPoints...")
+            var imgpath: [CChar]
+            do {
+                try imgpath = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
+            } catch let err {
+                print(err.localizedDescription)
+                break
+            }
+            let settingsPath = dirStruc.calibrationSettingsFile
+            var cSettingsPath: [CChar]
+            do {
+                try cSettingsPath = safePath(settingsPath)
+            } catch let err {
+                print(err.localizedDescription)
+                break
+            }
+            
+            DetectionCheck(&cSettingsPath, &imgpath, nil, false)
+            
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
@@ -1547,7 +1572,7 @@ func processCommand(_ input: String) -> Bool {
         let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
         
         calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
+//        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
         calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
         calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
         calib.save()
@@ -1562,7 +1587,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         DispatchQueue.main.async {
-            CalibrateWithSettings(&path)
+            CalibrateWithSettings(&path, false)
         }
         break
         
@@ -1616,7 +1641,7 @@ func processCommand(_ input: String) -> Bool {
             
             let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
             calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-            calib.set(key: .Mode, value: Yaml.string("STEREO"))
+//            calib.set(key: .Mode, value: Yaml.string("STEREO"))
             calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
             calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
             calib.save()
@@ -1625,10 +1650,11 @@ func processCommand(_ input: String) -> Bool {
             do {
                 try path = safePath(dirStruc.calibrationSettingsFile)
             } catch let err {
+                print("here")
                 print(err.localizedDescription)
                 break
             }
-            CalibrateWithSettings(&path)
+            CalibrateWithSettings(&path, true)
         }
         
         

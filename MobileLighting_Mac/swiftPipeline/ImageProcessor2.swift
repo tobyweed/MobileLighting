@@ -330,11 +330,16 @@ func reproject(left leftpos: Int, right rightpos: Int) {
     for proj in projectors {
         for pos in [leftpos, rightpos] {
             var dispx: [CChar], dispy: [CChar], codex: [CChar], codey: [CChar], outx: [CChar], outy: [CChar], errfile: [CChar], matfile: [CChar], logfile: [CChar]
-
-            dispx = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosscheck.pfm")
-            dispy = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)y-1crosscheck.pfm")
-            codex = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)u-4refined2.pfm"
-            codey = *"\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)v-4refined2.pfm"
+            do {
+                try dispx = safePath((dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosscheck.pfm"))
+                try dispy = safePath((dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)y-1crosscheck.pfm"))
+                try codex = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)u-4refined2.pfm")
+                try codey = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)v-4refined2.pfm")
+            } catch let err {
+                print(err.localizedDescription)
+                return
+            }
+                
             outx = (dirStruc.reprojected(proj: proj, pos: pos) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
             outy = (dirStruc.reprojected(proj: proj, pos: pos) + "/disp\(leftpos)\(rightpos)y-0initial.pfm").cString(using: .ascii)!
             errfile = (dirStruc.reprojected(proj: proj, pos: pos) + "/error\(leftpos)\(rightpos).pfm").cString(using: .ascii)!
@@ -362,7 +367,6 @@ func reproject(left leftpos: Int, right rightpos: Int) {
 }
 
 func mergeReprojected(left leftpos: Int, right rightpos: Int) {
-    
     for pos in [leftpos, rightpos] {
         var premerged = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm")
         
@@ -392,7 +396,7 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
         var outsdfile = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-sd.pfm")
         var outnfile = *(dirStruc.merged2(pos) + "/disp\(leftpos)\(rightpos)x-nsamples.pgm")
         
-         mergeDisparityMaps2(MERGE2_MAXDIFF, nV, nR, &outdfile, &outsdfile, &outnfile, &inmdfile, &viewDispsPtrs, &reprojDispsPtrs)
+        mergeDisparityMaps2(MERGE2_MAXDIFF, nV, nR, &outdfile, &outsdfile, &outnfile, &inmdfile, &viewDispsPtrs, &reprojDispsPtrs)
         
         // filter merged results
         var indispx = outdfile
