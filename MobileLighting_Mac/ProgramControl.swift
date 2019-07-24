@@ -384,6 +384,7 @@ func processCommand(_ input: String) -> Bool {
             // make sure we have the right image list
             generateIntrinsicsImageList()
             let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+            calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
             calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
             calib.save()
             
@@ -404,7 +405,7 @@ func processCommand(_ input: String) -> Bool {
                 break
             }
             
-            DetectionCheck(&cSettingsPath, &imgpath, nil, false)
+            DetectionCheck(&cSettingsPath, &imgpath, nil)
             
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
@@ -508,7 +509,7 @@ func processCommand(_ input: String) -> Bool {
                 }
             }
         } else if arg3.contains("-a") { // otherwise just use all positiosn
-            poses = Array(0...nPositions)
+            poses = Array(0..<nPositions)
         } else { // otherwise make sure we can conver the arg to an int
             guard let pos = Int(tokens[3]) else {
                 print(usage)
@@ -705,6 +706,8 @@ func processCommand(_ input: String) -> Bool {
             var torchMode: AVCaptureDevice.TorchMode = .off
             var mode = "normal"
             var appending = false
+            var humanMotion = false
+            var x = false
             for flag in flags {
                 switch flag {
                 case "-t":
@@ -716,13 +719,25 @@ func processCommand(_ input: String) -> Bool {
                     print("appending a new video directory...")
                     appending = true
                     break
+                case "-h":
+                    print("using realistic VIVE recorded trajectory...")
+                    humanMotion = true
+                    break
+                case "-x":
+                    x = true
+                    break
                 default:
                     print("flag \(flag) not recognized.")
                 }
             }
             
             // get the right lighting to write to
-            let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode)
+            var startIndex: Int
+            if !x {
+                startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
+            } else {
+                startIndex = 100
+            }
             
             // capture video at all selected exposures
             for exp in exps {
@@ -730,7 +745,11 @@ func processCommand(_ input: String) -> Bool {
                 
                 // go to the start position
                 if( !debugMode ) {
-                    GotoVideoStart()
+                    if (GotoVideoStart() == 0) {
+                        print("robot moved to video start position.")
+                    } else {
+                        print("could not move robot to start position")
+                    }
                 } else {
                     print("program is in debugMode. skipping robot motion")
                 }
@@ -741,16 +760,26 @@ func processCommand(_ input: String) -> Bool {
                 cameraServiceBrowser.sendPacket(packet)
                 
                 // configure video data receiver
-                let videoReceiver = AmbientVideoReceiver({}, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex))/exp\(exp)video.mp4")
+                var videoReceiver: AmbientVideoReceiver
+                var imuReceiver: IMUDataReceiver
+                var videoReceived: Bool = false
+                var imuReceived: Bool = false
+                
+                videoReceiver = AmbientVideoReceiver({
+                    videoReceived = true
+                }, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex, humanMotion: humanMotion))/exp\(exp)video.mp4")
                 photoReceiver.dataReceivers.insertFirst(videoReceiver)
-                let imuReceiver = IMUDataReceiver({}, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex))/exp\(exp)imu.yml")
+                imuReceiver = IMUDataReceiver({
+                    imuReceived = true
+                }, path: "\(dirStruc.ambientVideos(mode: mode, lighting: startIndex, humanMotion: humanMotion))/exp\(exp)imu.yml")
                 photoReceiver.dataReceivers.insertFirst(imuReceiver)
                 
                 // Tell the Rosvita server to move the robot smoothly through its whole trajectory
                 if( !debugMode ) {
-                    if( ExecutePath() == 0 ) {
+                    if( !humanMotion && ExecutePath() == 0 ) {
                         print("path completed. stopping recording.")
-                        
+                    } else if( ExecuteHumanPath() == 0 ) {
+                        print("path completed. stopping recording.")
                     } else {
                         print("problem executing path. stopping recording.")
                     }
@@ -762,6 +791,10 @@ func processCommand(_ input: String) -> Bool {
                 
                 packet = CameraInstructionPacket(cameraInstruction: .EndVideoCapture)
                 cameraServiceBrowser.sendPacket(packet)
+                
+                // wait to receive video and imu as the network connection can get clogged
+                while (!videoReceived) {}
+                while (!imuReceived) {}
             }
             break
         default:
@@ -1572,7 +1605,7 @@ func processCommand(_ input: String) -> Bool {
         let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
         
         calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-//        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
+        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
         calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
         calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
         calib.save()
@@ -1587,7 +1620,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         DispatchQueue.main.async {
-            CalibrateWithSettings(&path, false)
+            CalibrateWithSettings(&path)
         }
         break
         
@@ -1641,7 +1674,7 @@ func processCommand(_ input: String) -> Bool {
             
             let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
             calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-//            calib.set(key: .Mode, value: Yaml.string("STEREO"))
+            calib.set(key: .Mode, value: Yaml.string("STEREO"))
             calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
             calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
             calib.save()
@@ -1654,7 +1687,7 @@ func processCommand(_ input: String) -> Bool {
                 print(err.localizedDescription)
                 break
             }
-            CalibrateWithSettings(&path, true)
+            CalibrateWithSettings(&path)
         }
         
         

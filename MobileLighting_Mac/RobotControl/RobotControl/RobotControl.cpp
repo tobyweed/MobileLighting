@@ -33,6 +33,10 @@ extern "C" int ExecutePath(){
   return executePath();
 }
 
+extern "C" int ExecuteHumanPath(){
+    return executeHumanPath();
+}
+
 extern "C" int SetVelocity(float v){
   return setVelocity(v);
 }

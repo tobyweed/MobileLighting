@@ -31,7 +31,7 @@ int client()
     serv_addr.sin_port = htons(PORT);
     
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, "192.168.1.3", &serv_addr.sin_addr)<=0)
+    if(inet_pton(AF_INET, "192.168.1.102", &serv_addr.sin_addr)<=0)
     {
         printf("Invalid address/ Address not supported \n");
         return -1;
@@ -63,7 +63,6 @@ int sendCommand(char *script){
     close(client_sock);
     usleep(1000000);
     return 0;
-    
 }
 
 // Load the path to the Rosvita server. Return -1 if unsuccessful, number of positions if successful
@@ -112,6 +111,7 @@ int gotoView(string num){
     return 0;
 }
 
+// move smoothly through the main viewpoints
 int executePath(){
     string script = "e";
     int n = script.length();
@@ -121,6 +121,18 @@ int executePath(){
         return -1;
     return 0;
 }
+
+// go through the motion recorded by the VIVE motion tracker
+int executeHumanPath(){
+    string script = "t";
+    int n = script.length();
+    char command[n+1];
+    strcpy(command, script.c_str());
+    if(sendCommand(command)<0)
+        return -1;
+    return 0;
+}
+
 
 int setVelocity(float v){
     string script = "v " +  std::to_string(v);

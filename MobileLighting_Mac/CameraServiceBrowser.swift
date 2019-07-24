@@ -60,9 +60,9 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
         self.readyToSendPacket = isConnected
         
         if isConnected {
-            print("Connected with service on port \(sender.port) in domain \(sender.domain) under name \(sender.name)")
+            print(" -- CameraServiceBrowser: Connected with service on port \(sender.port) in domain \(sender.domain) under name \(sender.name)")
         } else {
-            print("Failed to connect to service.")
+            print(" -- CameraServiceBrowser: Failed to connect to service.")
         }
         
         // if any packets ready to send, begin sending
@@ -93,7 +93,7 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
                     try socket.connect(toAddress: address)
                     return true                         // successfully connected, return true
                 } catch {
-                    print("Failed to connect to address \(address).")
+                    print(" -- CameraServiceBrowser: Failed to connect to address \(address).")
                 }
             }
             return false    // unabled to connect to any addresses of service
@@ -122,7 +122,7 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
             return
         }
         let packet = packetsToSend.first!
-        print("Sending packet #\(packet.hashValue) with timestamp \(timestampToString(date: Date()))")
+        print(" -- CameraServiceBrowser: Sending packet #\(packet.hashValue) with timestamp \(timestampToString(date: Date()))")
         
         let packetData = NSKeyedArchiver.archivedData(withRootObject: packet)   // archive packet for sending
         let packetDataLength = UInt16(packetData.count)

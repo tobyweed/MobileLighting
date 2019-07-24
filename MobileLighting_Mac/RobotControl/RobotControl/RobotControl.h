@@ -18,6 +18,7 @@ int GotoView(char *);
 int LoadPath(char *);
 int GotoVideoStart();
 int ExecutePath();
+int ExecuteHumanPath();
 int SetVelocity(float);
 
 #pragma GCC visibility pop

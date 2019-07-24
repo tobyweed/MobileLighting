@@ -16,7 +16,7 @@
 #include "activeLighting/activeLighting.h"
 
 // calibration functions
-int calibrateWithSettings(char *settingspath, bool isStereoMode);
+int calibrateWithSettings(char *settingspath);
 
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
 
@@ -24,7 +24,7 @@ void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, ch
 #include "RobotControl/RobotControl/RobotControl.h"
 
 //MARK: Calibration
-int CalibrateWithSettings(const char *inputSettingsFile, bool isStereoMode);
-int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright, bool isStereoMode);
+int CalibrateWithSettings(const char *inputSettingsFile);
+int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
 
 #endif

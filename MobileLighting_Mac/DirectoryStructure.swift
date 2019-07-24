@@ -73,8 +73,8 @@ class DirectoryStructure {
     /*=====================================================================================
      Ambients
      ======================================================================================*/
-    func ambients(ball: Bool, photo: Bool) -> String {
-        return (photo) ? ((ball) ? ambientBallPhotos : ambientPhotos) : ambientVideos
+    func ambients(ball: Bool, photo: Bool, humanMotion: Bool) -> String {
+        return (photo) ? ((ball) ? ambientBallPhotos : ambientPhotos) : ambientVideos(humanMotion)
     }
     
     // gets the right index to write ambients to
@@ -82,14 +82,14 @@ class DirectoryStructure {
     // photo: whether we're in photo or video mode
     // ball: whether we should save to ambient or ambientBall (only applies to photo mode)
     // mode: what mode we're in (eg "flash", "torch", "normal")
-    func getAmbientDirectoryStartIndex(appending: Bool, photo: Bool, ball: Bool, mode: String) -> Int {
+    func getAmbientDirectoryStartIndex(appending: Bool, photo: Bool, ball: Bool, mode: String, humanMotion: Bool = false) -> Int {
         var ids: [Int] = []
         var startIndex = 0
         if(appending) {
             do {
                 // create an array of paths to all the prior directories
-                let dirs = try FileManager.default.contentsOfDirectory(atPath: dirStruc.ambients(ball: ball, photo: photo)).map {
-                    return "\(dirStruc.ambients(ball: ball, photo: photo))/\($0)"
+                let dirs = try FileManager.default.contentsOfDirectory(atPath: dirStruc.ambients(ball: ball, photo: photo, humanMotion: humanMotion)).map {
+                    return "\(dirStruc.ambients(ball: ball, photo: photo, humanMotion: humanMotion))/\($0)"
                 }
                 // collect all the directory IDs, ignoring all directories not in the appropriate format (eg [F|T|L]x)
                 switch mode {
@@ -169,14 +169,18 @@ class DirectoryStructure {
         }
     }
     
-    func ambientVideos(mode: String, lighting: Int) -> String {
+    func ambientVideos(_ humanMotion: Bool) -> String {
+        return ambientVideos + ( (humanMotion) ? "/human" : "/smooth" )
+    }
+    
+    func ambientVideos( mode: String, lighting: Int, humanMotion: Bool ) -> String {
         var subdir: String
         switch mode {
         case "torch":
-            subdir =  "\(ambientVideos)/T\(lighting)"
+            subdir =  "\(ambientVideos(humanMotion))/T\(lighting)"
             break
         default:
-            subdir =  "\(ambientVideos)/L\(lighting)"
+            subdir =  "\(ambientVideos(humanMotion))/L\(lighting)"
         }
         try! FileManager.default.createDirectory(atPath: subdir, withIntermediateDirectories: true, attributes: nil)
         return subdir

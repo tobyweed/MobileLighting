@@ -110,7 +110,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
                 settings.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
                 settings.save()
                 // now perform check what patterns were detected
-                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath, true)
+                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
             }
             i += 1
         }
