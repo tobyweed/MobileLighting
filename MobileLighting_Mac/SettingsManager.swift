@@ -312,7 +312,7 @@ class CalibrationSettings {
             settingsDict["First_Marker"] = Yaml.array([113,516].map{return Yaml.int($0)})
             settingsDict["Mode"] = Yaml.string(CalibrationMode.STEREO.rawValue)
             settingsDict["Alpha_Parameter"] = Yaml.int(-1)
-            settingsDict["Resizing_Factor"] = Yaml.int(2)
+            settingsDict["Resizing_Factor"] = Yaml.int(1)
             let mainDict = Yaml.dictionary(settingsDict)
             return Yaml.dictionary([Yaml.string("Settings") : mainDict])
         }
