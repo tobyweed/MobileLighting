@@ -304,7 +304,7 @@ After that, capture begins. It projects first vertical, then horizontal binary c
 Here is the approximate outline of the image processing pipeline:
 1. Compute intrinsics
 1. Compute extrinsics for all stereo pairs
-1. Rectify all ambient images & decoded images for all stereo pairs
+1. Rectify all ambient images
 1. Refine all rectified code images (unrectified images should already have automatically been refined during data acquisition)
 1. Disparity-match unrectified, rectified code images
 1. Merge disparity maps for unrectified, rectified code images

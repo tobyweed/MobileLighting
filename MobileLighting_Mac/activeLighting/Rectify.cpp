@@ -30,7 +30,7 @@ int resizing_factor;
 void computemaps(int width, int height, char *intrinsics, char *extrinsics, char *settings)
 {
     FileStorage calibSettings(settings, FileStorage::READ);
-    calibSettings["Settings"]["Resizing factor"] >> resizing_factor;
+    calibSettings["Settings"]["Resizing_Factor"] >> resizing_factor;
     cv::Size ims(width, height);
     std::clog << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
