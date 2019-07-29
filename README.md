@@ -111,7 +111,7 @@ There are numerous steps to dataset acquisition:
     1. Scene directory creation and configuration
     1. Scene selection
     1. Projector and camera positions
-    1. Scene description and images
+    1. Scene description, images, and robot path data.
 1. Calibration image capture
     1. Intrinsic calibration
     2. Multiview calibration
@@ -162,27 +162,28 @@ Projectors should be positioned such that there are few locations visible from t
 Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
 
 #### Scene description and images
-*Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining briefly the contents of the scene.* The keys listed should consist of:
+1. Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining briefly the contents of the scene. The keys listed should consist of:
 * Scene name: the name of the scene (same as that of the scene directory)
 * Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
 * Lighting conditions: add a listing in here with the lighting and the directory name whenever you take ambients with different lightings. E.g.:
-  
-  Normal:
+Photos:
     - L0 - Lights on, windows closed
     - L1 - Lights on, windows opened
     - L2 - Lights off, windows opened
-    
-    Torch:
-    - T0 - No lights on, windows closed
-    - T1 - No ceiling lights on, umbrella light turned on in far left (from viewer) corner. Windows closed
-    
-    Flash:
-    - F0 - No lights on, windows closed
-    Also remember to take ambientBall images with the same lighting conditions.
+    - T0 - No lights on, windows closed, torch mode
+    - T1 - No ceiling lights on, umbrella light turned on in far left (from viewer) corner, windows closed, torch mode
+    - F0 - No lights on, windows closed, flash mode
+    Videos: 
+    - L0 - Lights on, windows closed
+    - L1 - Lights on, windows opened
+    - L2 - Lights off, windows opened
+    Also remember to take ambientBall images with the same lighting conditions as in the other photos.
 * Robot motion: Briefly describe the robot views (E.g.: Two lateral views about a foot apart. A little over 12 feet from the wall.)
 * Projector configuration: Briefly describe the projector positions (E.g.: Two large viewsonic projectors from two positions each. Proj0,2 are left projector, proj 1,3 are right projector.)
 
-Also *create a scenePictures directory and store images of the projector and robot/camera positions.* Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format. [This website](https://heictojpg.com/) is an easy place to do that conversion. It is important to have at least one photo of every projector position and every camera position. It is also a good idea to have a photo of the whole scene, including the projectors, robot, and still life.
+2. Create a scenePictures directory and store images of the projector and robot/camera positions. Make sure the images have descriptive names and are stored in jpg or png as opposed to heic format. [This website](https://heictojpg.com/) is an easy place to do that conversion. It is important to have at least one photo of every projector position and every camera position. It is also a good idea to have a photo of the whole scene, including the projectors, robot, and still life.
+3. Get a file with information on the robot poses from the Rosvita server and call it "robotPathInfo.ob."
+4. Save the files and directories from steps 1-3 and save them in the sceneInfo directory.
 
 
 ### Calibration
@@ -216,7 +217,7 @@ In order to capture ambient data, the Mac must be connected to the robot arm (an
 
 Multiple exposures can be used for ambient images. These are specified in the `ambient -> exposureDurations, exposureISOs` lists in the scene settings file.
 
-#### Ambient Still Images
+##### Ambient Still Images
 To capture ambient still images, use the following command:
 `takeamb still (-b)? (-f|-t)? (-a|-d)? [resolution=high]`
 Flags:
@@ -229,13 +230,13 @@ Flags:
 
 The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
 
-#### Ambient Ball Images
+##### Ambient Ball Images
 Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
 
-#### Default Images
+##### Default Images
 Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
 
-#### Ambient Videos with IMU Data
+##### Ambient Videos with IMU Data
 Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
 This YML file must contain a `trajectory` key. Under this key is a list of robot poses (either joints or coordinates in space, both 6D vectors).
 Joint positoin: [joint1, joint2, joint3, joint4, joint5, joint6], all in radians

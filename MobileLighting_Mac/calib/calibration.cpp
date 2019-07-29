@@ -1285,8 +1285,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
                                  CV_CALIB_FIX_INTRINSIC, TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 1000, 1e-10));
     
     printf("\nStereo reprojection error = %.4f\n", err);
-    
-    
+        
     // Rectify the images using these extrinsic results
     stereoRectify(inCal.cameraMatrix, inCal.distCoeffs,
                   inCal2.cameraMatrix, inCal2.distCoeffs,

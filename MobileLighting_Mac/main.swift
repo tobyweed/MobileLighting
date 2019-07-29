@@ -21,7 +21,7 @@ import Yaml
 var app = NSApplication.shared
 
 // when debugMode == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
-var debugMode = true
+var debugMode = false
 
 // communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
@@ -104,9 +104,13 @@ case "init":
         calibSettings.save()
         print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/calibration.yml")
         
+        // try to create scenePictures directory
+        let sceneInfo = dirStruc.sceneInfo
+        try? FileManager.default.createDirectory(atPath: sceneInfo, withIntermediateDirectories: true, attributes: nil)
+        
         // try to save scene description file
-        let sceneDescription = URL(fileURLWithPath: dirStruc.scene + "/sceneDescription.txt")
-        let text = "Scene name: \(sceneName)\n\nScene content: (insert description of scene content)\n\nLighting conditions: (insert mapping of directory labels to lighting conditions)\n\nRobot motion: (insert description of robot motion)\n\nProjector configuration:  (insert description of projector positions)"
+        let sceneDescription = URL(fileURLWithPath: dirStruc.sceneInfo + "/sceneDescription.txt")
+        let text = "Scene name: \(sceneName)\n\nScene location:\n\nScene date:\n\nScene content: (insert description of scene content)\n\nLighting conditions: (insert mapping of directory labels to lighting conditions)\n\nRobot motion: (insert description of robot motion)\n\nProjector configuration: (insert description of projector positions)"
         try? text.write(to: sceneDescription, atomically: false, encoding: String.Encoding.utf8)
         
         // try to create scenePictures directory

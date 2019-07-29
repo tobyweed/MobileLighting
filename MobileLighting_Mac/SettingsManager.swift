@@ -60,8 +60,8 @@ class SceneSettings {
             calibration[Yaml.string("exposureISO")] = Yaml.double(66.5)
             maindict[Yaml.string("calibration")] = Yaml.dictionary(calibration)
             var ambient = [Yaml : Yaml]()
-            ambient[Yaml.string("exposureDurations")] = Yaml.array([0.01,0.03,0.1,0.3].map{return Yaml.double($0)})
-            ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,50.0,50.0,50.0].map{ return Yaml.double($0)})
+            ambient[Yaml.string("exposureDurations")] = Yaml.array([0.01,0.03,0.1].map{return Yaml.double($0)})
+            ambient[Yaml.string("exposureISOs")] = Yaml.array([50.0,50.0,50.0].map{ return Yaml.double($0)})
             maindict[Yaml.string("ambient")] = Yaml.dictionary(ambient)
             return Yaml.dictionary([Yaml.string("Settings") : Yaml.dictionary(maindict)])
         }

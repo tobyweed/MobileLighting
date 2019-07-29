@@ -32,6 +32,9 @@ class DirectoryStructure {
     var scene: String {
         return [scenesDir, currentScene].joined(separator: "/")
     }
+    var sceneInfo: String {
+        return scene + "/sceneInfo"
+    }
     
     var ambientDefault: String {
         return "\(self.scene)/defaultAmbient"
@@ -52,7 +55,7 @@ class DirectoryStructure {
     }
     
     var scenePictures: String {
-        return "\(self.scene)/scenePictures"
+        return "\(self.sceneInfo)/scenePictures"
     }
     
     var sceneSettingsFile: String {

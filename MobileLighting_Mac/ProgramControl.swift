@@ -785,7 +785,7 @@ func processCommand(_ input: String) -> Bool {
                     }
                 } else {
                     print("program is in debugMode. skipping robot motion")
-                    print("hit enter when trajectory completed.")
+                    print("hit enter when ready to take video.")
                     _ = readLine()
                 }
                 
