@@ -17,7 +17,7 @@ int SendCommand(char *);
 int GotoView(char *);
 int LoadPath(char *);
 int GotoVideoStart();
-int ExecutePath();
+int ExecutePath(float, float);
 int ExecuteHumanPath();
 int SetVelocity(float);
 

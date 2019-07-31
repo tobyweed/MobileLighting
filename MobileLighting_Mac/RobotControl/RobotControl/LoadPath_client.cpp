@@ -17,6 +17,8 @@
 #define PORT 50001
 using namespace std;
 
+int setVelocity(float v);
+
 int client() 
 { 
     int sock = 0;
@@ -111,15 +113,21 @@ int gotoView(string num){
     return 0;
 }
 
-// move smoothly through the main viewpoints
-int executePath(){
+// move smoothly through the main viewpoints at velocity atV, then revert to velocity revert2V
+int executePath(float atV, float revert2V){
     string script = "e";
     int n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
-    if(sendCommand(command)<0)
+    
+    if(setVelocity(atV)<0) // set the velocity to atV
         return -1;
-    return 0;
+    if(sendCommand(command)<0) // execute the path
+        return -1;
+    if(setVelocity(revert2V)<0) // set the velocity to revert2V
+        return -1;
+    
+    return 0; // return success
 }
 
 // go through the motion recorded by the VIVE motion tracker

@@ -548,7 +548,7 @@ func processCommand(_ input: String) -> Bool {
             resolution = defaultResolution
         }
         
-        for i in 0..<projIDs.count {
+        struclightloop: for i in 0..<projIDs.count {
             displayController.switcher?.turnOff(0)   // turns off all projs
             print("Hit enter when all projectors off.")
             _ = readLine()  // wait until user hits enter
@@ -560,7 +560,10 @@ func processCommand(_ input: String) -> Bool {
                 // Tell the Rosvita server to move the arm to the selected position
                 if( !debugMode ) {
                     var posStr = *String(pos) // get cchar version of pose string
-                    GotoView(&posStr) // pass address of pointer
+                    if(GotoView(&posStr) < 0) {
+                        print("ROBOT ERROR: problem moving to start position")
+                        break struclightloop
+                    }
                 } else {
                     print("program is in debugMode. skipping robot motion")
                 }
@@ -641,7 +644,10 @@ func processCommand(_ input: String) -> Bool {
             for pos in 0..<nPositions {
                 if ( !debugMode ) {
                     var posStr = *String(pos) // get cchar version of pos string
-                    GotoView(&posStr)
+                    if(GotoView(&posStr) < 0) {
+                        print("ROBOT ERROR: problem moving to start position")
+                        break
+                    }
                 } else {
                     print("program is in debugMode. skipping robot motion")
                 }
@@ -707,7 +713,6 @@ func processCommand(_ input: String) -> Bool {
             var mode = "normal"
             var appending = false
             var humanMotion = false
-            var x = false
             for flag in flags {
                 switch flag {
                 case "-t":
@@ -723,21 +728,13 @@ func processCommand(_ input: String) -> Bool {
                     print("using realistic VIVE recorded trajectory...")
                     humanMotion = true
                     break
-                case "-x":
-                    x = true
-                    break
                 default:
                     print("flag \(flag) not recognized.")
                 }
             }
             
             // get the right lighting to write to
-            var startIndex: Int
-            if !x {
-                startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
-            } else {
-                startIndex = 100
-            }
+            var startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
             
             // capture video at all selected exposures
             for exp in exps {
@@ -748,7 +745,8 @@ func processCommand(_ input: String) -> Bool {
                     if (GotoVideoStart() == 0) {
                         print("robot moved to video start position.")
                     } else {
-                        print("could not move robot to start position")
+                        print("ROBOT ERROR: problem moving to start position")
+                        break
                     }
                 } else {
                     print("program is in debugMode. skipping robot motion")
@@ -776,12 +774,13 @@ func processCommand(_ input: String) -> Bool {
                 
                 // Tell the Rosvita server to move the robot smoothly through its whole trajectory
                 if( !debugMode ) {
-                    if( !humanMotion && ExecutePath() == 0 ) {
+                    if( !humanMotion && ExecutePath(0.05, 0.7) == 0 ) { // velocities hard-coded, should be programmatically set prob from sceneSettings file
                         print("path completed. stopping recording.")
                     } else if( ExecuteHumanPath() == 0 ) {
                         print("path completed. stopping recording.")
                     } else {
-                        print("problem executing path. stopping recording.")
+                        print("ROBOT ERROR: problem executing path. exiting command.")
+                        break
                     }
                 } else {
                     print("program is in debugMode. skipping robot motion")
@@ -994,7 +993,9 @@ func processCommand(_ input: String) -> Bool {
                         // Tell the Rosvita server to move the arm to the selected position
                         if (!debugMode) {
                             var posStr = *String(posInt)
-                            GotoView(&posStr)
+                            if(GotoView(&posStr) < 0) {
+                                print("ROBOT ERROR: problem moving to start position")
+                            }
                         }
                     }
                 } else if (!(posInt >= 0)) {

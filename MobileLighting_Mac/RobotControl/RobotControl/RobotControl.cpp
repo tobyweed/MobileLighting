@@ -29,8 +29,8 @@ extern "C" int GotoVideoStart(){
     return gotoVideoStart();
 }
 
-extern "C" int ExecutePath(){
-  return executePath();
+extern "C" int ExecutePath(float atV, float revert2V){
+  return executePath(atV, revert2V);
 }
 
 extern "C" int ExecuteHumanPath(){

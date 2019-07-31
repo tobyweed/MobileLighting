@@ -11,6 +11,6 @@ int sendCommand(char *script);
 int loadPath(std::string pathName);
 int gotoVideoStart();
 int gotoView(std::string num);
-int executePath();
+int executePath(float atV, float revert2V);
 int executeHumanPath();
 int setVelocity(float v);
