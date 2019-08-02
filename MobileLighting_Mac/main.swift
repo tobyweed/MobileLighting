@@ -189,8 +189,8 @@ if( !debugMode ) {
         print("Succesfully loaded path with \(nPositions) positions")
     }
 } else {
-    print("debugMode == true. skipping robot motion, assigning emulated path with 2 positions.")
-    nPositions = 2
+    print("debugMode == true. skipping robot motion, assigning emulated path with 3 positions.")
+    nPositions = 3
 }
 
 // focus iPhone if focus provided
