@@ -447,3 +447,25 @@ Here's a link that describes the process: <http://www.swiftprogrammer.info/swift
 Some specific notes:
 * all the bridging headers are already created/configured for MobileLighting (for both iOS and macOS targets)
 * oftentimes, if a C++-only object is _not_ being passed in or out of a function (i.e. it appears in the function's signature), it can be directly compiled as a "C" function by adding `extern "C"` to the beginning of the function declaration. For example, `float example(int n)` would become `extern "C" float example(int n)`. You would then have to add `float example(int n);` to the bridging header. The function `example(Int32)` should then be accessible from Swift.
+
+## Known Issues and Loose Ends
+There are a few bugs present in the system, along with a few features in need of revision. Last updated July 2019.
+
+#### Robot Crashes
+Occasionally, when ML Mac and ML iOS are sending back and forth high amounts of data (e.g., PFMs or videos), the connection between ML Robot Control and the UR5 robot will timeout (marked by a "heartbeat failure" in the Rosvita IDE). This will cause ML Mac to stop executing, after which it will need to be restarted. This is possibly due to an over-taxing of the wifi router's resources, and perhaps could be fixed by using a higher-performance router. However, it's relatively uncommon. When it happens, just retake whatever was being captured.
+
+#### Image Flipping and Orientation Issues
+The system has trouble handling portrait orientation. When capturing a scene in portrait mode, the decoded images will usually get flipped over the y-axis. Also, when the phone has been in portrait mode, sometimes it doesn't register getting switched back to landscape mode. In this case, all of the images will be saved in the wrong orientation.
+
+For ambient and calibration images, orientation can be easily adjusted using [ImageMagick](https://imagemagick.org/)'s mogrify command. 
+
+To remedy orientation problems for decoded images, use the **transform** command in ML Mac. This can flip images over the Y axis or rotate them 90 degrees CW, depending on the arguments supplied. DO NOT use mogrify for PFMs, as it can change them in strange ways (e.g., descreasing the depth range dramatically).
+
+#### Inflexible Commands
+There are a few commands, including showshadows, rectifyamb, and transform, which automatically run on all of a particular set of images, e.g.: all decoded images. These need to be updated to allow more flexible usage.
+
+In addition, during takeamb video, the program automatically adjusts the robot velocity so that when not filming, the robot moves quickly, and when filming, it moves slowly. This is currently hardcoded; it should be adjusted to be set programmatically.
+
+#### Debugmode Affects Processing
+Processing depends on the number of positions. As of July 2019, this depends on the path ML Mac thinks is loaded on the server. Debug mode assumes a particular number of positions on the server (currently 3). This means that running processing in debugmode for a scene with more or less than 3 viewpoints could cause issues. This should be updated to be more robust.
+
