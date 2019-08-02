@@ -44,6 +44,7 @@
    * [Image Flipping and Orientation Issues](#image-flipping-and-orientation-issues)
    * [Inflexible Commands](#inflexible-commands)
    * [Debugmode Affects Processing](#debugmode-affects-processing)
+   * [iOS App Fails to Open](#ios-app-fails-to-open)
 
 ## Overview
 MobileLighting (ML) performs two general tasks:
