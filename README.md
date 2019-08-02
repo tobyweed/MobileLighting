@@ -1,5 +1,7 @@
 #  MobileLighting System
 Nicholas Mosier, 07/2018
+
+Toby Weed, 07/2019
 ## Overview
 MobileLighting (ML) performs two general tasks:
 * Dataset acquisition
