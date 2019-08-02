@@ -467,6 +467,8 @@ For ambient and calibration images, orientation can be easily adjusted using [Im
 
 To remedy orientation problems for decoded images, use the **transform** command in ML Mac. This can flip images over the Y axis or rotate them 90 degrees CW, depending on the arguments supplied. DO NOT use mogrify for PFMs, as it can change them in strange ways (e.g., descreasing the depth range dramatically).
 
+A good place to look for someone trying to fix this is the getPFMData() function in MobileLighting_iPhone/ImageProcessor.swift. I think the transformation for portrait mode there is just buggy.
+
 #### Inflexible Commands
 There are a few commands, including showshadows, rectifyamb, and transform, which automatically run on all of a particular set of images, e.g.: all decoded images. These need to be updated to allow more flexible usage.
 
