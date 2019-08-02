@@ -474,3 +474,5 @@ In addition, during takeamb video, the program automatically adjusts the robot v
 #### Debugmode Affects Processing
 Processing depends on the number of positions. As of July 2019, this depends on the path ML Mac thinks is loaded on the server. Debug mode assumes a particular number of positions on the server (currently 3). This means that running processing in debugmode for a scene with more or less than 3 viewpoints could cause issues. This should be updated to be more robust.
 
+#### iOS App Fails to Open
+Occasionally, ML iOS will not open. It's not clear why this happens - usually, it's after the app hasn't been used in a while. In this case, delete the app and redownload it via Xcode (just by connecting the device and running it on the device from Xcode).
