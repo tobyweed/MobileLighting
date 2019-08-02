@@ -39,6 +39,11 @@
         * [Loading Paths](#loading-paths)
         * [Debug Mode](#debug-mode)
     * [Bridging C++ to Swift](#bridging-cpp-to-swift)
+* [Known Issues and Loose Ends](#known-issues-and-loose-ends)
+   * [Robot Crashes](#robot-crashes)
+   * [Image Flipping and Orientation Issues](#image-flipping-and-orientation-issues)
+   * [Inflexible Commands](#inflexible-commands)
+   * [Debugmode Affects Processing](#debugmode-affects-processing)
 
 ## Overview
 MobileLighting (ML) performs two general tasks:
