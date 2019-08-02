@@ -114,20 +114,10 @@ void float2color(CFloatImage fimg, CByteImage &img, float dmin, float scale, int
             int g = 0;
             int b = 0;
             
-            // this seems to always evaluate to false? this may be a relic
-            if (0 && (y < 100 || y > height-100)) { // visualize range at top and bottom of image
-                f = 1.2 * (float)x / (float)width - .1;
+            if (f != INFINITY) {
+                float val = scale * (f - dmin);
                 if (usejet)
-                    jet(f, r, g, b);
-                if ((r<2) + (r>253) + (g<2) + (g>253) + (b<2) + (b>253) >= 3 && (y%3 == 0)) {
-                    r = g = b = 0; // show locations of pure colors
-                }
-            } else {
-                if (f != INFINITY) {
-                    float val = scale * (f - dmin);
-                    if (usejet)
-                        jet(val, r, g, b);
-                }
+                    jet(val, r, g, b);
             }
             
             img.Pixel(x, y, 0) = b;

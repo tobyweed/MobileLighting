@@ -14,10 +14,15 @@
 #include "Reproject.h"
 #include "Decode.h"
 #include "ShowShadows.hpp"
+#include "TransformPFM.hpp"
 #include <assert.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+
+extern "C" void transformPfm( char *pfmPath, char *transformation ) {
+    transformpfm(pfmPath,transformation);
+}
 
 extern "C" void writeShadowImgs(char *decodedDir, char *outDir, int projs[], int nProjs, int pos) {
     writeshadowimgs(decodedDir, outDir, projs, nProjs, pos);

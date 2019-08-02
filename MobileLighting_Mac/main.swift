@@ -21,7 +21,7 @@ import Yaml
 var app = NSApplication.shared
 
 // when debugMode == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
-var debugMode = false
+var debugMode = true
 
 // communication devices
 var cameraServiceBrowser: CameraServiceBrowser!

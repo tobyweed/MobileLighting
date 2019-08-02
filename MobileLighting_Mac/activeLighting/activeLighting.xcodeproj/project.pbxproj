@@ -10,6 +10,7 @@
 		AA81620822D8ECA100322B93 /* ShowShadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AA81620622D8ECA100322B93 /* ShowShadows.cpp */; };
 		AA81620922D8ECA100322B93 /* ShowShadows.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AA81620722D8ECA100322B93 /* ShowShadows.hpp */; };
 		AAAF15BD22DE6E3B006AEB79 /* Decode_OLD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */; };
+		AAC1501622F332B800022491 /* TransformPFM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAC1501422F332B700022491 /* TransformPFM.cpp */; };
 		E114D51820CF0F9E00020017 /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E114D51720CF0F9D00020017 /* libpfm.a */; };
 		E114D51A20CF106600020017 /* Rectify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E114D51920CF106600020017 /* Rectify.cpp */; };
 		E1694A6420E6B3D900AC3FF9 /* Disparities.h in Headers */ = {isa = PBXBuildFile; fileRef = E1694A6320E6B3D900AC3FF9 /* Disparities.h */; };
@@ -41,6 +42,9 @@
 		AA81620622D8ECA100322B93 /* ShowShadows.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ShowShadows.cpp; sourceTree = "<group>"; };
 		AA81620722D8ECA100322B93 /* ShowShadows.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ShowShadows.hpp; sourceTree = "<group>"; };
 		AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decode_OLD.cpp; sourceTree = "<group>"; };
+		AAC1501322F3283400022491 /* pfmLib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = pfmLib; sourceTree = "<group>"; };
+		AAC1501422F332B700022491 /* TransformPFM.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TransformPFM.cpp; sourceTree = "<group>"; };
+		AAC1501522F332B800022491 /* TransformPFM.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TransformPFM.hpp; sourceTree = "<group>"; };
 		E1052C4F20C81328004A65C0 /* libactiveLighting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libactiveLighting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E114D51720CF0F9D00020017 /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = pfmLib/libpfm.a; sourceTree = "<group>"; };
 		E114D51920CF106600020017 /* Rectify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectify.cpp; sourceTree = "<group>"; };
@@ -93,7 +97,10 @@
 		E1052C4620C81328004A65C0 = {
 			isa = PBXGroup;
 			children = (
+				AAC1501322F3283400022491 /* pfmLib */,
 				AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */,
+				AAC1501422F332B700022491 /* TransformPFM.cpp */,
+				AAC1501522F332B800022491 /* TransformPFM.hpp */,
 				AA81620622D8ECA100322B93 /* ShowShadows.cpp */,
 				AA81620722D8ECA100322B93 /* ShowShadows.hpp */,
 				AA6961EB22BAB09A00C21D61 /* imageLib */,
@@ -228,6 +235,7 @@
 				AAAF15BD22DE6E3B006AEB79 /* Decode_OLD.cpp in Sources */,
 				E186058D20C813E900206D40 /* Disparities.cpp in Sources */,
 				E114D51A20CF106600020017 /* Rectify.cpp in Sources */,
+				AAC1501622F332B800022491 /* TransformPFM.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

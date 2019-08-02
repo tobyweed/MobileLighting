@@ -66,6 +66,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     
     // debugging
     case showshadows, ss
+    case transform
     case dispres
     case dispcode
     case clearpackets
@@ -129,6 +130,7 @@ func getUsage(_ command: Command) -> String {
     case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
     // debugging
     case .showshadows, .ss: return "showshadows"
+    case .transform: return "transform"
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
     case .clearpackets: return "clearpackets"
@@ -1722,6 +1724,61 @@ func processCommand(_ input: String) -> Bool {
         for i in 0..<nPositions {
             showShadows(projs: projectors, pos: Int32(i))
         }
+        
+    // currently just transforms all decoded images
+    case .transform:
+        guard tokens.count >= 1 && tokens.count <= 3 else {
+            print(usage)
+            break
+        }
+        
+        var mode: String
+        if (tokens[1] == "rotate90cw") {
+            print("rotating images 90 degrees CW...")
+            mode = "rotate90cw"
+        } else if (tokens[1] == "flipY") {
+            print("flipping images over y axis...")
+            mode = "flipY"
+        } else {
+            print("transformation \(tokens[0]) unrecognized")
+            break
+        }
+        
+        // later insert functionality to transform image by image
+        var allimg = true
+        var projs: [Int] = []
+        let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
+        projs = getIDs(projDirs, prefix: "proj", suffix: "")
+        
+        transLoop: for rect in 0...1 {
+            for proj in projs {
+                for pos in 0..<nPositions {
+                    let rectified = (rect == 0) ? false : true
+                    let decodedUrl = URL(string: dirStruc.decoded(proj: proj, pos: pos, rectified: rectified))
+                    var fileURLs: [URL]
+                    do {
+                        try fileURLs = FileManager.default.contentsOfDirectory(at: decodedUrl!, includingPropertiesForKeys: nil)
+                    } catch let err {
+                        print(err.localizedDescription)
+                        break transLoop
+                    }
+                    for fileURL in fileURLs {
+                        var path: [CChar]
+                        do {
+                            print(fileURL.path)
+                            try path = safePath("\(fileURL.path)")
+                        } catch let err {
+                            print(err.localizedDescription)
+                            break transLoop
+                        }
+                        var transform: [CChar] = *mode
+                        transformPfm(&path, &transform)
+                    }
+                }
+            }
+        }
+        
+        
         
         // displays current resolution being used for external display
     // -useful for troubleshooting with projector display issues

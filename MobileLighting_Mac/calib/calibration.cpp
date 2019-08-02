@@ -178,7 +178,6 @@ Mat Settings::imageSetup(int imageIndex) {
     Mat img;
     if (imageIndex < (int)imageList.size())
         img = imread(imageList[imageIndex], CV_LOAD_IMAGE_COLOR);
-    
     return img;
 }
 
