@@ -1,7 +1,45 @@
 #  MobileLighting System
-Nicholas Mosier, 07/2018
+* Nicholas Mosier, 07/2018
+* Toby Weed, 07/2019
 
-Toby Weed, 07/2019
+
+## Table of Contents
+* [Overview](#overview)
+* [Setup & Installation](#setup-and-installation)
+    * [Compatibility](#compatibility)
+    * [Installation](#installation)
+* [Dataset Acquisition](#dataset-acquisition)
+    1. [Scene Setup and Description](#scene-setup-and-description)
+        1. [Scene directory creation and configuration](#scene-directory-creation-and-configuration)
+        1. [Scene selection](#scene-selection)
+        1. [Projector and camera positions](#projector-and-camera-positions)
+        1. [Scene description, images, and robot path data.](#scene-description,-images,-and-robot-path-data)
+    1. [Calibration image capture](#calibration)
+        1. [Intrinsic calibration](#intrinsic-calibration)
+        2. [Stereo calibration](#stereo-calibration)
+    1. [Ambient data capture](#ambient)
+        1. [Ambient images with mirror ball](#ambient-ball-images)
+        2. [Ambient still images](#ambient-still-images)
+        3. [Default images](#default-images)
+        4. [Ambient video with IMU data](#ambient-videos-with-imu-data)
+    1. [Structured lighting image capture](#structured-lighting)
+* [Image Processing](#image-processing)
+    1. [Compute intrinsics](#intrinsics)
+    1. [Compute extrinsics for all stereo pairs](#extrinsics)
+    1. [Rectify ambient images](#rectify-ambient-images)
+    1. [Rectify decoded images](#rectify-decoded-images)
+    1. [Refine rectified code images](#refine)
+    1. [Disparity-match unrectified, rectified code images](#disparity)
+    1. [Merge disparity maps for unrectified, rectified code images](#merge)
+    1. [Reproject rectified, merged disparity maps](#reproject)
+    1. [Merge reprojected disparities with original disparities and merged disparities for final result](#merge-(2))
+* [General Tips](#general-tips)
+    * [Communication between ML Mac and ML iOS](#communication-between-ml-mac-and-ml-ios)
+    * [Communication between ML Mac and ML Robot Control](#communication-between-ml-mac-and-ml-robot-control)
+        * [Loading Paths](#loading-paths)
+        * [Debug Mode](#debug-mode)
+    * [Bridging C++ to Swift](#bridging-cpp-to-swift)
+
 ## Overview
 MobileLighting (ML) performs two general tasks:
 * Dataset acquisition
@@ -11,15 +49,23 @@ ML consists of 2 different applications:
 * **MobileLighting Mac:** this is the control program with which the user interacts. It compiles to an executable and features a command-line interface.
 * **MobileLighting iOS:** this is the iOS app that runs on the iPhone / iPod Touch. Its main task is taking photos (and videos, IMU data) upon request from the macOS control program. It manages the camera and also processes structured light images up through the decoding step.
 
-## MobileLighting Setup & Installation
-### Compatibility
-MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Control has only been tested on macOS High Sierra (10.13).
+It also has a number of associated, but standalone, applications:
+* **[ML Robot Control:](https://github.com/pgh245340802/vision-website)** server which controls a UR5 robot arm via [Rosvita](https://xamla.com/en/) and communicates with ML Mac to coordinate robot motion during dataset capture.
+* **[ML SteamVR Tracking:](https://github.com/tianshengs/SteamVR_Tracking)** software which uses an HTC VIVE tracker and SteamVR software to record realistic human-held camera trajectories for simulation by ML Robot Control during dataset capture.
+* **[ML Vision Website:](https://github.com/pgh245340802/vision-website)** python scripts used to generate HTML files for the display of ML datasets. 
 
-MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-facing camera and a flashlight.
+
+
+
+## Setup and Installation
+### Compatibility
+MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Control has only been tested on macOS versions High Sierra (10.13) through Mojave (10.14.5).
+
+MobileLighting iOS is compatible with all devices that run iOS 11+ and have a rear-facing camera and flashlight.
 
 ### Installation
 1. Install Xcode (available through the Mac App Store).
-1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) **Note June 2019:** This step has been causing a lot of trouble--my understanding is that we've been building openCV 3.4.6 from source, and then building linked libraries like ArUco from source separately, but there seem to be a lot of tricky bugs which people run into when following this procedure. A proper guide should be written.
+1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) If necessary, obtain a copy of openCV 3.4.6 from Toby Weed.
 1. Install the Mac USB-to-Serial driver.
     1. Go to the website <https://www.mac-usb-serial.com/dashboard/>
     1. Download the package called **PL-2303 Driver (V3.1.5)**
@@ -27,8 +73,8 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
     **username:** _nmosier_
     **password:** _scharsteinmobileimagematching_
     1. Open & install the driver package.
-1. Clone the entire Xcode project from the GitHub repository, <https://github.com/nmosier/MobileLighting>:
-`git clone https://github.com/nmosier/MobileLighting.git`
+1. Clone the entire Xcode project from the GitHub repository:
+`git clone https://github.com/tobyweed/MobileLighting.git`
 1. Run the script called `makeLibraries`
 `cd MobileLighting`
 `./makeLibraries`
@@ -57,54 +103,11 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ have a rear-f
         1. After re-adding, the libraries should all have reappaeared under MobileLighting/Frameworks in the left sidebar, and there should no longer be any red ones.
 1. You may also encounter code signing errors — these can generally be resolved by opening the Xcode project's settings (in the left sidebar where all the files are listed, click on the blue Xcode project icon with the name <project>.xcodeproj). Select the target, and then open the "General" tab. Check the "Automatically manage signing" box under the "signing" section. [Here's a visual guide](readme_images/codesign.png)
 1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it from Xcode. To run it from a non-Xcode command line, first build the project (the easiest way to do that is ⌘-b from within Xcode). This should write all necessary products into a bin/ directory within MobileLighting/. Then run "bin/MobileLighting_Mac" with any tokens (init or a path to a sceneSettings.yml file) to run the app.
+    * Note that whenever running the app, it expects either "init" or an absolute path to a sceneSettings.yml file as an argument. From Xcode, these arguments can be passed by going to the build target menu in the top left and clicking "Edit Scheme...". When executing the ML Mac product from Terminal, pass the arguments as you would to any command-line tool.
 1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
 
-## General Tips
-Use the `help` command to list all possible commands. If you are unsure how to use the `help` command, type `help help`.
 
-## Communication Between ML Mac and ML iOS
-The two apps of the ML system communicate wirelessly using Bonjour / async sockets. ML Mac issues _CameraInstructions_ to ML iOS via _CameraInstructionPackets_, and ML iOS sends _PhotoDataPackets_ back to ML Mac.
-
-**Tip**: when _not_ debugging ML iOS, I've found this setup to be the best: host a local WiFi network on the Mac and have the iPhone connect to that.
-
-1. **Initialization:**
-    * ML iOS publishes a _CameraService_ on the local domain (visibile over most Wifi, Bluetooth, etc.)
-    * ML Mac publishes a _PhotoReceiver_ on the local domain (visibile over most Wifi, Bluetooth, etc.)
-1. **Connection**
-    * ML Mac searches for the iPhone's _CameraService_ using a _CameraServiceBrowser_
-    * ML iOS searches for the Mac's _PhotoReceiver_ using a _PhotoSender_
-    If and only if both services are found will communication between the Mac and iPhone be successful.
-1. **Communication**
-    * ML Mac always initiates communication with the iPhone by sending a _CameraInstructionPacket_, which necessarily contains a _CameraInstruction_ and optionally contains camera settings, such as exposure and focus.
-    * For some _CameraInstructions_, ML iOS will send back data within a _PhotoData_ packet. Note that _not all data sent back to the Mac is photo data_: depending on the instruction to which it is responding, it may be a video, the current focus (as a lens position), or a structured light metadata file.
-    * For some _CameraInstructions_, ML iOS will send back multiple _PhotoDataPackets_.
-    * For some _CameraInstructions_, ML iOS will send back no _PhotoDataPackets_.
-    * ML Mac will _always_ be expecting an exact number of _PhotoDataPackets_ for each _CameraInstruction_ it issues. For example, the _CameraInstruction.StartStructuredLighting_ sends back no packets, which the _CameraInstruction.StopVideoCapture_ sends back two packets.
-1. **Caveats**
-    * Something about the **MiddleburyCollege** WiFi network prevents ML Mac and ML iOS from discovering each other when connected. If ML iOS needs to be connected to MiddleburyCollege, then consider connecting the Mac and iPhone over Bluetooth.
-    * In order to view **stdout** for ML iOS, it needs to be run through Xcode. When run through Xcode, the app is reinstalled before launch. Upon reinstallation, the iPhone needs an internet connection to verify the app. Therefore, when debugging ML iOS, it has worked best for me to connect the device to **MiddleburyCollege** and to the Mac over **Bluetooth**.
-    * Connection over Bluetooth is at least _10x_ slower than connection over WiFi.
-1. **Errors**
-    * Sometimes, ML Mac and iOS have trouble finding each other's services. I'm not sure if this is due to poor WiFi/Bluetooth connection, or if it's a bug. In this case, try the following:
-    * Make sure ML Mac and ML iOS are connected to the same WiFi network or connected 
-    * Try restarting the ML Mac app / ML iOS app while keeping the other running.
-    * Try restarting both apps, but launching ML iOS _before_ ML Mac.
-    * Sometimes, the connection between ML Mac and ML iOS drops unexpectedly. The "solution" is to try the same steps listed directly above.
-    
-    **Update:** As of June 2019, the two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
-
-## Communication Between ML Mac and Rosvita server
-The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
-
-They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends to the server, and that **ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp**. If it doesn't have the correct IP address (and the robot's IP address occasionally changes), it will try to establish connection indefinitely.
-
-The server replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath(), which returns "-1" indicating failure or "x", where x is the number of positions in the loaded path.
-
-**Loading Paths**
-The server stores robot positions in sets called "paths," which are initialized on the server without any input from or output to ML Mac. Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
-
-ML Mac automatically tries to load path "default" on initialization. 
 
 
 ## Dataset Acquisition
@@ -127,7 +130,7 @@ There are numerous steps to dataset acquisition:
 These steps are executed/controlled from the MobileLighting Mac command-line interface.
 
 ### Scene Setup and Description
-#### Scene directory creation and configuration
+##### Scene directory creation and configuration
 First, create a directory to store scenes. Then, run MobileLighting_Mac with the "init" option. 
 
 Directions to do this from Xcode:
@@ -149,7 +152,7 @@ Some important parameters to consider changing:
     * Resizing factor: determines how much to resize the image by on rectification. For example, "2" will zoom the image by 100%.
     * There are also a number of parameters (Num_MarkersX, Marker_Length, Num_of_Boards, Num_MarkersY, First_Marker) which the program uses to generate calibration matrices based on the positions of ArUco or chessboards in calibration images. These need to be changed whenever the board(s) being used for calibration are changed.
     
-#### Scene selection
+##### Scene selection
 The system has a few limitations and caveats to be considered when taking a scene:
 * The system will sometimes assign faulty (reflected) codes to even slightly reflective surfaces. These will usually get discarded during cross checking, causing those surfaces to appear undefined in the final images.
 * The system can have trouble with particularly dark surfaces, which don't reflect the projected light well. Adding a very high exposure to struclight (listed above) can sometimes solve this, but will add time to scene capture.
@@ -157,14 +160,14 @@ The system has a few limitations and caveats to be considered when taking a scen
 * Structured lighting images should be captured in as dark a setting as possible, so scenes should be taken in places where outside light sources (from windows, for example) can be mostly eliminated.
 * Vibration in the camera can cause problems, particularly during structured lighting capture, so the floor shouldn't be too shaky and there should be little or no movement from bystanders during struclight. This means that places with lots of foot traffic could be problematic. By the same token, nothing in the scene can move during structured lighting capture, which can be tricker than expected -- for example, even a plant wilting slightly during scene capture could cause issues.
 
-#### Projector and camera positions
+##### Projector and camera positions
 Projectors should be positioned such that there are few locations visible from the camera which don't receive light from at least one of the projectors. This may mean taking structured lighting from many projector positions. Also make sure that projects are slightly tilted relative to the camera's axes to avoid moiré patterns from an aliasing effect. A useful command is showshadows, which will add decoded unrectified images and output them to /computed/shadowvis. This shows remaining areas with no codes and help determine the next projector positions.
 
 *Remember to take a quick picture (just using any phone camera) of the projector whenever it is re-oriented or moved to be included later in the scenePictures directory.* Note that the images should be stored in JPG format.
 
 Robot positions will be saved onto the robot server directly, where they can be loaded from the program. Remember to change the robotPathName parameter to reflect the path, and to take pictures of the robot/camera poses to save in scenePictures.
 
-#### Scene description and images
+##### Scene description and images
 1. Create a text file (by convention stored in the root of the scene directory and named sceneDescription.txt) explaining briefly the contents of the scene. The keys listed should consist of:
 * Scene name: the name of the scene (same as that of the scene directory)
 * Scene content: a brief description of the scene (E.g.: plaster bust on grey bin against gray wall, etc.)
@@ -191,7 +194,7 @@ Photos:
 
 ### Calibration
 In order to capture calibration images, the Mac must be connected to the robot arm (and the iPhone).
-#### Intrinsic Calibration
+##### Intrinsic Calibration
 To capture intrinsics calibration images, use the following command:
 `calibrate (-a|-d)? [resolution=high]`
 Flags:
@@ -203,7 +206,7 @@ ML Mac will automatically set the correct exposure before taking the photos. Thi
 
 ML Mac will ask you to hit enter as soon as you are ready to take the next photo. Each photo is saved at <scene>/orig/calibration/intrinsics with the filename IMG<#>.JPG. It will continue to prompt photo capture until the user tells it to stop with "q" or "quit".
 
-#### Stereo Calibration
+##### Stereo Calibration
 To capture extrinsics calibration photos, use the following command:
 `stereocalib (-a)? [resolution=high]`
 Flags:
@@ -220,6 +223,9 @@ In order to capture ambient data, the Mac must be connected to the robot arm (an
 
 Multiple exposures can be used for ambient images. These are specified in the `ambient -> exposureDurations, exposureISOs` lists in the scene settings file.
 
+##### Ambient Ball Images
+Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
+
 ##### Ambient Still Images
 To capture ambient still images, use the following command:
 `takeamb still (-b)? (-f|-t)? (-a|-d)? [resolution=high]`
@@ -233,11 +239,8 @@ Flags:
 
 The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
 
-##### Ambient Ball Images
-Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
-
 ##### Default Images
-Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
+Put one image from each position in the ambients/defaultAmbient directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting.
 
 ##### Ambient Videos with IMU Data
 Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
@@ -301,6 +304,8 @@ The reason for the distinction between the projector number and id is so that on
 
 Before starting capture, ML Mac will move the arm to the position and ask you to hit "enter" once it reaches that position.
 After that, capture begins. It projects first vertical, then horizontal binary code images. After each direction, the Mac should receive 2 files: a "metadata" file that simply contains the direction of the stripes and the decoded PFM file. It saves the PFM file to "computed/decoded/projX/posA". It then refines the decoded image.
+
+
 
 
 
@@ -386,7 +391,58 @@ Use the `merge2` command to merge the reprojected & disparity results for the re
 The final results are saved in `computed/merged2/pos*`.
 
 
-## Bridging C++ to Swift
+
+
+## General Tips
+Use the `help` command to list all possible commands. If you are unsure how to use the `help` command, type `help help`.
+
+### Communication Between ML Mac and ML iOS
+The two apps of the ML system communicate wirelessly using Bonjour / async sockets. ML Mac issues _CameraInstructions_ to ML iOS via _CameraInstructionPackets_, and ML iOS sends _PhotoDataPackets_ back to ML Mac.
+
+**Tip**: when _not_ debugging ML iOS, I've found this setup to be the best: host a local WiFi network on the Mac and have the iPhone connect to that.
+
+1. **Initialization:**
+    * ML iOS publishes a _CameraService_ on the local domain (visibile over most Wifi, Bluetooth, etc.)
+    * ML Mac publishes a _PhotoReceiver_ on the local domain (visibile over most Wifi, Bluetooth, etc.)
+1. **Connection**
+    * ML Mac searches for the iPhone's _CameraService_ using a _CameraServiceBrowser_
+    * ML iOS searches for the Mac's _PhotoReceiver_ using a _PhotoSender_
+    If and only if both services are found will communication between the Mac and iPhone be successful.
+1. **Communication**
+    * ML Mac always initiates communication with the iPhone by sending a _CameraInstructionPacket_, which necessarily contains a _CameraInstruction_ and optionally contains camera settings, such as exposure and focus.
+    * For some _CameraInstructions_, ML iOS will send back data within a _PhotoData_ packet. Note that _not all data sent back to the Mac is photo data_: depending on the instruction to which it is responding, it may be a video, the current focus (as a lens position), or a structured light metadata file.
+    * For some _CameraInstructions_, ML iOS will send back multiple _PhotoDataPackets_.
+    * For some _CameraInstructions_, ML iOS will send back no _PhotoDataPackets_.
+    * ML Mac will _always_ be expecting an exact number of _PhotoDataPackets_ for each _CameraInstruction_ it issues. For example, the _CameraInstruction.StartStructuredLighting_ sends back no packets, which the _CameraInstruction.StopVideoCapture_ sends back two packets.
+1. **Caveats**
+    * Something about the **MiddleburyCollege** WiFi network prevents ML Mac and ML iOS from discovering each other when connected. If ML iOS needs to be connected to MiddleburyCollege, then consider connecting the Mac and iPhone over Bluetooth.
+    * In order to view **stdout** for ML iOS, it needs to be run through Xcode. When run through Xcode, the app is reinstalled before launch. Upon reinstallation, the iPhone needs an internet connection to verify the app. Therefore, when debugging ML iOS, it has worked best for me to connect the device to **MiddleburyCollege** and to the Mac over **Bluetooth**.
+    * Connection over Bluetooth is at least _10x_ slower than connection over WiFi.
+1. **Errors**
+    * Sometimes, ML Mac and iOS have trouble finding each other's services. I'm not sure if this is due to poor WiFi/Bluetooth connection, or if it's a bug. In this case, try the following:
+    * Make sure ML Mac and ML iOS are connected to the same WiFi network or connected 
+    * Try restarting the ML Mac app / ML iOS app while keeping the other running.
+    * Try restarting both apps, but launching ML iOS _before_ ML Mac.
+    * Sometimes, the connection between ML Mac and ML iOS drops unexpectedly. The "solution" is to try the same steps listed directly above.
+    
+    **Update:** As of June 2019, the two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
+
+### Communication Between ML Mac and ML Robot Control
+The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
+
+They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends to the server, and that **ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp**. If it doesn't have the correct IP address (and the robot's IP address occasionally changes), it will try to establish connection indefinitely.
+
+The server replies with a "0" or "-1" string status code ("-1" indicating failure), except in the special case of loadPath(), which returns "-1" indicating failure or "x", where x is the number of positions in the loaded path.
+
+##### Loading Paths
+The server stores robot positions in sets called "paths," which are initialized on the server without any input from or output to ML Mac. Each path has a string name and contains positions with IDs from 0 to n-1, n being the number of positions in the set. ML Mac can load paths to the server via the LoadPath function, supplying the string name of the path. If successful, the server will reply with a string (eg "1","2"...) indicating the number of positions in the path, which ML Mac will store. Then, ML Mac can use the GotoView function with a position number as a parameter to tell the server to move the robot to that position.
+
+ML Mac automatically tries to load the path specified in the sceneSettings.yml file whenever the program is started.
+
+##### Debug Mode
+There is a variable hard-coded in main.swift called debugMode. When this is set to true, the app will not try to connect to the robot server at all, and will automatically skip robot motion. This is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization (with the message **trying to connect to robot server**). Note that this will load a simulated path with 3 viewpoints, and the number of viewpoints is used to compute, for example, extrinsics, so **some processing steps might be affected in debugmode**.
+
+### Bridging cpp to Swift
 Here's a link that describes the process: <http://www.swiftprogrammer.info/swift_call_cpp.html>
 Some specific notes:
 * all the bridging headers are already created/configured for MobileLighting (for both iOS and macOS targets)
