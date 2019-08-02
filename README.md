@@ -26,23 +26,19 @@
 * [Image Processing](#image-processing)
     1. [Compute intrinsics](#intrinsics)
     1. [Compute extrinsics for all stereo pairs](#extrinsics)
-    1. [Rectify all ambient images](#rectify-ambient-images)
-    1. [Refine all rectified code images (unrectified images should already have automatically been refined during data acquisition)](#refine-decoded-images)
+    1. [Rectify ambient images](#rectify-ambient-images)
+    1. [Rectify decoded images](#rectify-decoded-images)
+    1. [Refine rectified code images](#refine)
     1. [Disparity-match unrectified, rectified code images](#disparity)
     1. [Merge disparity maps for unrectified, rectified code images](#merge)
     1. [Reproject rectified, merged disparity maps](#reproject)
     1. [Merge reprojected disparities with original disparities and merged disparities for final result](#merge-(2))
 * [General Tips](#general-tips)
     * [Communication between ML Mac and ML iOS](#communication-between-ml-mac-and-ml-ios)
-        1. [Initialization](#initialization)
-        1. [Connection](#connection)
-        1. [Communication](#communication)
-        1. [Caveats](#caveats)
-        1. [Errors](#errors)
     * [Communication between ML Mac and ML Robot Control](#communication-between-ml-mac-and-ml-robot-control)
         * [Loading Paths](#loading-paths)
         * [Debug Mode](#debug-mode)
-    * [Bridging C++ to Swift](#bridging-c++-to-swift)
+    * [Bridging C++ to Swift](#bridging-cpp-to-swift)
 
 ## Overview
 MobileLighting (ML) performs two general tasks:
@@ -446,7 +442,7 @@ ML Mac automatically tries to load the path specified in the sceneSettings.yml f
 ##### Debug Mode
 There is a variable hard-coded in main.swift called debugMode. When this is set to true, the app will not try to connect to the robot server at all, and will automatically skip robot motion. This is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization (with the message **trying to connect to robot server**). Note that this will load a simulated path with 3 viewpoints, and the number of viewpoints is used to compute, for example, extrinsics, so **some processing steps might be affected in debugmode**.
 
-### Bridging C++ to Swift
+### Bridging cpp to Swift
 Here's a link that describes the process: <http://www.swiftprogrammer.info/swift_call_cpp.html>
 Some specific notes:
 * all the bridging headers are already created/configured for MobileLighting (for both iOS and macOS targets)
