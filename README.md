@@ -59,6 +59,7 @@ It also has a number of associated, but standalone, applications:
 * **[ML Robot Control:](https://github.com/pgh245340802/vision-website)** server which controls a UR5 robot arm via [Rosvita](https://xamla.com/en/) and communicates with ML Mac to coordinate robot motion during dataset capture.
 * **[ML SteamVR Tracking:](https://github.com/tianshengs/SteamVR_Tracking)** software which uses an HTC VIVE tracker and SteamVR software to record realistic human-held camera trajectories for simulation by ML Robot Control during dataset capture.
 * **[ML Vision Website:](https://github.com/pgh245340802/vision-website)** python scripts used to generate HTML files for the display of ML datasets. 
+* **[Camera Calibration:](https://github.com/tianshengs/Camera_Calibration_MobileLighting2019)** not really standalone software (everything is incorporated into ML Mac). However, the README there is useful.
 
 
 
