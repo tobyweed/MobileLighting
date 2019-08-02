@@ -5,7 +5,44 @@
 
 ## Table of Contents
 * [Overview](#overview)
-
+* [Setup & Installation](#setup-and-installation)
+    * [Compatibility](#compatibility)
+    * [Installation](#installation)
+* [Dataset Acquisition](#dataset-acquisition)
+    1. [Scene Setup and Description](#scene-setup-and-description)
+        1. [Scene directory creation and configuration](#scene-directory-creation-and-configuration)
+        1. [Scene selection](#scene-selection)
+        1. [Projector and camera positions](#projector-and-camera-positions)
+        1. [Scene description, images, and robot path data.](#scene-description,-images,-and-robot-path-data)
+    1. [Calibration image capture](#calibration)
+        1. [Intrinsic calibration](#intrinsic-calibration)
+        2. [Stereo calibration](#stereo-calibration)
+    1. [Ambient data capture](#ambient)
+        1. [Ambient images with mirror ball](#ambient-ball-images)
+        2. [Ambient still images](#ambient-still-images)
+        3. [Default images](#default-images)
+        4. [Ambient video with IMU data](#ambient-videos-with-imu-data)
+    1. [Structured lighting image capture](#structured-lighting)
+* [Image Processing](#image-processing)
+    1. [Compute intrinsics](#intrinsics)
+    1. [Compute extrinsics for all stereo pairs](#extrinsics)
+    1. [Rectify all ambient images](#rectify-ambient-images)
+    1. [Refine all rectified code images (unrectified images should already have automatically been refined during data acquisition)](#refine-decoded-images)
+    1. [Disparity-match unrectified, rectified code images](#disparity)
+    1. [Merge disparity maps for unrectified, rectified code images](#merge)
+    1. [Reproject rectified, merged disparity maps](#reproject)
+    1. [Merge reprojected disparities with original disparities and merged disparities for final result](#merge-(2))
+* [General Tips](#general-tips)
+    * [Communication between ML Mac and ML iOS](#communication-between-ml-mac-and-ml-ios)
+        1. [Initialization](#initialization)
+        1. [Connection](#connection)
+        1. [Communication](#communication)
+        1. [Caveats](#caveats)
+        1. [Errors](#errors)
+    * [Communication between ML Mac and ML Robot Control](#communication-between-ml-mac-and-ml-robot-control)
+        * [Loading Paths](#loading-paths)
+        * [Debug Mode](#debug-mode)
+    * [Bridging C++ to Swift](#bridging-c++-to-swift)
 
 ## Overview
 MobileLighting (ML) performs two general tasks:
@@ -24,7 +61,7 @@ It also has a number of associated, but standalone, applications:
 
 
 
-## MobileLighting Setup & Installation
+## Setup and Installation
 ### Compatibility
 MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Control has only been tested on macOS versions High Sierra (10.13) through Mojave (10.14.5).
 
@@ -190,6 +227,9 @@ In order to capture ambient data, the Mac must be connected to the robot arm (an
 
 Multiple exposures can be used for ambient images. These are specified in the `ambient -> exposureDurations, exposureISOs` lists in the scene settings file.
 
+##### Ambient Ball Images
+Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
+
 ##### Ambient Still Images
 To capture ambient still images, use the following command:
 `takeamb still (-b)? (-f|-t)? (-a|-d)? [resolution=high]`
@@ -203,11 +243,8 @@ Flags:
 
 The program will move the robot arm to each position and capture ambients of all exposures, and then save them to the appropriate directory. 
 
-##### Ambient Ball Images
-Remember to take ambients with the mirror ball first, and then without. This is important because it's mission critical that the scene not move between ambient (without ball) capture and struclight capture. Ambient ball images should be taken under all lighting conditions, and the nomenclature should be the same as non-ball ambient -- e.g., ambientBall/L0 should contain images taken under the same lighting conditions as ambient/L0.
-
 ##### Default Images
-Put one image from each position in the ambients/default directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting,
+Put one image from each position in the ambients/defaultAmbient directory. These images should be copied from ambients with the best (most visible & high quality) exposure and lighting.
 
 ##### Ambient Videos with IMU Data
 Ambient videos are taken using the trajectory specified in `<scene>/settings/trajectory.yml`.
@@ -394,7 +431,7 @@ The two apps of the ML system communicate wirelessly using Bonjour / async socke
     
     **Update:** As of June 2019, the two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
 
-### Communication Between ML Mac and Rosvita server
+### Communication Between ML Mac and ML Robot Control
 The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
 
 They communicate via a wireless socket. Note that the socket is re-created with every command ML Mac sends to the server, and that **ML Mac requires the IP address of the server, which is currently hardcoded in LoadPath_client.cpp**. If it doesn't have the correct IP address (and the robot's IP address occasionally changes), it will try to establish connection indefinitely.
@@ -407,7 +444,7 @@ The server stores robot positions in sets called "paths," which are initialized 
 ML Mac automatically tries to load the path specified in the sceneSettings.yml file whenever the program is started.
 
 ##### Debug Mode
-There is a variable hard-coded in main.swift called debugMode. When this is set to true, the app will not try to connect to the robot server at all, and will automatically skip robot motion. This is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization (with the message **trying to connect to robot server**).
+There is a variable hard-coded in main.swift called debugMode. When this is set to true, the app will not try to connect to the robot server at all, and will automatically skip robot motion. This is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization (with the message **trying to connect to robot server**). Note that this will load a simulated path with 3 viewpoints, and the number of viewpoints is used to compute, for example, extrinsics, so **some processing steps might be affected in debugmode**.
 
 ### Bridging C++ to Swift
 Here's a link that describes the process: <http://www.swiftprogrammer.info/swift_call_cpp.html>
