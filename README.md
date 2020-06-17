@@ -103,6 +103,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
         * MobileLighting_iPhone/CocoaAsyncSocket.framework
         * MobileLighting_Mac/calib/libcalib (this currently needs to be manually recompiled using "make")
         * MobileLighting_Mac/activeLighting/libImgProcessor
+        
         If they appear in _red_ in the left sidebar under "MobileLighting/Frameworks", then they cannot be found. This means they need to be re-added. Instructions:
         1. Select red libraries, hit "delete". A dialog pop up — click "Remove Reference".
         1. Now, re-add the libraries. Go back to the MobileLighting.xcodeproj settings, select the MobileLighting_Mac target, and go to the "General" tab and find the "Linked Libraries" section. Click the "+". [picture](readme_images/lib_readd.png)
