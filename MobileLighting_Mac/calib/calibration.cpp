@@ -177,7 +177,7 @@ void Settings::write(  FileStorage& fs) const
 Mat Settings::imageSetup(int imageIndex) {
     Mat img;
     if (imageIndex < (int)imageList.size())
-        img = imread(imageList[imageIndex], CV_LOAD_IMAGE_COLOR);
+        img = imread(imageList[imageIndex], IMREAD_COLOR);
     return img;
 }
 
@@ -401,12 +401,12 @@ void Settings::interprate()
         if (i >= 3) shift = i + 3;
         else shift = i;
         if (digit)
-            flag |= CV_CALIB_FIX_K1 << shift;
+            flag |= CALIB_FIX_K1 << shift;
     }
     
-    if(fixPrincipalPoint)       flag |= CV_CALIB_FIX_PRINCIPAL_POINT;
-    if(assumeZeroTangentDist)   flag |= CV_CALIB_ZERO_TANGENT_DIST;
-    if(aspectRatio)             flag |= CV_CALIB_FIX_ASPECT_RATIO;
+    if(fixPrincipalPoint)       flag |= CALIB_FIX_PRINCIPAL_POINT;
+    if(assumeZeroTangentDist)   flag |= CALIB_ZERO_TANGENT_DIST;
+    if(aspectRatio)             flag |= CALIB_FIX_ASPECT_RATIO;
 }
 
 // Saves the intrinsic parameters of the inCal struct to intrinsicOutput
@@ -430,20 +430,20 @@ void Settings::saveIntrinsics(intrinsicCalibration &inCal) {
         fs << "Square_Size" << squareSize;
     }
     
-    if( flag & CV_CALIB_FIX_ASPECT_RATIO )
+    if( flag & CALIB_FIX_ASPECT_RATIO )
         fs << "AspectRatio" << aspectRatio;
     
     if( flag )
         sprintf( buf, "%s%s%s%s%s%s%s%s%s",
-                flag & CV_CALIB_FIX_K1 ? "+FIX_K1 " : "",
-                flag & CV_CALIB_FIX_K2 ? "+FIX_K2 " : "",
-                flag & CV_CALIB_FIX_K3 ? "+FIX_K3 " : "",
-                flag & CV_CALIB_FIX_K4 ? "+FIX_K4 " : "",
-                flag & CV_CALIB_FIX_K5 ? "+FIX_K5 " : "",
-                flag & CV_CALIB_USE_INTRINSIC_GUESS ? "+USE_INTRINSIC_GUESS " : "",
-                flag & CV_CALIB_FIX_ASPECT_RATIO ? "+FIX_ASPECT_RATIO " : "",
-                flag & CV_CALIB_FIX_PRINCIPAL_POINT ? "+FIX_PRINCIPAL_POINT " : "",
-                flag & CV_CALIB_ZERO_TANGENT_DIST ? "+ZERO_TANGENT_DIST " : "" );
+                flag & CALIB_FIX_K1 ? "+FIX_K1 " : "",
+                flag & CALIB_FIX_K2 ? "+FIX_K2 " : "",
+                flag & CALIB_FIX_K3 ? "+FIX_K3 " : "",
+                flag & CALIB_FIX_K4 ? "+FIX_K4 " : "",
+                flag & CALIB_FIX_K5 ? "+FIX_K5 " : "",
+                flag & CALIB_USE_INTRINSIC_GUESS ? "+USE_INTRINSIC_GUESS " : "",
+                flag & CALIB_FIX_ASPECT_RATIO ? "+FIX_ASPECT_RATIO " : "",
+                flag & CALIB_FIX_PRINCIPAL_POINT ? "+FIX_PRINCIPAL_POINT " : "",
+                flag & CALIB_ZERO_TANGENT_DIST ? "+ZERO_TANGENT_DIST " : "" );
     fs << "Calibration_Flags" << buf;
     fs << "Camera_Matrix" << inCal.cameraMatrix;
     fs << "Distortion_Coefficients" << inCal.distCoeffs;
@@ -623,7 +623,7 @@ double computeReprojectionErrors(intrinsicCalibration &inCal)
     {
         projectPoints(Mat(inCal.objectPoints[i]), inCal.rvecs[i], inCal.tvecs[i],
                       inCal.cameraMatrix, inCal.distCoeffs, imagePoints2);
-        err = norm(Mat(inCal.imagePoints[i]), Mat(imagePoints2), CV_L2);
+        err = norm(Mat(inCal.imagePoints[i]), Mat(imagePoints2), NORM_L2);
         int n = (int)inCal.objectPoints[i].size();
         inCal.reprojErrs[i] = (float)sqrt(err*err/n);
         totalErr += err*err;
@@ -767,14 +767,14 @@ void chessboardDetect(Settings s, Mat &img, intrinsicCalibration &inCal)
     vector<Point3f> objectPointsBuf;
     
     bool found = findChessboardCorners( img, s.boardSize, imagePointsBuf,
-                                       CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS | CV_CALIB_CB_FAST_CHECK |
-                                       CV_CALIB_CB_NORMALIZE_IMAGE);
+                                       CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_FILTER_QUADS | CALIB_CB_FAST_CHECK |
+                                       CALIB_CB_NORMALIZE_IMAGE);
     
     
     if (found)
     {
         cornerSubPix(imgGray, imagePointsBuf, Size(11,11), Size(-1,-1),
-                     TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+                     TermCriteria( TermCriteria::EPS+TermCriteria::MAX_ITER, 30, 0.1 ));
         
         //add these image points to the overall calibration vector
         inCal.imagePoints.push_back(imagePointsBuf);
@@ -1198,7 +1198,7 @@ void rectifyImages(Settings s, intrinsicCalibration &inCal,
             //Mat img = imread(s.imageList[i*2+k], 0), rimg, cimg;
             Mat img = s.imageSetup(i*2+k), rimg;
             
-            remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
+            remap(img, rimg, rmap[k][0], rmap[k][1], INTER_LINEAR);
             
             // If a valid path for rectified images has been provided, save them to this path
             if (save)
@@ -1240,7 +1240,7 @@ bool runIntrinsicCalibration(Settings s, intrinsicCalibration &inCal)
         
         calibrateCamera(inCal.objectPoints, inCal.imagePoints, s.imageSize,
                         inCal.cameraMatrix, inCal.distCoeffs,
-                        inCal.rvecs, inCal.tvecs, s.flag | CV_CALIB_USE_INTRINSIC_GUESS);
+                        inCal.rvecs, inCal.tvecs, s.flag | CALIB_USE_INTRINSIC_GUESS);
         
     } else {                    //else, create empty matrices to be calculated
         inCal.cameraMatrix = Mat::eye(3, 3, CV_64F);
@@ -1281,7 +1281,7 @@ stereoCalibration runStereoCalibration(Settings s, intrinsicCalibration &inCal, 
                                  inCal.cameraMatrix, inCal.distCoeffs,
                                  inCal2.cameraMatrix, inCal2.distCoeffs,
                                  s.imageSize, sterCal.R, sterCal.T, sterCal.E, sterCal.F,
-                                 CV_CALIB_FIX_INTRINSIC, TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 1000, 1e-10));
+                                 CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
     
     printf("\nStereo reprojection error = %.4f\n", err);
         

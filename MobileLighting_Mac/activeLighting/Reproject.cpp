@@ -40,7 +40,7 @@
 #include "imageLib/imageLib.h"
 #include "Utils.h"
 #include "flowIO.h"
-#include "opencv/cv.h"
+#include "opencv2/opencv.hpp"
 
 // factors to divide x, y, u, and v by for improved numerical stability
 #define SCALE  1000.0

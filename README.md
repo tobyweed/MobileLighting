@@ -72,7 +72,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 
 ### Installation
 1. Install Xcode (available through the Mac App Store).
-1. Install openCV 3. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) If necessary, obtain a copy of openCV 3.4.6 from Toby Weed.
+1. Install openCV 3.4.6. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) The source for this version can be obtained [here](https://github.com/opencv/opencv/releases/tag/3.4.6). Also download additional openCV modules [here](https://github.com/opencv/opencv_contrib/tree/3.4). Then run `cmake -DBUILD_EXAMPLES=OFF -DOPENCV_EXTRA_MODULES_PATH=<path to opencv_contrib>/modules <path to opencv>` followed by `make`, optionally with a flag like `-j3` to run multiple parallel threads. Finally, install by running `sudo make install` after you've successfully built from source.
 1. Install the Mac USB-to-Serial driver.
     1. Go to the website <https://www.mac-usb-serial.com/dashboard/>
     1. Download the package called **PL-2303 Driver (V3.1.5)**
