@@ -279,7 +279,7 @@ Both files are saved in `orig/ambient/video/(normal|torch)/exp#`.
 ### Structured Lighting
 In order to capture structured lighting, the Mac must be connected to the robot arm, the switcher box via the display port and a USB-to-Serial cable, and the iPhone. Furthermore, all projectors being used must be connected to the output VGA ports of the switcher box.
 
-Before capturing structured lighting, you must open a connection with the switcher box.
+Before capturing structured lighting, you must open a connection with the switcher box. Make sure the Mac is connected to the switcher box in two ways: a) to the RS-232 input via a USB-to-serial adaptor and b) to the XGA input via a VGA cable (note that to connect the Mac to a VGA cable, you will need an HDMI-to-VGA adaptor).
 1. Find the name of the USB-to-Serial peripheral by opening the command line and entering
     `ls /dev/tty.*`
     Find the one that looks like it would be the USB-to-Serial device. For example, it may be `/dev/tty.RepleoXXXXX` (if you use the USB-to-Serial driver I use).

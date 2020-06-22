@@ -241,7 +241,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
 
 
 
-// Configures the display controller object, whcih manages the displays
+// Configures the display controller object, which manages the displays
 // Untested for more than two screens; Kramer switcher box is treated as only one screen
 func configureDisplays() -> Bool {
     if displayController == nil {

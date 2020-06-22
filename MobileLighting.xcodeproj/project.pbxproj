@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA3FB608227B833D001DB4D6 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB607227B833D001DB4D6 /* opencv2.framework */; };
 		AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */; };
 		AA6961E622B94BE900C21D61 /* CommunicationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */; };
 		AACFBC86249D013B0033E0C0 /* libopencv_aruco.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAC1A316249BE9ED00AA07DD /* libopencv_aruco.4.3.0.dylib */; };
@@ -18,6 +17,7 @@
 		AACFBC8B249D013B0033E0C0 /* libopencv_imgcodecs.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAC1A311249BE9EC00AA07DD /* libopencv_imgcodecs.4.3.0.dylib */; };
 		AACFBC8C249D013B0033E0C0 /* libopencv_imgproc.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAC1A312249BE9EC00AA07DD /* libopencv_imgproc.4.3.0.dylib */; };
 		AACFBC8D249D013B0033E0C0 /* libopencv_videoio.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAC1A313249BE9EC00AA07DD /* libopencv_videoio.4.3.0.dylib */; };
+		AACFBCAE249E75480033E0C0 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AACFBCAD249E75480033E0C0 /* opencv2.framework */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
@@ -250,7 +250,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AA3FB607227B833D001DB4D6 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = "<group>"; };
 		AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
 		AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunicationUtils.swift; sourceTree = "<group>"; };
 		AAA0AA1E22AEE5CB00002E78 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
@@ -261,6 +260,7 @@
 		AAC1A314249BE9ED00AA07DD /* libopencv_highgui.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.4.3.0.dylib; path = ../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_highgui.4.3.0.dylib; sourceTree = "<group>"; };
 		AAC1A315249BE9ED00AA07DD /* libopencv_features2d.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.4.3.0.dylib; path = ../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_features2d.4.3.0.dylib; sourceTree = "<group>"; };
 		AAC1A316249BE9ED00AA07DD /* libopencv_aruco.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_aruco.4.3.0.dylib; path = ../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_aruco.4.3.0.dylib; sourceTree = "<group>"; };
+		AACFBCAD249E75480033E0C0 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = opencv2.framework; sourceTree = SOURCE_ROOT; };
 		AAE78A60249BE8CD00CA8CCF /* libopencv_core.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.4.3.0.dylib; path = ../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_core.4.3.0.dylib; sourceTree = "<group>"; };
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -330,7 +330,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA3FB608227B833D001DB4D6 /* opencv2.framework in Frameworks */,
+				AACFBCAE249E75480033E0C0 /* opencv2.framework in Frameworks */,
 				E17AC73D20FE29430007EF77 /* CocoaAsyncSocket.framework in Frameworks */,
 				E17AC78220FE38C40007EF77 /* Yaml.framework in Frameworks */,
 			);
@@ -428,6 +428,7 @@
 		E11F1FB11EE1B521008F9F0F /* MobileLighting_iPhone */ = {
 			isa = PBXGroup;
 			children = (
+				AACFBCAD249E75480033E0C0 /* opencv2.framework */,
 				E15E06E420D2E57500C43D71 /* Rectify */,
 				E11F1FF61EE1BBD7008F9F0F /* CameraPermissions.swift */,
 				E10205B020C085C000A003BE /* Globals.swift */,
@@ -445,7 +446,6 @@
 				E11F1FB91EE1B521008F9F0F /* Assets.xcassets */,
 				E11F1FBB1EE1B521008F9F0F /* LaunchScreen.storyboard */,
 				E11F1FBE1EE1B521008F9F0F /* Info.plist */,
-				AA3FB607227B833D001DB4D6 /* opencv2.framework */,
 				E17AC73B20FE29300007EF77 /* CocoaAsyncSocket.framework */,
 			);
 			path = MobileLighting_iPhone;
@@ -1034,6 +1034,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
+					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
@@ -1067,6 +1068,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
+					"$(PROJECT_DIR)",
 				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
