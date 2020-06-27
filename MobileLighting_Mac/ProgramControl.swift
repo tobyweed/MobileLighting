@@ -1589,7 +1589,6 @@ func processCommand(_ input: String) -> Bool {
     // ABSOLUTE PATHS NOT REQUIRED
     case .getintrinsics, .gi:
         guard tokens.count <= 2 else {
-            //            print("usage: \(commandUsage[command]!)")
             print(usage)
             break
         }

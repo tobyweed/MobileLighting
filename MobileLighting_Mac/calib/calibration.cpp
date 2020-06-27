@@ -1339,7 +1339,7 @@ void runCalibrationAndSave(Settings s, intrinsicCalibration &inCal, intrinsicCal
     } else {                        // intrinsic calibration
         if (inCal.objectPoints.size() <= 0){
             cout<<" The number of detected images is " << inCal.objectPoints.size()<<endl;
-            cout<<" Unbale to calibrate due to invalid number of object points.";
+            cout<<" Unable to calibrate due to invalid number of object points.";
             cout<<" Check your settings!" << endl;
             return;
         }

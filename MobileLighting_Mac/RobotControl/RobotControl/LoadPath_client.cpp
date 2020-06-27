@@ -14,7 +14,10 @@
 #include <string.h>
 #include <string>
 #include <iostream>
-#define PORT 50001
+
+#include <stdexcept>
+
+#define PORT 65000
 using namespace std;
 
 int setVelocity(float v);
@@ -46,9 +49,11 @@ int client()
     {
         printf("Connection to robot server failed. \n");
         return -1;
+    } else {
+        printf("Connection to robot server successful. \n");
     }
     return sock;
-} 
+}
 
 int sendCommand(char *script){
     int client_sock = client(), result;
@@ -73,20 +78,25 @@ int loadPath(string pathName){
     int n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
-    
+
     // Send command
     int client_sock = client(), result;
     char buffer[1024] = {0};
+    
     if(client_sock<1)
         return -1;
+
     result = send(client_sock,command,strlen(command),0);
     if (result<0){
         printf("Sending Failed\n");
         return -1;
     }
+
     read(client_sock, buffer, 1024);
     close(client_sock);
+
     usleep(1000000);
+
     int numViews = std::stoi(buffer);
 
     return numViews;
