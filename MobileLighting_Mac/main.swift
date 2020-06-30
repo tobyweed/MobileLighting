@@ -68,7 +68,7 @@ case "init":
     
     // If no path is provided, ask for one
     if CommandLine.argc == 2 {
-        print("location of scenes folder: ", terminator: "")
+        print("Location of scenes folder: ", terminator: "")
         scenesDirectory = readLine() ?? ""
     } else {
         scenesDirectory = CommandLine.arguments[2]
@@ -85,6 +85,7 @@ case "init":
     do {
         dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
         // generate sceneSettings and calibration Yaml files with default values
+        print("Generating sceneSettings.yml file")
         _ = try SceneSettings.create(dirStruc)
         // set contingent values
         sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
@@ -93,8 +94,16 @@ case "init":
         sceneSettings.set( key: "robotPathName", value: Yaml.string("default") )
         sceneSettings.set( key: "minSWdataPath", value: Yaml.string("(Value not initialized. Enter path to minSW data file.)") )
         sceneSettings.save()
-        print("successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
+        print("Successfully created settings file at \(scenesDirectory)/\(sceneName)/settings/sceneSettings.yml")
         
+        // Generate a board
+        print("Generating board.yml file")
+        try Board.create(dirStruc)
+        let board = try Board("\(dirStruc.boardsDir)/board0.yml")
+        board.save()
+        print("Successfully created board file at \(dirStruc.boardsDir)/board0.yml")
+        
+//        OLD
         try CalibrationSettings.create(dirStruc)
         // set contingent values
         let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)

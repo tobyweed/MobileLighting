@@ -340,7 +340,7 @@ func processCommand(_ input: String) -> Bool {
             case "-d":
                 for photo in photos {
                     do { try FileManager.default.removeItem(atPath: photo) }
-                    catch { print("could not remove \(photo)") }
+                    catch { print("Could not remove \(photo)") }
                 }
                 startIndex = 0
             case "-a":
@@ -360,10 +360,20 @@ func processCommand(_ input: String) -> Bool {
         } else {
             startIndex = 0
         }
+        
+        // Load and create boards
+        // Collect boards
+        print("Attempting to load boards")
+        var boards = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir)
+        guard boards.count > 0 else {
+            print("No boards were successfully initialized. Exiting command \(tokens[0]).")
+            break
+        }
+        print("Boards: \(boards)")
+        
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
-        
-        print("Press enter to begin taking photos.")
+        print("\n Press enter to begin taking photos.")
         guard let input = readLine() else {
             fatalError("Unexpected error reading stdin.")
         }
@@ -376,7 +386,7 @@ func processCommand(_ input: String) -> Bool {
                 i -= 1
                 print("Retaking last photo")
             } else{
-                print("Taking another photo")
+                print("Taking a photo")
             }
             
             // Capture calibration photo
@@ -387,30 +397,36 @@ func processCommand(_ input: String) -> Bool {
                 CalibrationImageReceiver(completionHandler, dir: dirStruc.intrinsicsPhotos, id: i)
             )
             while !receivedCalibrationImage {}
+
+//            Delete if found
+//             Make sure we have the right image list
+//            generateIntrinsicsImageList()
+//            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+//            calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
+//            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
+//            calib.save()
             
-            // Make sure we have the right image list
-            generateIntrinsicsImageList()
-            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-            calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-            calib.save()
-            
+            // Make sure there is a photo where we think there is
             var imgpath: [CChar]
             do {
                 try imgpath = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
             } catch let err {
-                print(err.localizedDescription)
-                break
-            }
-            let settingsPath = dirStruc.calibrationSettingsFile
-            var cSettingsPath: [CChar]
-            do {
-                try cSettingsPath = safePath(settingsPath)
-            } catch let err {
+                print("No file found with name \(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
                 print(err.localizedDescription)
                 break
             }
             
+//            Delete if found
+//            let settingsPath = dirStruc.calibrationSettingsFile
+//            var cSettingsPath: [CChar]
+//            do {
+//                try cSettingsPath = safePath(settingsPath)
+//            } catch let err {
+//                print(err.localizedDescription)
+//                break
+//            }
+            
+            print("Tracking ChArUco markers from image")
             // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
             DispatchQueue.main.sync(execute: {
                 keyCode = TrackMarkers(&imgpath)
@@ -419,6 +435,7 @@ func processCommand(_ input: String) -> Bool {
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
+        print("Photo capture ended. Exiting command \(tokens[0])")
         break
         
     case .stereocalib, .sc:

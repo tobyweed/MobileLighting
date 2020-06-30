@@ -217,17 +217,126 @@ func generateStereoImageList(left ldir: String, right rdir: String, outpath: Str
     try! Yaml.save(ymlDict, toFile: outpath)
 }
 
-class CalibrationSettings {
+
+class Board {
     let filepath: String
     var yml: Yaml
     
+    // Strings representing the supported predefined ChArUco dictionaries
+    enum BoardDict: String {
+        case DICT_4x4
+        case DICT_5x5
+        case DICT_6x6
+    }
+    
+    var Description: String?
+    var SquaresX: Int
+    var SquaresY: Int
+    var SquareSizeMM: Double
+    var MarkerSizeMM: Double
+    var BoardWidthMM: Double
+    var BoardHeightMM: Double
+    var Dict: BoardDict
+    var StartCode: Int
+    
+    init(_ path: String) throws {
+        self.filepath = path
+        // Load and read the preexisting yaml file
+        let ymlStr = try String(contentsOfFile: self.filepath)
+        let tmp = try Yaml.load(ymlStr)
+        guard let dict = tmp.dictionary else {
+            throw YamlError.InvalidFormat
+        }
+        guard dict[Yaml.string("Board")] != nil else {
+            throw YamlError.MissingRequiredKey
+        }
+        self.yml = dict[Yaml.string("Board")]!
+        guard let mainDict = dict[Yaml.string("Board")]!.dictionary else {
+            throw YamlError.InvalidFormat
+        }
+        
+        // process required properties:
+        guard let SquaresX = mainDict[Yaml.string("squares_x")]?.int,
+            let SquaresY = mainDict[Yaml.string("squares_y")]?.int,
+            let SquareSizeMM = mainDict[Yaml.string("square_size_mm")]?.double,
+            let MarkerSizeMM = mainDict[Yaml.string("marker_size_mm")]?.double,
+            let BoardWidthMM = mainDict[Yaml.string("board_width_mm")]?.double,
+            let BoardHeightMM = mainDict[Yaml.string("board_height_mm")]?.double,
+            let Dict = mainDict[Yaml.string("dict")]?.string,
+            let StartCode = mainDict[Yaml.string("start_code")]?.int else {
+                throw YamlError.MissingRequiredKey
+        }
+        
+        self.SquaresX = SquaresX
+        self.SquaresY = SquaresY
+        self.SquareSizeMM = SquareSizeMM
+        self.MarkerSizeMM = MarkerSizeMM
+        self.BoardWidthMM = BoardWidthMM
+        self.BoardHeightMM = BoardHeightMM
+        self.Dict = BoardDict(rawValue: Dict) ?? BoardDict(rawValue: "DICT_5x5")!
+        self.StartCode = StartCode
+    }
+    
+    static var format: Yaml {
+        get {
+            var maindict = [Yaml : Yaml]()
+            maindict[Yaml.string("description")] = Yaml.string("(value uninitialized)")
+            maindict[Yaml.string("squares_x")] = Yaml.int(12)
+            maindict[Yaml.string("squares_y")] = Yaml.int(9)
+            maindict[Yaml.string("square_size_mm")] = Yaml.double(60)
+            maindict[Yaml.string("marker_size_mm")] = Yaml.double(45)
+            maindict[Yaml.string("board_width_mm")] = Yaml.double(800)
+            maindict[Yaml.string("board_height_mm")] = Yaml.double(600)
+            maindict[Yaml.string("dict")] = Yaml.string("DICT_5x5")
+            maindict[Yaml.string("start_code")] = Yaml.int(300)
+            return Yaml.dictionary([Yaml.string("Board") : Yaml.dictionary(maindict)])
+        }
+    }
+    
+    // return all property names as an array of Strings
+    func properties()-> [(String,Any)] {
+        let mirror = Mirror(reflecting: self)
+        return mirror.children.compactMap{ ($0.label!, $0.value) }
+    }
+    
+    // Set a value on the yaml settings dictionary
+    func set(key: String, value: Yaml) {
+        guard var dict = self.yml.dictionary else { return }
+        dict[Yaml.string(key)] = value
+        self.yml = Yaml.dictionary(dict)
+    }
+    
+    // Set the yaml settings dictionary
+    func save(){
+        try! Yaml.save(Yaml.dictionary([Yaml.string("Board") : self.yml]), toFile: filepath)
+    }
+    
+    // Generate a sceneSettings file in the appropriate directory with default values from SceneSettings.format
+    static func create(_ dirStruc: DirectoryStructure) throws {
+        let path = "\(dirStruc.boardsDir)/board0.yml"
+        let dir = ((path.first == "/") ? "/" : "") + path.split(separator: "/").dropLast().joined(separator: "/")
+        do {
+            try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true, attributes: nil)
+            let yml = try Board.format.save()
+            try yml.write(toFile: path, atomically: true, encoding: .ascii)
+        } catch let error {
+            print(error.localizedDescription)
+        }
+    }
+}
+
+// OLD
+class CalibrationSettings {
+    let filepath: String
+    var yml: Yaml
+
     enum CalibrationMode: String {
         case INTRINSIC, STEREO, PREVIEW
     }
     enum CalibrationPattern: String {
         case CHESSBOARD, ARUCO_SINGLE
     }
-    
+
     enum Key: String {
         case Mode, Calibration_Pattern, ChessboardSize_Width
         case ChessboardSize_Height
@@ -243,7 +352,7 @@ class CalibrationSettings {
         case Show_UndistortedImages, ShowRectifiedImages
         case Wait_NextDetecedImage
     }
-    
+
     init(_ path: String) {
         self.filepath = path
         do {
@@ -261,28 +370,28 @@ class CalibrationSettings {
             fatalError()
         }
     }
-    
+
     // return all property names as an array of Strings
     func properties()-> [(String,Any)] {
         let mirror = Mirror(reflecting: self)
         return mirror.children.compactMap{ ($0.label!, $0.value) }
     }
-    
+
     func set(key: Key, value: Yaml) {
         guard var dict = self.yml.dictionary else { return }
         dict[Yaml.string(key.rawValue)] = value
         self.yml = Yaml.dictionary(dict)
     }
-    
+
     func get(key: Key) -> Yaml? {
         guard var dict = self.yml.dictionary else { return nil }
         return dict[Yaml.string(key.rawValue)]
     }
-    
+
     func save() {
         try! Yaml.save(Yaml.dictionary([Yaml.string("Settings") : self.yml]), toFile: filepath)
     }
-    
+
     static var format: Yaml {
         get {
             var settingsDict = [Yaml : Yaml]()
@@ -317,7 +426,7 @@ class CalibrationSettings {
             return Yaml.dictionary([Yaml.string("Settings") : mainDict])
         }
     }
-    
+
     static func create(_ dirStruc: DirectoryStructure) throws {
         let path = dirStruc.calibrationSettingsFile
         try Yaml.save(CalibrationSettings.format, toFile: path)
