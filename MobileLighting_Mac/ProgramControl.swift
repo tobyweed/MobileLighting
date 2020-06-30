@@ -324,6 +324,7 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
+        // Handle flags
         let nPhotos: Int
         let startIndex: Int
         if tokens.count == 2 {
@@ -361,20 +362,24 @@ func processCommand(_ input: String) -> Bool {
         }
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
-        // Insert photos starting at the right index, stopping on user prompt
+        
+        print("Press enter to begin taking photos.")
+        guard let input = readLine() else {
+            fatalError("Unexpected error reading stdin.")
+        }
+        
+        // Insert photos starting at the correct index, stopping on user prompt
+        var keyCode:Int32 = 0;
         var i: Int = startIndex;
-        while(true) {
-            print("Enter to take a photo, q to finish taking photos, or r to retake the last photo.")
-            guard let input = readLine() else {
-                fatalError("Unexpected error in reading stdin.")
-            }
-            if ["q", "quit"].contains(input) {
-                break
-            } else if ["r"].contains(input) {
+        while(keyCode != 113) {
+            if keyCode == 114 {
                 i -= 1
+                print("Retaking last photo")
+            } else{
+                print("Taking another photo")
             }
             
-            // take calibration photo
+            // Capture calibration photo
             var receivedCalibrationImage = false
             cameraServiceBrowser.sendPacket(packet)
             let completionHandler = { receivedCalibrationImage = true }
@@ -383,14 +388,13 @@ func processCommand(_ input: String) -> Bool {
             )
             while !receivedCalibrationImage {}
             
-            // make sure we have the right image list
+            // Make sure we have the right image list
             generateIntrinsicsImageList()
             let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
             calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
             calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
             calib.save()
             
-            print("\nDetecting objectPoints...")
             var imgpath: [CChar]
             do {
                 try imgpath = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
@@ -407,7 +411,10 @@ func processCommand(_ input: String) -> Bool {
                 break
             }
             
-            DetectionCheck(&cSettingsPath, &imgpath, nil)
+            // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
+            DispatchQueue.main.sync(execute: {
+                keyCode = TrackMarkers(&imgpath)
+            })
             
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1

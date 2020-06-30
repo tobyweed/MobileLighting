@@ -23,7 +23,6 @@ class DirectoryStructure {
         }
     }
     
-    // MARK: generated directory paths
     var scenes: String {
         get {
             return scenesDir
@@ -67,6 +66,12 @@ class DirectoryStructure {
     var calibrationSettingsFile: String {
         get {
             return self.settings + "/" + "calibration.yml"
+        }
+    }
+    
+    var boardsDir: String {
+        get {
+            return "\(self.settings)/boards"
         }
     }
     

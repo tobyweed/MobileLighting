@@ -12,19 +12,17 @@
 #include "Parameters.h"
 #include <stdbool.h>
 
-//MARK: Image Processor
 #include "activeLighting/activeLighting.h"
-
-// calibration functions
 int calibrateWithSettings(char *settingspath);
-
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
 
-//MARK: Robot Control
 #include "RobotControl/RobotControl/RobotControl.h"
 
-//MARK: Calibration
 int CalibrateWithSettings(const char *inputSettingsFile);
 int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
+
+#
+
+#include "calibration/calibration/wrapper.hpp"
 
 #endif
