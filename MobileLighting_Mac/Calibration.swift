@@ -2,7 +2,7 @@ import Foundation
 import Yaml
 
 
-// Load boards from all eligible .yml file in given directory
+// Load boards from all eligible .yml files in given directory
 func loadBoardsFromDirectory(boardsDir: String) -> [Board] {
     var boardPaths: [String]
     do {

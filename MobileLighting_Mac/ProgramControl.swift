@@ -369,7 +369,6 @@ func processCommand(_ input: String) -> Bool {
             print("No boards were successfully initialized. Exiting command \(tokens[0]).")
             break
         }
-        print("Boards: \(boards)")
         
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
@@ -397,14 +396,6 @@ func processCommand(_ input: String) -> Bool {
                 CalibrationImageReceiver(completionHandler, dir: dirStruc.intrinsicsPhotos, id: i)
             )
             while !receivedCalibrationImage {}
-
-//            Delete if found
-//             Make sure we have the right image list
-//            generateIntrinsicsImageList()
-//            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-//            calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-//            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-//            calib.save()
             
             // Make sure there is a photo where we think there is
             var imgpath: [CChar]
@@ -415,17 +406,7 @@ func processCommand(_ input: String) -> Bool {
                 print(err.localizedDescription)
                 break
             }
-            
-//            Delete if found
-//            let settingsPath = dirStruc.calibrationSettingsFile
-//            var cSettingsPath: [CChar]
-//            do {
-//                try cSettingsPath = safePath(settingsPath)
-//            } catch let err {
-//                print(err.localizedDescription)
-//                break
-//            }
-            
+
             print("Tracking ChArUco markers from image")
             // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
             DispatchQueue.main.sync(execute: {

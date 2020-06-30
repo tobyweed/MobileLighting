@@ -115,5 +115,5 @@ int trackCharucoMarkers(char *imagePath)
 //}
 
 //std::vector<cv::Point3f> getObjPoints(std::vector<int> ids) {
-//    
+//
 //}
