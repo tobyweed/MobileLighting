@@ -371,7 +371,6 @@ func processCommand(_ input: String) -> Bool {
         }
         
         // Convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
-//        let boardPathsCpp = boardPaths.map({ (*$0).unsafeCopy() }).unsafeCopy()
         var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
         var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
         
