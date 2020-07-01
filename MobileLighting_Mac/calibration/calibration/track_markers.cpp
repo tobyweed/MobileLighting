@@ -14,8 +14,19 @@
 #include <iostream>
 #include <string>
 
-// imgdir, size, fnames, image points, obj points, ids
-
+// Class for managing ChArUco boards
+class Board {
+public:
+    std::string description;
+    int squares_x;
+    int squares_y;
+    double square_size_mm;
+    double marker_size_mm;
+    double board_width_mm;
+    double board_height_mm;
+    std::string dict;
+    int startcode;
+};
 
 // Struct to store parameters for intrinsics calibration
 struct inCalParams {
@@ -40,7 +51,7 @@ void createBoard()
 }
 
 // Detect CharUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
-int trackCharucoMarkers(char *imagePath)
+int trackCharucoMarkers(char *imagePath, char **boardpaths)
 {
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_5X5_1000);
     cv::Ptr<cv::aruco::CharucoBoard> board = cv::aruco::CharucoBoard::create(12, 9, 0.06f, 0.045f, dictionary);

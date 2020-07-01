@@ -12,7 +12,6 @@
 #include <opencv2/aruco/charuco.hpp>
 #include <stdio.h>
 
-
-extern "C" int TrackMarkers(char *impath) {
-    return trackCharucoMarkers(impath);
+extern "C" int TrackMarkers(char *impath, char **boardpaths) {
+    return trackCharucoMarkers(impath, boardpaths);
 }

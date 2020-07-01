@@ -363,18 +363,27 @@ func processCommand(_ input: String) -> Bool {
         
         // Load and create boards
         // Collect boards
-        print("Attempting to load boards")
-        var boards = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir)
+        print("Collecting board paths")
+        var (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir)
         guard boards.count > 0 else {
             print("No boards were successfully initialized. Exiting command \(tokens[0]).")
             break
         }
         
+        // Convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
+//        let boardPathsCpp = boardPaths.map({ (*$0).unsafeCopy() }).unsafeCopy()
+        var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
+        var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
+        
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
-        print("\n Press enter to begin taking photos.")
+        print("\nEnter q to quit or any other button to begin taking photos.")
         guard let input = readLine() else {
             fatalError("Unexpected error reading stdin.")
+        }
+        if input == "q" {
+            print("Program quit. Exiting command \(tokens[0])")
+            break
         }
         
         // Insert photos starting at the correct index, stopping on user prompt
@@ -406,11 +415,11 @@ func processCommand(_ input: String) -> Bool {
                 print(err.localizedDescription)
                 break
             }
-
+            
             print("Tracking ChArUco markers from image")
             // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
             DispatchQueue.main.sync(execute: {
-                keyCode = TrackMarkers(&imgpath)
+                keyCode = TrackMarkers(&imgpath,&boardPathsCpp)
             })
             
             print("\n\(i-startIndex+1) photos recorded.")

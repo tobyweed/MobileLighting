@@ -1,31 +1,38 @@
 import Foundation
 import Yaml
 
-
 // Load boards from all eligible .yml files in given directory
-func loadBoardsFromDirectory(boardsDir: String) -> [Board] {
-    var boardPaths: [String]
+// returns an array of paths to valid board Yaml files and an array of Boards
+// returns empty arrays when errors are thrown
+func loadBoardsFromDirectory(boardsDir: String) -> ([String], [Board]) {
+    // Retrieve paths of all files in given directory
+    var paths: [String]
     do {
-        boardPaths = try FileManager.default.contentsOfDirectory(atPath: "\(boardsDir)/")
+        paths = try FileManager.default.contentsOfDirectory(atPath: "\(boardsDir)/")
     } catch let err {
         print(err.localizedDescription)
-        return []
+        return ([],[])
     }
-    guard boardPaths.count > 0 else {
+    guard paths.count > 0 else {
         print("No files were found in directory \(boardsDir)/")
-        return []
+        return ([],[])
     }
+    
+    // Try to load a board from each path. If successful, load a board and add a path to the return list.
+    // else print a message
     var boards: [Board] = []
-    for path in boardPaths {
+    var boardPaths: [String] = []
+    for path in paths {
         do {
             let board = try Board("\(boardsDir)/\(path)")
             boards.append(board)
+            boardPaths.append(path)
         } catch let err {
             print(err.localizedDescription)
             print("Could not initialize board from file \(path).")
         }
     }
-    return boards
+    return (boardPaths,boards)
 }
 
 // captureNPosCalibration: takes stereo calibration photos for all N positions

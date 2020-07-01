@@ -22,6 +22,16 @@ func +(left: [CChar], right: [CChar]) -> [CChar] {
     return result
 }
 
+extension Collection {
+    // Convert an array to an <UnsafeMutablePointer<Int8>? (note the '?' denoting Optional value)
+    public func unsafeCopy() -> UnsafeMutablePointer<Self.Element>? {
+        let copy = UnsafeMutablePointer<Self.Element>.allocate(capacity: self.underestimatedCount)
+        _ = copy.initialize(from: self)
+        return copy
+    }
+}
+
+// Convert String to [CChar]
 prefix operator *
 extension String {
     static prefix func * (swiftString: String) -> [CChar] {
@@ -29,12 +39,14 @@ extension String {
     }
 }
 
+// Convert [String] to [[CChar]]
 prefix func * (swiftStringArray: [String]) -> [[CChar]] {
     return swiftStringArray.map {
         return *$0
     }
 }
 
+// Convert [[CChar]] to [UnsafeMutablePointer<Int8>?]
 prefix operator **
 prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
     var ptrs = [UnsafeMutablePointer<CChar>?]()

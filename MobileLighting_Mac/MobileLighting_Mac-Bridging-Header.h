@@ -21,8 +21,6 @@ void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, ch
 int CalibrateWithSettings(const char *inputSettingsFile);
 int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
 
-#
-
 #include "calibration/calibration/wrapper.hpp"
 
 #endif
