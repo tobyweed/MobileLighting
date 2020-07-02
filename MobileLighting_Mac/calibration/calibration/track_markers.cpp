@@ -32,7 +32,6 @@ struct inCalParams {
 // Detect CharUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
 int trackCharucoMarkers(char *imagePath, char **boardPaths)
 {
-    printf("0");
     // Assume all boards use the same ChArUco dict
     Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000);
     
@@ -46,7 +45,6 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths)
     vector<vector<Point2f> > markerCorners;
     
     detectMarkers(image, dictionary, markerCorners, markerIds, params);
-    printf("1");
     vector<Point2f> charucoCorners;
     vector<int> charucoIds;
     int output = -1;
@@ -57,14 +55,28 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths)
         int n_boards = sizeof(boardPaths);
         Ptr<aruco::CharucoBoard> boards[n_boards];
         for( int i = 0; i < n_boards; i++ ) {
-            Ptr<aruco::CharucoBoard> board_n;
-            readBoardFromFile(boardPaths[0], board_n);
-            interpolateCornersCharuco(markerCorners, markerIds, image, board_n, charucoCorners, charucoIds);
+            Board boardN = readBoardFromFile(boardPaths[0]);
+            int startCode = boardN.startcode;
+            Ptr<aruco::CharucoBoard> boardNCharuco = convertBoardToCharuco(boardN);
+
+            // Subtract the start code from each value in markerIds
+            vector<int> markerIdsAdjusted = markerIds;
+            for(int i = 0; i < sizeof(markerIds); i++) {
+                markerIdsAdjusted.at(i) = markerIds.at(i) - startCode;
+            }
+            
+            interpolateCornersCharuco(markerCorners, markerIdsAdjusted, image, boardNCharuco, charucoCorners, charucoIds);
+            
+            // if at least one charuco corner detected
+            if (charucoCorners.size() > 0) {
+                // Not 100% sure what role this code plays.
+                vector<int> charucoIdsAdjusted = charucoIds;
+                for(int i = 0; i < sizeof(charucoIds); i++) {
+                    charucoIdsAdjusted.at(i) = charucoIds.at(i) + 2*startCode;
+                }
+                aruco::drawDetectedCornersCharuco(imageCopy, charucoCorners, charucoIdsAdjusted, Scalar(255, 0, 0));
+            }
         }
-        
-        // if at least one charuco corner detected
-        if (charucoIds.size() > 0)
-            aruco::drawDetectedCornersCharuco(imageCopy, charucoCorners, charucoIds, Scalar(255, 0, 0));
     } else {
         putText(imageCopy,
                     "No markers were detected!",

@@ -18,50 +18,6 @@
 using namespace cv;
 using namespace std;
 
-// Intermediary class for managing ChArUco boards, especially loading their information from Yaml files
-class Board {
-public:
-    void write(FileStorage& fs) const                        //Write serialization for this class
-    {
-        fs << "{" << "description" << description << "}";
-    }
-    void read(const FileNode& node)                          //Read serialization for this class
-    {
-        description = (string)node["description"];
-        squares_x = (int)node["squares_x"];
-        squares_x = (int)node["squares_y"];
-        square_size_mm = (double)node["square_size_mm"];
-        marker_size_mm = (double)node["marker_size_mm"];
-        board_width_mm = (double)node["board_width_mm"];
-        board_height_mm = (double)node["board_height_mm"];
-        dict = (string)node["dict"];
-        startcode = (int)node["startcode"];
-    }
-    // Convert a string to a supported predefined ChArUco dictionary
-    aruco::PREDEFINED_DICTIONARY_NAME chDict(string dictString) {
-        if (dictString == "DICT_4x4") {
-            return aruco::DICT_4X4_1000;
-        } else if (dictString == "DICT_5x5") {
-            return aruco::DICT_5X5_1000;
-        } else if (dictString == "DICT_6x6") {
-            return aruco::DICT_6X6_1000;
-        }
-        cout << "Unknown ChArUco dictionary: " << dictString;
-        exit (EXIT_FAILURE);
-    }
-public: // Parameters
-    string description;
-    int squares_x;
-    int squares_y;
-    double square_size_mm;
-    double marker_size_mm;
-    double board_width_mm;
-    double board_height_mm;
-    string dict;
-    int startcode;
-};
-
-
 // Read and write function implementation necessary for FileStorage to work.
 static void write(FileStorage& fs, const std::string&, const Board& b)
 {
@@ -76,21 +32,27 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
 
 
 // Reads a Board object from a file, then convert it to a CharucoBoard
-int readBoardFromFile(string filePath, Ptr<aruco::CharucoBoard> board)
+Board readBoardFromFile(string filePath)
 {
     FileStorage fs;
     fs.open(filePath, FileStorage::READ);
     if (!fs.isOpened())
     {
         cerr << "Failed to open " << filePath << endl;
-        return -1;
+        exit (EXIT_FAILURE);
     }
     Board b;
     fs["Board"] >> b;
-    Ptr<aruco::Dictionary> dict = getPredefinedDictionary(b.chDict(b.dict));
-    board = aruco::CharucoBoard::create(b.squares_x, b.squares_y, b.square_size_mm, b.marker_size_mm, dict);
-    return 0;
+    return b;
 }
+
+// Convert an object of class Board to a ChArUco board object
+Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b) {
+    Ptr<aruco::Dictionary> dict = b.chDict(b.dict);
+    Ptr<aruco::CharucoBoard> board = aruco::CharucoBoard::create(b.squares_x, b.squares_y, b.square_size_mm, b.marker_size_mm, dict);
+    return board;
+}
+
 
 
 // Create a charuco board and write it to BoardImage.jpg
