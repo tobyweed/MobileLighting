@@ -26,7 +26,7 @@ func loadBoardsFromDirectory(boardsDir: String) -> ([String], [Board]) {
         do {
             let board = try Board("\(boardsDir)/\(path)")
             boards.append(board)
-            boardPaths.append(path)
+            boardPaths.append("\(boardsDir)/\(path)")
         } catch let err {
             print(err.localizedDescription)
             print("Could not initialize board from file \(path).")

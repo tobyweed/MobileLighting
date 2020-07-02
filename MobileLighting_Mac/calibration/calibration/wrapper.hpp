@@ -13,7 +13,6 @@
 
 int TrackMarkers(char *impath, char **boardpaths);
 
-
 #pragma GCC visibility pop
 
 #endif /* wrapper_hpp */

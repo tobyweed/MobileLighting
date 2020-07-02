@@ -376,7 +376,7 @@ func processCommand(_ input: String) -> Bool {
         
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
-        print("\nEnter q to quit or any other button to begin taking photos.")
+        print("\nHit Enter to begin taking photos, or q then enter to quit.")
         guard let input = readLine() else {
             fatalError("Unexpected error reading stdin.")
         }
