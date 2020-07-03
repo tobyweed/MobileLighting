@@ -30,7 +30,6 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
         b.read(node);
 }
 
-
 // Reads a Board object from a file, then convert it to a CharucoBoard
 Board readBoardFromFile(string filePath)
 {

@@ -18,7 +18,6 @@
 using namespace cv;
 using namespace std;
 
-
 // Struct to store parameters for intrinsics calibration
 struct inCalParams {
     string pathName;
@@ -29,19 +28,19 @@ struct inCalParams {
     vector<int> ids;
 };
 
+
+
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
 //  - called by trackCharucoMarkers
-int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, char **boardPaths, int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<int>* charucoIds, vector<Point2f>* charucoCorners) {
+int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<int>* charucoIds, vector<Point2f>* charucoCorners) {
     
     cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, *markerCorners, *markerIds, params);
     
     if (markerIds->size() > 0) {
         // Loop through all provided board paths, initialize the Board objects, and detect/draw chessboard corners
-        Ptr<aruco::CharucoBoard> boards[numBoards];
         for( int i = 0; i < numBoards; i++ ) {
-            cout << "\nReading board " << i << " from file " << boardPaths[i];
-            Board boardN = readBoardFromFile(boardPaths[i]);
+            Board boardN = boards[i];
             int startCode = boardN.startcode;
             Ptr<aruco::CharucoBoard> boardNCharuco = convertBoardToCharuco(boardN);
             
@@ -95,8 +94,15 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
     vector<int> charucoIds;
     vector<Point2f> charucoCorners;
     
+    // Load all boards
+    Board boards[numBoards];
+    for( int i = 0; i < numBoards; i++ ) {
+        cout << "\nReading board " << i << " from file " << boardPaths[i];
+        boards[i] = readBoardFromFile(boardPaths[i]);
+    }
+    
     // Find markers and corners in the image and write them to our storage vectors
-    findMarkersAndCorners(image,dictionary,params,boardPaths,numBoards,&markerIds,&markerCorners,&charucoIds,&charucoCorners);
+    findMarkersAndCorners(image,dictionary,params,boards,numBoards,&markerIds,&markerCorners,&charucoIds,&charucoCorners);
     
     // If we found markers, create a copy of the image and draw indicators of all found markers and corners on it
     Mat imageCopy;
@@ -145,7 +151,7 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
 //int saveTracks(inCalParams imageParams) {
 //
 //}
-
-//vector<Point3f> getObjPoints(vector<int> ids) {
+//
+//vector<Point3f> getObjPoints(Board boards[],vector<int> ids) {
 //
 //}
