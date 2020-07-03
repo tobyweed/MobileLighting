@@ -10,6 +10,6 @@
 #define track_markers_h
 
 void createBoard();
-int trackCharucoMarkers(char *image, char **boardpaths);
+int trackCharucoMarkers(char *image, char **boardPaths, int numBoards);
 
 #endif //track_markers_h

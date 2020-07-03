@@ -30,7 +30,7 @@ struct inCalParams {
 };
 
 // Detect CharUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
-int trackCharucoMarkers(char *imagePath, char **boardPaths)
+int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
 {
     // Assume all boards use the same ChArUco dict
     Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000);
@@ -38,46 +38,56 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths)
     Ptr<aruco::DetectorParameters> params = aruco::DetectorParameters::create();
     params->cornerRefinementMethod = aruco::CORNER_REFINE_NONE;
 
+    // Read the provided image and create a copy to draw indicators where we detect markers and corners
     Mat image = imread(imagePath);
     Mat imageCopy;
     image.copyTo(imageCopy);
     vector<int> markerIds;
     vector<vector<Point2f> > markerCorners;
     
+    cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, markerCorners, markerIds, params);
     vector<Point2f> charucoCorners;
     vector<int> charucoIds;
     int output = -1;
     if (markerIds.size() > 0) {
-        aruco::drawDetectedMarkers(imageCopy, markerCorners, markerIds);
+        // Draw an outline around the detected ArUco markers
+        cout << "\nDrawing detected marker indicators";
+        aruco::drawDetectedMarkers(imageCopy, markerCorners, markerIds,Scalar(0, 0, 255));
         
-        // Loop through all provided board paths, initialize the Board objects, and interpolate corners
-        int n_boards = sizeof(boardPaths);
-        Ptr<aruco::CharucoBoard> boards[n_boards];
-        for( int i = 0; i < n_boards; i++ ) {
-            Board boardN = readBoardFromFile(boardPaths[0]);
+        // Loop through all provided board paths, initialize the Board objects, and detect/draw chessboard corners
+        Ptr<aruco::CharucoBoard> boards[numBoards];
+        for( int i = 0; i < numBoards; i++ ) {
+            cout << "\nReading board " << i << " from file " << boardPaths[i];
+            Board boardN = readBoardFromFile(boardPaths[i]);
             int startCode = boardN.startcode;
             Ptr<aruco::CharucoBoard> boardNCharuco = convertBoardToCharuco(boardN);
-
+            
             // Subtract the start code from each value in markerIds
+            // Note: this is necessary because we occasionally use boards with starting IDs higher than 0 which the OpenCV ChArUco library does not expect
             vector<int> markerIdsAdjusted = markerIds;
-            for(int i = 0; i < sizeof(markerIds); i++) {
+            for(int i = 0; i < markerIds.size(); i++) {
                 markerIdsAdjusted.at(i) = markerIds.at(i) - startCode;
             }
             
+            // Generate the 2D pixel locations of the chessboard corners based on the locations of the detected ArUco markers
+            cout << "\nInterpolating chessboard corners from board " << i << " based on detected ArUco markers";
             interpolateCornersCharuco(markerCorners, markerIdsAdjusted, image, boardNCharuco, charucoCorners, charucoIds);
             
-            // if at least one charuco corner detected
+            // If we have at least one charuco corner, draw indicators of each found corner on the output image
             if (charucoCorners.size() > 0) {
-                // Not 100% sure what role this code plays.
+                // Re-adjust the IDs to ensure unique corner IDs when using multiple boards.
+                // Note: a board with N = sx * sy squares has N // 2 markers and M = (sx-1) * (sy-1) interior corners, so M < N, which is twice the number of markers. Thus we will have unique corner IDs if we begin counting at 2*startCode
                 vector<int> charucoIdsAdjusted = charucoIds;
-                for(int i = 0; i < sizeof(charucoIds); i++) {
+                for(int i = 0; i < charucoIds.size(); i++) {
                     charucoIdsAdjusted.at(i) = charucoIds.at(i) + 2*startCode;
                 }
-                aruco::drawDetectedCornersCharuco(imageCopy, charucoCorners, charucoIdsAdjusted, Scalar(255, 0, 0));
+                cout << "\nDrawing chessboard corner markers for board " << i;
+                aruco::drawDetectedCornersCharuco(imageCopy, charucoCorners, charucoIdsAdjusted, Scalar(0, 255, 0));
             }
         }
     } else {
+        printf("\nNo markers were detected\n");
         putText(imageCopy,
                     "No markers were detected!",
                     Point(10, imageCopy.rows/2),
@@ -88,6 +98,7 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths)
     }
     
     // Open a visualization window and prompt user key command
+    printf("\nPress any key to continue, r to retake, or q to quit.\n");
     putText(imageCopy,
                 "Press any key to continue, r to retake, or q to quit.",
                 Point(10, imageCopy.rows-15),
@@ -103,7 +114,7 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths)
     
     imshow("Marker Detection Image", imageCopy);
     
-    output = waitKey(0); // Wait for a keystroke in the window
+    output = waitKey(0); // Wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
     destroyWindow("Marker Detection Image");
     
     // Save the necessary information if "r" was not input (we're not retaking the image)

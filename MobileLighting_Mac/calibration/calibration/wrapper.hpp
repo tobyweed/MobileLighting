@@ -11,7 +11,7 @@
 
 #pragma GCC visibility push(default)
 
-int TrackMarkers(char *impath, char **boardpaths);
+int TrackMarkers(char *imPath, char **boardPaths, int numBoards);
 
 #pragma GCC visibility pop
 

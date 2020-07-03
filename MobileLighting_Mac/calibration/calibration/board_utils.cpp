@@ -34,13 +34,17 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
 // Reads a Board object from a file, then convert it to a CharucoBoard
 Board readBoardFromFile(string filePath)
 {
+    printf("1");
     FileStorage fs;
+    printf("2");
     fs.open(filePath, FileStorage::READ);
+    printf("3");
     if (!fs.isOpened())
     {
         cerr << "Failed to open " << filePath << endl;
         exit (EXIT_FAILURE);
     }
+    printf("4");
     Board b;
     fs["Board"] >> b;
     return b;

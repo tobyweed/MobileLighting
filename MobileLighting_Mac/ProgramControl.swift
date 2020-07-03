@@ -418,7 +418,7 @@ func processCommand(_ input: String) -> Bool {
             print("Tracking ChArUco markers from image")
             // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
             DispatchQueue.main.sync(execute: {
-                keyCode = TrackMarkers(&imgpath,&boardPathsCpp)
+                keyCode = TrackMarkers(&imgpath,&boardPathsCpp,Int32(boards.count))
             })
             
             print("\n\(i-startIndex+1) photos recorded.")
