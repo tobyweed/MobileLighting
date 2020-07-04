@@ -1,13 +1,13 @@
 //
-//  board_utils.hpp
+//  calib_utils.hpp
 //  calibration
 //
 //  Created by Toby Weed on 7/2/20.
 //  Copyright © 2020 Toby Weed. All rights reserved.
 //
 
-#ifndef board_utils_hpp
-#define board_utils_hpp
+#ifndef calib_utils_hpp
+#define calib_utils_hpp
 
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
@@ -62,6 +62,7 @@ public: // Parameters
 };
 
 cv::Ptr<cv::aruco::CharucoBoard> convertBoardToCharuco(Board b);
-Board readBoardFromFile(std::string filePath);
+Board readBoardFromFile(string filePath);
+int writeMarkersToFile(string filePath, string imgPath, int size[], vector<Point2f> imgPoints, vector<int> ids);
 
-#endif /* board_utils_hpp */
+#endif /* calib_utils_hpp */

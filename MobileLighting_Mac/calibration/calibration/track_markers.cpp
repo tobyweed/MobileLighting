@@ -7,7 +7,7 @@
 //
 
 #include "track_markers.hpp"
-#include "board_utils.hpp"
+#include "calib_utils.hpp"
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
@@ -135,8 +135,16 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
         // store data in json file:
         // imgdir, size, fnames, image points, obj points, ids
         
-        // get object points
+        int width = image.cols;
+        int height = image.rows;
+        int size[2] = { width, height };
+        vector<int> ids = charucoIds;
+        vector<Point2f> imgPoints = charucoCorners;
+        // get object points (parameters: boards, ids)
+        // get image points (imgpoints = charuco corners)
+        // det ids (ids = charuco ids)
         
+        writeMarkersToFile("/Users/tobyweed/workspace/sandbox_scene/track.json", imagePath, size, imgPoints, ids);
         
 //        inCalParams imageParams = {imagePath, charucoCorners};
 //        imageParams.pathName = imagePath
@@ -149,9 +157,11 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
 
 
 //int saveTracks(inCalParams imageParams) {
-//
+// Needed: imgdir, size, fnames, imgpoints, objpoints, ids
 //}
 //
 //vector<Point3f> getObjPoints(Board boards[],vector<int> ids) {
 //
 //}
+
+

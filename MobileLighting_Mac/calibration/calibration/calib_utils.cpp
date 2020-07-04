@@ -7,7 +7,7 @@
 //
 //  Functions to assist with loading ChArUco boards to and from Yaml files
 
-#include "board_utils.hpp"
+#include "calib_utils.hpp"
 
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
@@ -19,7 +19,7 @@ using namespace cv;
 using namespace std;
 
 // Read and write function implementation necessary for FileStorage to work.
-static void write(FileStorage& fs, const std::string&, const Board& b)
+static void write(FileStorage& fs, const string&, const Board& b)
 {
     b.write(fs);
 }
@@ -30,7 +30,45 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
         b.read(node);
 }
 
-// Reads a Board object from a file, then convert it to a CharucoBoard
+
+FileStorage& operator<<(FileStorage& out, const vector<Point2f>& imgPoints)
+{
+    
+    vector<vector<float>> output;
+    for(int i = 0; i < imgPoints.size(); i++) {
+        vector<float> point{ (imgPoints.at(i).x), (imgPoints.at(i).y) };
+        output.push_back( point );
+    }
+    return out << output;
+}
+
+int writeMarkersToFile(string filePath, string imgPath, int size[], vector<Point2f> imgPoints, vector<int> ids) {
+    FileStorage fs(filePath, FileStorage::WRITE);
+
+//    int imgPointsArray[imgPoints.size()][2];
+//    string imgPointsString;
+//    for(int i = 0; i < imgPoints.size(); i++) {
+////        imgPointsString << "[" << imgPoints.at(i).x << ", " << imgPoints.at(i).y << "], ";
+////        imgPointsArray[i][0] = imgPoints.at(i).x;
+////        imgPointsArray[i][1] = imgPoints.at(i).y;
+//    }
+    
+    fs << "imgPath" << imgPath;
+    fs << "imgPoints" << imgPoints;
+//    cout << "\nImgpoints" <<imgPoints;
+    fs << "ids" << ids;
+    
+    fs.release();                                       // explicit close
+    cout << "Write Done." << endl;
+    return 0;
+}
+
+
+/* ========================================================================
+BOARDS
+========================================================================= */
+
+// Reads a Board object from a file
 Board readBoardFromFile(string filePath)
 {
     FileStorage fs;
@@ -51,8 +89,6 @@ Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b) {
     Ptr<aruco::CharucoBoard> board = aruco::CharucoBoard::create(b.squares_x, b.squares_y, b.square_size_mm, b.marker_size_mm, dict);
     return board;
 }
-
-
 
 // Create a charuco board and write it to BoardImage.jpg
 void createBoard()
