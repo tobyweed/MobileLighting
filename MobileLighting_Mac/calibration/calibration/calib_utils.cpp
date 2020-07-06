@@ -42,7 +42,6 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<Point2f>>& imgPoin
     }
     return out << output;
 }
-
 FileStorage& operator<<(FileStorage& out, const vector<vector<Point3f>>& objPoints)
 {
     vector<vector<float>> output;
@@ -55,6 +54,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<Point3f>>& objPoin
     return out << output;
 }
 
+// Write a JSON containing the important calbration data from each image
 int writeMarkersToFile(string filePath, string imgPath, int size[], vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids) {
     FileStorage fs(filePath, FileStorage::WRITE);
     
