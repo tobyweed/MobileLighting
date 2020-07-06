@@ -30,32 +30,45 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
         b.read(node);
 }
 
-
-FileStorage& operator<<(FileStorage& out, const vector<Point2f>& imgPoints)
+// << operator overloads for object points and image points. Convert openCV points to vectors of floats so that FileStorage can write them to disk. Also flatten 2- or 3D imgpoints vectors to 1D, so that each board no longer has its own array
+FileStorage& operator<<(FileStorage& out, const vector<vector<Point2f>>& imgPoints)
 {
-    
     vector<vector<float>> output;
     for(int i = 0; i < imgPoints.size(); i++) {
-        vector<float> point{ (imgPoints.at(i).x), (imgPoints.at(i).y) };
-        output.push_back( point );
+        for(int k = 0; k < imgPoints.at(i).size(); k++) {
+            vector<float> point{ (imgPoints.at(i).at(k).x), (imgPoints.at(i).at(k).y) };
+            output.push_back( point );
+        }
     }
     return out << output;
 }
 
-int writeMarkersToFile(string filePath, string imgPath, int size[], vector<Point2f> imgPoints, vector<int> ids) {
-    FileStorage fs(filePath, FileStorage::WRITE);
+FileStorage& operator<<(FileStorage& out, const vector<vector<Point3f>>& objPoints)
+{
+    vector<vector<float>> output;
+    for(int i = 0; i < objPoints.size(); i++) {
+        for(int k = 0; k < objPoints.at(i).size(); k++) {
+            vector<float> point{ (objPoints.at(i).at(k).x), (objPoints.at(i).at(k).y), (objPoints.at(i).at(k).z) };
+            output.push_back( point );
+        }
+    }
+    return out << output;
+}
 
-//    int imgPointsArray[imgPoints.size()][2];
-//    string imgPointsString;
-//    for(int i = 0; i < imgPoints.size(); i++) {
-////        imgPointsString << "[" << imgPoints.at(i).x << ", " << imgPoints.at(i).y << "], ";
-////        imgPointsArray[i][0] = imgPoints.at(i).x;
-////        imgPointsArray[i][1] = imgPoints.at(i).y;
-//    }
+int writeMarkersToFile(string filePath, string imgPath, int size[], vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids) {
+    FileStorage fs(filePath, FileStorage::WRITE);
     
     fs << "imgPath" << imgPath;
     fs << "imgPoints" << imgPoints;
-//    cout << "\nImgpoints" <<imgPoints;
+    fs << "objPoints" << objPoints;
+    
+    // "flatten" the IDs 2D vector to a 1D vector that doesn't differentiate between boards
+    vector<int> flattenedIds;
+    for(int i = 0; i < ids.size(); i++) {
+        for(int k = 0; k < ids.at(i).size(); k++) {
+            flattenedIds.push_back( ids.at(i).at(k) );
+        }
+    }
     fs << "ids" << ids;
     
     fs.release();                                       // explicit close

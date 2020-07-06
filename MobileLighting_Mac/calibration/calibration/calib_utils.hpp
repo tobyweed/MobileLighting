@@ -35,7 +35,7 @@ public:
         board_width_mm = (double)node["board_width_mm"];
         board_height_mm = (double)node["board_height_mm"];
         dict = (string)node["dict"];
-        startcode = (int)node["start_code"];
+        start_code = (int)node["start_code"];
     }
     // Convert a string to a supported predefined ChArUco dictionary
     Ptr<aruco::Dictionary> chDict(string dictString) {
@@ -58,11 +58,11 @@ public: // Parameters
     double board_width_mm;
     double board_height_mm;
     string dict;
-    int startcode;
+    int start_code;
 };
 
 cv::Ptr<cv::aruco::CharucoBoard> convertBoardToCharuco(Board b);
 Board readBoardFromFile(string filePath);
-int writeMarkersToFile(string filePath, string imgPath, int size[], vector<Point2f> imgPoints, vector<int> ids);
+int writeMarkersToFile(string filePath, string imgPath, int size[], vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids);
 
 #endif /* calib_utils_hpp */

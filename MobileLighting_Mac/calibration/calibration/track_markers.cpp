@@ -29,10 +29,9 @@ struct inCalParams {
 };
 
 
-
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
 //  - called by trackCharucoMarkers
-int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<int>* charucoIds, vector<Point2f>* charucoCorners) {
+int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<vector<int>>* charucoIds, vector<vector<Point2f>>* charucoCorners) {
     
     cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, *markerCorners, *markerIds, params);
@@ -41,7 +40,7 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
         // Loop through all provided board paths, initialize the Board objects, and detect/draw chessboard corners
         for( int i = 0; i < numBoards; i++ ) {
             Board boardN = boards[i];
-            int startCode = boardN.startcode;
+            int startCode = boardN.start_code;
             Ptr<aruco::CharucoBoard> boardNCharuco = convertBoardToCharuco(boardN);
             
             // Subtract the start code from each value in markerIds
@@ -64,8 +63,10 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
                 for(int k = 0; k < boardCharucoIds.size(); k++) {
                     boardCharucoIds.at(k) += 2*startCode;
                 }
-                charucoCorners->insert(charucoCorners->begin(), boardCharucoCorners.begin(), boardCharucoCorners.end());
-                charucoIds->insert(charucoIds->begin(), boardCharucoIds.begin(), boardCharucoIds.end());
+                charucoCorners->push_back(boardCharucoCorners);
+                charucoIds->push_back(boardCharucoIds);
+//                charucoCorners->insert(charucoCorners->begin(), boardCharucoCorners.begin(), boardCharucoCorners.end());
+//                charucoIds->insert(charucoIds->begin(), boardCharucoIds.begin(), boardCharucoIds.end());
             } else {
                 cout << "\nNo ChArUco corners were interpolated for board " << i;
             }
@@ -77,6 +78,34 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
     return 1;
 }
 
+// Translates ChArUco IDs into
+vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> ids) {
+//    vector<int> nxs;
+//    vector<double> ssizes;
+//    vector<int> starts;
+    vector<vector<Point3f>> objPoints;
+    
+    for(int i = 0; i < boards.size(); i++){
+//        nxs.push_back(b.squares_x - 1);
+//        ssizes.push_back(b.square_size_mm);
+//        starts.push_back(b.start_code)
+        Board b = boards[i];
+        int nx = b.squares_x - 1;
+        double ssize = b.square_size_mm;
+        int start = b.start_code;
+        
+        vector<Point3f> result;
+        vector<int> boardIds = ids[i];
+//        vector<int> boardIdsAdj = boardIds;
+        for(int k = 0; k < boardIds.size(); k++) {
+            int id = boardIds[k] - 2*start; // subtract ID offset
+            Point3f point = Point3f( id % nx + 1, floor(id / nx) + 1, 0 ); // calculate object point from ID
+            result.push_back(point * ssize); // multiply point coordinates by the square size to get the final 3D location
+        }
+        objPoints.push_back(result);
+    }
+    return objPoints;
+}
 
 // Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
 //  - main function, called by ProgramControl.swift
@@ -91,8 +120,8 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
     params->cornerRefinementMethod = aruco::CORNER_REFINE_NONE;
     vector<int> markerIds;
     vector<vector<Point2f>> markerCorners;
-    vector<int> charucoIds;
-    vector<Point2f> charucoCorners;
+    vector<vector<int>> charucoIds;
+    vector<vector<Point2f>> charucoCorners;
     
     // Load all boards
     Board boards[numBoards];
@@ -138,13 +167,16 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
         int width = image.cols;
         int height = image.rows;
         int size[2] = { width, height };
-        vector<int> ids = charucoIds;
-        vector<Point2f> imgPoints = charucoCorners;
+        vector<vector<int>> ids = charucoIds;
+        vector<vector<Point2f>> imgPoints = charucoCorners;
+        
+        vector<Board> boardsVector(boards, boards + sizeof(boards)/sizeof(boards[0])); // convert boards array to vector so it can be passed by value
+        vector<vector<Point3f>> objPoints = getObjPoints(boardsVector, ids);
         // get object points (parameters: boards, ids)
         // get image points (imgpoints = charuco corners)
         // det ids (ids = charuco ids)
         
-        writeMarkersToFile("/Users/tobyweed/workspace/sandbox_scene/track.json", imagePath, size, imgPoints, ids);
+        writeMarkersToFile("/Users/tobyweed/workspace/sandbox_scene/track.json", imagePath, size, imgPoints, objPoints, ids);
         
 //        inCalParams imageParams = {imagePath, charucoCorners};
 //        imageParams.pathName = imagePath
@@ -160,8 +192,3 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
 // Needed: imgdir, size, fnames, imgpoints, objpoints, ids
 //}
 //
-//vector<Point3f> getObjPoints(Board boards[],vector<int> ids) {
-//
-//}
-
-
