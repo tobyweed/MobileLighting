@@ -21,11 +21,11 @@ using namespace std;
 // Intermediary class for managing ChArUco boards, especially loading their information from Yaml files
 class Board {
 public:
-    void write(FileStorage& fs) const                        //Write serialization for this class
+    void write(FileStorage& fs) const // write serialization for this class
     {
         fs << "{" << "description" << description << "}";
     }
-    void read(const FileNode& node)                          //Read serialization for this class
+    void read(const FileNode& node) // read serialization for this class
     {
         description = (string)node["description"];
         squares_x = (int)node["squares_x"];
@@ -63,6 +63,8 @@ public: // Parameters
 
 cv::Ptr<cv::aruco::CharucoBoard> convertBoardToCharuco(Board b);
 Board readBoardFromFile(string filePath);
-int writeMarkersToFile(string filePath, string imgPath, int size[], vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids);
+//int writeMarkersToFile(string filePath, string imgPath, vector<int> size, vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids);
+const void *initializeCalibDataStorage(char *imgDirPath);
+void saveCalibDataToFile(char *filePath, void *calibrationData);
 
 #endif /* calib_utils_hpp */

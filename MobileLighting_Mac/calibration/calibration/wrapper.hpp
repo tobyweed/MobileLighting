@@ -11,7 +11,9 @@
 
 #pragma GCC visibility push(default)
 
-int TrackMarkers(char *imPath, char **boardPaths, int numBoards);
+int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData);
+const void *InitializeCalibDataStorage(char *imgDirPath);
+void SaveCalibDataToFile(char *filePath, void *calibrationData);
 
 #pragma GCC visibility pop
 

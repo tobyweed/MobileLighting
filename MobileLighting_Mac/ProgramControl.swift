@@ -362,20 +362,22 @@ func processCommand(_ input: String) -> Bool {
         }
         
         // Load and create boards
-        // Collect boards
         print("Collecting board paths")
-        var (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir)
+        var (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
         guard boards.count > 0 else {
             print("No boards were successfully initialized. Exiting command \(tokens[0]).")
             break
         }
-        
-        // Convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
+        // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
         var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
         var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
         
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
+        // Initialize a class to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+        var intrinsicsPhotosDir = *dirStruc.intrinsicsPhotos;
+        let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir));
         
+        // Prepare for photo capture
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         print("\nHit Enter to begin taking photos, or q then enter to quit.")
         guard let input = readLine() else {
             fatalError("Unexpected error reading stdin.")
@@ -408,22 +410,34 @@ func processCommand(_ input: String) -> Bool {
             // Make sure there is a photo where we think there is
             var imgpath: [CChar]
             do {
-                try imgpath = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
+                try safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
             } catch let err {
                 print("No file found with name \(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
                 print(err.localizedDescription)
                 break
             }
+            var imgName = *"IMG\(i).JPG"
             
             print("Tracking ChArUco markers from image")
+            
+//            var calibrationDataPointer = UnsafeMutableRawPointer();
             // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
             DispatchQueue.main.sync(execute: {
-                keyCode = TrackMarkers(&imgpath,&boardPathsCpp,Int32(boards.count))
+                keyCode = TrackMarkers(&imgName,&boardPathsCpp,Int32(boards.count),calibDataPtr)
             })
+            
+            if( keyCode == -1 ) {
+                print("Something went wrong with call to TrackMarkers. Exiting command \(tokens[0]).")
+                break;
+            }
             
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
+        
+        var outputTrackPath = *"/Users/tobyweed/workspace/sandbox_scene/track.json";
+        SaveCalibDataToFile( &outputTrackPath, calibDataPtr );
+        
         print("Photo capture ended. Exiting command \(tokens[0])")
         break
         

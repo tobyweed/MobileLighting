@@ -18,10 +18,14 @@
 using namespace cv;
 using namespace std;
 
+
+/* ========================================================================
+MARKER TRACKING FUNCTIONALITY
+========================================================================= */
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
 //  - called by trackCharucoMarkers
-int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<vector<int>>* charucoIds, vector<vector<Point2f>>* charucoCorners) {
-    
+int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<vector<int>>* charucoIds, vector<vector<Point2f>>* charucoCorners)
+{
     cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, *markerCorners, *markerIds, params);
     
@@ -68,7 +72,8 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
 
 
 // Translates ChArUco IDs into 3D object point coordinates
-vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> ids) {
+vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> ids)
+{
     vector<vector<Point3f>> objPoints;
     
     // loop through each board
@@ -95,14 +100,27 @@ vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> id
     return objPoints;
 }
 
+
+
 // Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
 //  - main function, called by ProgramControl.swift
-int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
+//  - returns -1 on failure or the input keycode on success
+//  - saves a pointer to a calibration data structure to be passed back to swift
+int trackCharucoMarkers(char *imageName, char **boardPaths, int numBoards, void *calibrationData)
 {
     int output = -1;
+    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
     
-    // Initialize the storage vectors, image, and necessary parameters
+    // Generate the path to the file and read the image
+    string imgDir(data->imgDir), imgName(imageName);
+    string imagePath = imgDir + "/" + imgName;
     Mat image = imread(imagePath);
+    if(image.data == NULL) { // make sure we loaded an image successfully
+        cout << "Image could not be read from path: " << imagePath;
+        return -1;
+    }
+    
+    // Intitialize necessary parameters
     Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000); // assume all boards use the same ChArUco dict
     Ptr<aruco::DetectorParameters> params = aruco::DetectorParameters::create();
     params->cornerRefinementMethod = aruco::CORNER_REFINE_NONE;
@@ -149,23 +167,19 @@ int trackCharucoMarkers(char *imagePath, char **boardPaths, int numBoards)
     output = waitKey(0); // wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
     destroyWindow("Marker Detection Image");
     
-    // Save the necessary information if "r" was not input (we're not retaking the image)
-    if( output != 114 ){
+    if( output != 114 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
         int width = image.cols;
         int height = image.rows;
-        int size[2] = { width, height };
+        vector<int> size = { width, height };
         vector<vector<int>> ids = charucoIds;
         vector<vector<Point2f>> imgPoints = charucoCorners;
-        
         vector<vector<Point3f>> objPoints;
-        if(ids.size() > 0) {
+        if(ids.size() > 0) { // safety check
             vector<Board> boardsVector(boards, boards + sizeof(boards)/sizeof(boards[0])); // convert boards array to vector so it can be passed by value
             objPoints = getObjPoints(boardsVector, ids);
         }
-        
-        writeMarkersToFile("/Users/tobyweed/workspace/sandbox_scene/track.json", imagePath, size, imgPoints, objPoints, ids);
+        data->loadData( imageName, size, imgPoints, objPoints, ids );
     }
-    
     return output;
 }
 

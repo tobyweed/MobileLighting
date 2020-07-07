@@ -9,9 +9,27 @@
 //
 
 #include "track_markers.hpp"
+#include "calib_utils.hpp"
 #include <opencv2/aruco/charuco.hpp>
 #include <stdio.h>
 
-extern "C" int TrackMarkers(char *imPath, char **boardPaths, int numBoards) {
-    return trackCharucoMarkers(imPath, boardPaths, numBoards);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData) {
+        return trackCharucoMarkers(imPath, boardPaths, numBoards, calibrationData);
+    }
+
+    const void *InitializeCalibDataStorage(char *imgDirPath) {
+        return initializeCalibDataStorage(imgDirPath);
+    }
+
+    void SaveCalibDataToFile(char *filePath, void *calibrationData) {
+        return saveCalibDataToFile(filePath, calibrationData);
+    }
+
+#ifdef __cplusplus
 }
+#endif
+
