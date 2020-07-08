@@ -372,7 +372,7 @@ func processCommand(_ input: String) -> Bool {
         var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
         var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
         
-        // Initialize a class to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+        // Initialize an object to store the data (charuco corners, object points, etc..) gained during calibration photo capture
         var intrinsicsPhotosDir = *dirStruc.intrinsicsPhotos;
         let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir));
         
@@ -420,8 +420,7 @@ func processCommand(_ input: String) -> Bool {
             
             print("Tracking ChArUco markers from image")
             
-//            var calibrationDataPointer = UnsafeMutableRawPointer();
-            // Track ChArUco markers: detect markers, show visualization, and save tracks on user prompt
+            // Track ChArUco markers: detect markers, show visualization, and save data on user prompt
             DispatchQueue.main.sync(execute: {
                 keyCode = TrackMarkers(&imgName,&boardPathsCpp,Int32(boards.count),calibDataPtr)
             })
@@ -436,7 +435,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         var outputTrackPath = *"/Users/tobyweed/workspace/sandbox_scene/track.json";
-        SaveCalibDataToFile( &outputTrackPath, calibDataPtr );
+        SaveCalibDataToFile( &outputTrackPath, calibDataPtr ); // write the data extracted by TrackMarkers to a file
         
         print("Photo capture ended. Exiting command \(tokens[0])")
         break
@@ -479,7 +478,7 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        var posIDs: [Int] = Array(0..<nPositions)
+        let posIDs: [Int] = Array(0..<nPositions)
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         break
         

@@ -15,12 +15,14 @@
 using namespace cv;
 using namespace std;
 
+// Class for storage of data extracted from calibration of images before writing to disk.
 class CalibrationData {
 public:
-    CalibrationData(char *imgDirPath) {
+    CalibrationData(char *imgDirPath) { // constructor
         imgDir = imgDirPath;
     };
     
+    // load data extracted from one image to the storage object
     void loadData(string fname, vector<int> imgSize, vector<vector<Point2f>> imgPointsVector, vector<vector<Point3f>> objPointsVector, vector<vector<int>> idsVector) {
         fnames.push_back(fname);
         size = imgSize;

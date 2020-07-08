@@ -24,7 +24,7 @@ MARKER TRACKING FUNCTIONALITY
 ========================================================================= */
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
 //  - called by trackCharucoMarkers
-int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int>* markerIds, vector<vector<Point2f>>* markerCorners, vector<vector<int>>* charucoIds, vector<vector<Point2f>>* charucoCorners)
+int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int> *markerIds, vector<vector<Point2f>> *markerCorners, vector<vector<int>> *charucoIds, vector<vector<Point2f>> *charucoCorners)
 {
     cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, *markerCorners, *markerIds, params);
@@ -100,7 +100,17 @@ vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> id
     return objPoints;
 }
 
-
+//int generateImgPath( char *imageName, char *imageDir, Mat*  ) {
+//    // Generate the path to the file and read the image
+//    string imgDir(imageDir), imgName(imageName);
+//    string imagePath = imgDir + "/" + imgName;
+//    Mat image = imread(imagePath);
+//    if(image.data == NULL) { // make sure we loaded an image successfully
+//        cout << "Image could not be read from path: " << imagePath;
+//        return -1;
+//    }
+//    return 0;
+//}
 
 // Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
 //  - main function, called by ProgramControl.swift
@@ -158,7 +168,7 @@ int trackCharucoMarkers(char *imageName, char **boardPaths, int numBoards, void 
     }
     
     // Open a visualization window and prompt user input
-    printf("\nPress any key to continue, r to retake, or q to quit.\n");
+    printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
     putText(imageCopy, "Press any key to continue, r to retake, or q to quit.", Point(10, imageCopy.rows-15), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(118, 185, 0), 2);
     namedWindow("Marker Detection Image", WINDOW_NORMAL);
     setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_FULLSCREEN); // it is necessary to toggle fullscreen to bring the display window to the front
@@ -182,9 +192,3 @@ int trackCharucoMarkers(char *imageName, char **boardPaths, int numBoards, void 
     }
     return output;
 }
-
-
-//int saveTracks(inCalParams imageParams) {
-// Needed: imgdir, size, fnames, imgpoints, objpoints, ids
-//}
-//

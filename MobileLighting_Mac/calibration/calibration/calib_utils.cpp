@@ -39,18 +39,17 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>&
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
-        out << "[";
+//        out << "[";
         for(int j = 0; j < points.at(i).size(); j++) {
             out << "[";
             for(int k = 0; k < points.at(i).at(j).size(); k++) {
                 vector<float> point;
                 point = { points.at(i).at(j).at(k).x, points.at(i).at(j).at(k).y, points.at(i).at(j).at(k).z };
-//                point = { (points.at(i).at(j).at(k).x), (points.at(i).at(j).at(k).y) };
                 out << point;
             }
             out << "]";
         }
-        out << "]";
+//        out << "]";
     }
     return out << "]";
 }
@@ -58,7 +57,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>&
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
-        out << "[";
+//        out << "[";
         for(int j = 0; j < points.at(i).size(); j++) {
             out << "[";
             for(int k = 0; k < points.at(i).at(j).size(); k++) {
@@ -68,49 +67,10 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>&
             }
             out << "]";
         }
-        out << "]";
+//        out << "]";
     }
     return out << "]";
 }
-//
-//FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>& imgPoints)
-//{
-////    vector<vector<vector<float>>> output; // will consist of arrays of image outputs
-//    out << "[";
-//    for(int i = 0; i < imgPoints.size(); i++) {
-//        out << "[";
-////        vector<vector<float>> imgOutput; // output for one image
-//
-//        for(int j = 0; j < imgPoints.at(i).size(); j++) {
-//
-//            for(int k = 0; k < imgPoints.at(i).at(j).size(); k++) {
-//                vector<float> point{ (imgPoints.at(i).at(j).at(k).x), (imgPoints.at(i).at(j).at(k).y) };
-//
-//                out << "[" << point << "]";
-////                imgOutput.push_back( point );
-//            }
-//        }
-//        out << "]";
-////        output.push_back( imgOutput );
-//    }
-//    return out << "]";
-////    return out << output;
-//}
-//FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& objPoints)
-//{
-//    vector<vector<vector<float>>> output; // will consist of arrays of image outputs
-//    for(int i = 0; i < objPoints.size(); i++) {
-//        vector<vector<float>> imgOutput; // output for one image
-//        for(int j = 0; j < objPoints.at(i).size(); j++) {
-//            for(int k = 0; k < objPoints.at(i).at(j).size(); k++) {
-//                vector<float> point{ (objPoints.at(i).at(j).at(k).x), (objPoints.at(i).at(j).at(k).y), (objPoints.at(i).at(j).at(k).z)  };
-//                imgOutput.push_back( point );
-//            }
-//        }
-//        output.push_back( imgOutput );
-//    }
-//    return out << output;
-//}
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int>>>& ids)
 {
     vector<vector<int>> output; // will consist of arrays of image outputs
@@ -154,6 +114,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int>>>& ids
 /* ========================================================================
 CALIBRATIONDATA MANAGEMENT
 ========================================================================= */
+// Initialize a CalibrationData object and return a pointer to it
 const void *initializeCalibDataStorage(char *imgDirPath)
 {
     CalibrationData *data = new CalibrationData(imgDirPath);
@@ -168,11 +129,11 @@ void saveCalibDataToFile(char *filePath, void *calibrationData) {
     fs << "imgdir" << data->imgDir;
     fs << "fnames" << data->fnames;
     fs << "size" << data->size;
-    fs << "imgPoints" << data->imgPoints;
-    fs << "objPoints" << data->objPoints;
+    fs << "img_points" << data->imgPoints;
+    fs << "obj_points" << data->objPoints;
     fs << "ids" << data->ids;
     
-    fs.release();                                       // explicit close
+    fs.release();
     cout << "Write Done." << endl;
 }
 
