@@ -48,7 +48,7 @@ public:
     vector<vector<Point2f>> charucoCorners;
 };
 
-int trackCharucoMarkers(char *image, char **boardPaths, int numBoards, void *calibrationData);
+//int trackCharucoMarkers(char *image, char **boardPaths, int numBoards, void *calibrationData);
 int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores);
 
 #endif //track_markers_h

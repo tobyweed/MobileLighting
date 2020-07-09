@@ -374,7 +374,8 @@ func processCommand(_ input: String) -> Bool {
         
         // Initialize an object to store the data (charuco corners, object points, etc..) gained during calibration photo capture
         var intrinsicsPhotosDir = *dirStruc.intrinsicsPhotos;
-        let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir));
+        var calibDataPtr: [UnsafeMutableRawPointer?] = [UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir))]; // wrapped in an array for compatibility with TrackMarkers
+        
         
         // Prepare for photo capture
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
@@ -415,13 +416,15 @@ func processCommand(_ input: String) -> Bool {
                 print(err.localizedDescription)
                 break
             }
-            var imgName = *"IMG\(i).JPG"
+            var imgName = "IMG\(i).JPG"
+            var imgNamesCChar = *[imgName]
+            var imgNameCpp = **(imgNamesCChar); // wrap in ptr-to-ptr format for compatibility with TrackMarkers
             
             print("Tracking ChArUco markers from image")
             
             // Track ChArUco markers: detect markers, show visualization, and save data on user prompt
             DispatchQueue.main.sync(execute: {
-                keyCode = TrackMarkers(&imgName,&boardPathsCpp,Int32(boards.count),calibDataPtr)
+                keyCode = TrackMarkersStereo(&imgNameCpp,Int32(1),&boardPathsCpp,Int32(boards.count),&calibDataPtr)
             })
             
             if( keyCode == -1 ) {
@@ -434,7 +437,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         var outputTrackPath = *"/Users/tobyweed/workspace/sandbox_scene/track.json";
-        SaveCalibDataToFile( &outputTrackPath, calibDataPtr ); // write the data extracted by TrackMarkers to a file
+//        SaveCalibDataToFile( &outputTrackPath, calibDataPtr ); // write the data extracted by TrackMarkers to a file
         
         print("Photo capture ended. Exiting command \(tokens[0])")
         break

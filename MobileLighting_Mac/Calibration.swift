@@ -85,19 +85,26 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         photoID = 0
     }
     
+    print("\nHit Enter to begin taking photos, or q then enter to quit.")
+    guard let input = readLine() else {
+        fatalError("Unexpected error reading stdin.")
+    }
+    if input == "q" {
+        print("Program quit. Exiting command.")
+        return
+    }
+
+    // Insert photos starting at the correct index, stopping on user prompt
     var keyCode:Int32 = 0;
-    
-    // take the photos
-    while(true) {
+    var i: Int = photoID;
+        while(keyCode != 113) {
+        if keyCode == 114 {
+            i -= 1
+            print("Retaking last set")
+        } else {
+            print("Taking a photo set")
+        }
         var i = 0
-        
-        print("Hit enter to take a set or write q to finish taking photos");
-        guard let input = readLine() else {
-            fatalError("Unexpected error in reading stdin.")
-        }
-        if ["q", "quit"].contains(input) {
-            break
-        }
         
         // Load and create boards
         print("Collecting board paths")
@@ -127,11 +134,11 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
                 print("stereocalib: ERROR -- could not find directory for position \(i)")
                 return
             }
-            receiveCalibrationImageSync(dir: photoDir, id: photoID)
+            receiveCalibrationImageSync(dir: photoDir, id: i)
             
-            print("\nChecking path \(photoDir)/IMG\(photoID).JPG")
+            print("\nChecking path \(photoDir)/IMG\(i).JPG")
             do {
-                try _ = safePath("\(photoDir)/IMG\(photoID).JPG")
+                try _ = safePath("\(photoDir)/IMG\(i).JPG")
             } catch let err {
                 print(err.localizedDescription)
                 break
@@ -141,7 +148,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirPtr));
             calibDataPtrs.append(calibDataPtr)
             
-            let imgName = "IMG\(photoID).JPG";
+            let imgName = "IMG\(i).JPG";
             imgNames.append(imgName);
             
             i += 1
@@ -157,22 +164,22 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         
         if( keyCode == -1 ) {
             print("Something went wrong with call to TrackMarkers. Exiting command.")
-            break;
+            return;
         }
         
-        // Ask the user if they'd like to retake the photo from that position
-        print("Continue (c), retake the last set (r), or finish taking photos (q).")
-        var quit = false
-        switch readLine() {
-        case "c":
-            photoID += 1
-        case "r":
-            print("Retaking...")
-        case "q":
-            quit = true
-        default:
-            photoID += 1
-        }
-        if(quit){ break }
+//        // Ask the user if they'd like to retake the photo from that position
+//        print("Continue (c), retake the last set (r), or finish taking photos (q).")
+//        var quit = false
+//        switch readLine() {
+//        case "c":
+//            photoID += 1
+//        case "r":
+//            print("Retaking...")
+//        case "q":
+//            quit = true
+//        default:
+//            photoID += 1
+//        }
+//        if(quit){ break }
     }
 }

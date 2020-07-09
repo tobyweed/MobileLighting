@@ -24,12 +24,12 @@ MARKER TRACKING FUNCTIONALITY
 ========================================================================= */
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
 //  - called by trackCharucoMarkers
-int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, vector<int> *markerIds, vector<vector<Point2f>> *markerCorners, vector<vector<int>> *charucoIds, vector<vector<Point2f>> *charucoCorners)
+int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, ImgMarkers *imgMarkers)
 {
     cout << "\nDetecting ArUco markers";
-    detectMarkers(image, dictionary, *markerCorners, *markerIds, params);
+    detectMarkers(image, dictionary, imgMarkers->markerCorners, imgMarkers->markerIds, params);
     
-    if (markerIds->size() > 0) {
+    if (imgMarkers->markerIds.size() > 0) {
         // loop through all provided board paths, initialize the Board objects, and detect chessboard corners
         for( int i = 0; i < numBoards; i++ ) {
             Board boardN = boards[i];
@@ -38,9 +38,9 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
             
             // subtract the start code from each value in markerIds
             // note: this is necessary because we occasionally use boards with starting IDs higher than 0 which the OpenCV ChArUco library does not expect
-            vector<int> markerIdsAdjusted = *markerIds;
-            for(int k = 0; k < markerIds->size(); k++) {
-                markerIdsAdjusted.at(k) = markerIds->at(k) - startCode;
+            vector<int> markerIdsAdjusted = imgMarkers->markerIds;
+            for(int k = 0; k < imgMarkers->markerIds.size(); k++) {
+                markerIdsAdjusted.at(k) = imgMarkers->markerIds.at(k) - startCode;
             }
             
             // storage vectors for ChArUco ids and corners, specific to each board to avoid issues during interpolation
@@ -48,7 +48,7 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
             vector<Point2f> boardCharucoCorners;
             // generate the 2D pixel locations of the chessboard corners based on the locations of the detected ArUco markerg
             cout << "\nInterpolating chessboard corners from board " << i << " based on detected ArUco markers";
-            interpolateCornersCharuco(*markerCorners, markerIdsAdjusted, image, boardNCharuco, boardCharucoCorners, boardCharucoIds);
+            interpolateCornersCharuco(imgMarkers->markerCorners, markerIdsAdjusted, image, boardNCharuco, boardCharucoCorners, boardCharucoIds);
             
             if (boardCharucoCorners.size() > 0) {
                 // re-adjust the IDs to ensure unique corner IDs when using multiple boards.
@@ -56,8 +56,8 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
                 for(int k = 0; k < boardCharucoIds.size(); k++) {
                     boardCharucoIds.at(k) += 2*startCode;
                 }
-                charucoCorners->push_back(boardCharucoCorners);
-                charucoIds->push_back(boardCharucoIds);
+                imgMarkers->charucoCorners.push_back(boardCharucoCorners);
+                imgMarkers->charucoIds.push_back(boardCharucoIds);
             } else {
                 cout << "\nNo ChArUco corners were interpolated for board " << i;
             }
@@ -68,8 +68,6 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
     }
     return 0;
 }
-
-
 
 // Translates ChArUco IDs into 3D object point coordinates
 vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> ids)
@@ -100,26 +98,40 @@ vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> id
     return objPoints;
 }
 
-
-Mat drawMarkerVis( Mat img, vector<int> markerIds, vector<vector<Point2f>> markerCorners, vector<vector<int>> charucoIds, vector<vector<Point2f>> charucoCorners ) {
-    
+// Return a copy of the input with the input markers drawn on
+Mat drawMarkerVis( Mat img, ImgMarkers imgMarkers) {
     Mat outputImg;
     img.copyTo(outputImg);
     // If we found any ArUco markers, draw outlines around them
-    if(markerCorners.size() > 0) {
+    if(imgMarkers.markerCorners.size() > 0) {
         cout << "\nDrawing detected marker indicators";
-        aruco::drawDetectedMarkers(outputImg, markerCorners, markerIds, Scalar(0, 0, 255));
+        aruco::drawDetectedMarkers(outputImg, imgMarkers.markerCorners, imgMarkers.markerIds, Scalar(0, 0, 255));
         // If we found any chessboard corners, draw outlines around them
-        if(charucoCorners.size() > 0) {
+        if(imgMarkers.charucoCorners.size() > 0) {
             cout << "\nDrawing chessboard corners";
-            for(int i = 0; i < charucoIds.size(); i++) {
-                aruco::drawDetectedCornersCharuco(outputImg, charucoCorners.at(i), charucoIds.at(i), Scalar(0, 255, 0));
+            for(int i = 0; i < imgMarkers.charucoIds.size(); i++) {
+                aruco::drawDetectedCornersCharuco(outputImg, imgMarkers.charucoCorners.at(i), imgMarkers.charucoIds.at(i), Scalar(0, 255, 0));
             }
         }
     } else {
         putText(outputImg, "No markers were detected!", Point(10, outputImg.rows/2), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(255, 0, 0), 2);
     }
     return outputImg;
+}
+
+// Display the input image in a window. Close the window when a key is pressed and return its key code.
+int createDisplay( Mat img ) {
+    int output;
+    // Open a visualization window containing the concatenated images and prompt user input
+    printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
+    putText(img, "Press any key to continue, r to retake, or q to quit.", Point(10, img.rows-15), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(118, 185, 0), 2);
+    namedWindow("Marker Detection Image", WINDOW_NORMAL);
+    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_FULLSCREEN); // it is necessary to toggle fullscreen to bring the display window to the front
+    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_NORMAL);
+    imshow("Marker Detection Image", img);
+    output = waitKey(0); // wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
+    destroyWindow("Marker Detection Image");
+    return output;
 }
 
 // Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
@@ -159,10 +171,10 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
         }
         
         // Find markers and corners in the image and write them to our storage vectors
-        findMarkersAndCorners(image,dictionary,params,boards,numBoards,&imgMarkers.markerIds,&imgMarkers.markerCorners,&imgMarkers.charucoIds,&imgMarkers.charucoCorners);
+        findMarkersAndCorners(image,dictionary,params,boards,numBoards,&imgMarkers);
         
         // If we found markers, create a copy of the image and draw indicators of all found markers and corners on it
-        Mat markerVis = drawMarkerVis(image, imgMarkers.markerIds, imgMarkers.markerCorners, imgMarkers.charucoIds, imgMarkers.charucoCorners);
+        Mat markerVis = drawMarkerVis(image, imgMarkers);
 
         imgsToAdd[i] = markerVis;
     }
@@ -176,15 +188,7 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
         vconcat(imgsToAdd, numImgs, finalImg);
     }
     
-    // Open a visualization window containing the concatenated images and prompt user input
-    printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
-    putText(finalImg, "Press any key to continue, r to retake, or q to quit.", Point(10, finalImg.rows-15), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(118, 185, 0), 2);
-    namedWindow("Marker Detection Image", WINDOW_NORMAL);
-    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_FULLSCREEN); // it is necessary to toggle fullscreen to bring the display window to the front
-    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_NORMAL);
-    imshow("Marker Detection Image", finalImg);
-    output = waitKey(0); // wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
-    destroyWindow("Marker Detection Image");
+    output = createDisplay(finalImg);
     
     if( output != 114 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
         vector<int> size = { imageWidth, imageHeight };
@@ -196,10 +200,10 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
             void *calibrationData = calibrationDataStores[i];
             CalibrationData *data = (CalibrationData *)calibrationData;
             ImgMarkers imgMarkers = imgsMarkers[i];
+            
             vector<vector<int>> ids = imgMarkers.charucoIds;
             vector<vector<Point2f>> imgPoints = imgMarkers.charucoCorners;
             vector<vector<Point3f>> objPoints;
-            
             if(ids.size() > 0) { // safety check
                 vector<Board> boardsVector(boards, boards + sizeof(boards)/sizeof(boards[0])); // convert boards array to vector so it can be passed by value
                 objPoints = getObjPoints(boardsVector, ids);
@@ -212,83 +216,80 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
 }
 
 
-// Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
-//  - main function, called by ProgramControl.swift
-//  - returns -1 on failure or the input keycode on success
-//  - saves a pointer to a calibration data structure to be passed back to swift
-int trackCharucoMarkers(char *imageName, char **boardPaths, int numBoards, void *calibrationData)
-{
-    int output = -1;
-    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
-
-    // Generate the path to the file and read the image
-    string imgDir(data->imgDir), imgName(imageName);
-    string imagePath = imgDir + "/" + imgName;
-    Mat image = imread(imagePath);
-    if(image.data == NULL) { // make sure we loaded an image successfully
-        cout << "Image could not be read from path: " << imagePath;
-        return -1;
-    }
-
-    // Intitialize necessary parameters
-    Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000); // assume all boards use the same ChArUco dict
-    Ptr<aruco::DetectorParameters> params = aruco::DetectorParameters::create();
-    params->cornerRefinementMethod = aruco::CORNER_REFINE_NONE;
-    vector<int> markerIds;
-    vector<vector<Point2f>> markerCorners;
-    vector<vector<int>> charucoIds;
-    vector<vector<Point2f>> charucoCorners;
-
-    // Load all boards
-    Board boards[numBoards];
-    for( int i = 0; i < numBoards; i++ ) {
-        cout << "\nReading board " << i << " from file " << boardPaths[i];
-        boards[i] = readBoardFromFile(boardPaths[i]);
-    }
-
-    // Find markers and corners in the image and write them to our storage vectors
-    findMarkersAndCorners(image,dictionary,params,boards,numBoards,&markerIds,&markerCorners,&charucoIds,&charucoCorners);
-
-    // If we found markers, create a copy of the image and draw indicators of all found markers and corners on it
-    Mat imageCopy;
-    image.copyTo(imageCopy);
-    // If we found any ArUco markers, draw outlines around them
-    if(markerCorners.size() > 0) {
-        cout << "\nDrawing detected marker indicators";
-        aruco::drawDetectedMarkers(imageCopy, markerCorners, markerIds, Scalar(0, 0, 255));
-        // If we found any chessboard corners, draw outlines around them
-        if(charucoCorners.size() > 0) {
-            cout << "\nDrawing chessboard corners";
-            for(int i = 0; i < charucoIds.size(); i++) {
-                aruco::drawDetectedCornersCharuco(imageCopy, charucoCorners.at(i), charucoIds.at(i), Scalar(0, 255, 0));
-            }
-        }
-    } else {
-        putText(imageCopy, "No markers were detected!", Point(10, imageCopy.rows/2), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(255, 0, 0), 2);
-    }
-
-    // Open a visualization window and prompt user input
-    printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
-    putText(imageCopy, "Press any key to continue, r to retake, or q to quit.", Point(10, imageCopy.rows-15), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(118, 185, 0), 2);
-    namedWindow("Marker Detection Image", WINDOW_NORMAL);
-    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_FULLSCREEN); // it is necessary to toggle fullscreen to bring the display window to the front
-    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_NORMAL);
-    imshow("Marker Detection Image", imageCopy);
-    output = waitKey(0); // wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
-    destroyWindow("Marker Detection Image");
-
-    if( output != 114 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
-        int width = image.cols;
-        int height = image.rows;
-        vector<int> size = { width, height };
-        vector<vector<int>> ids = charucoIds;
-        vector<vector<Point2f>> imgPoints = charucoCorners;
-        vector<vector<Point3f>> objPoints;
-        if(ids.size() > 0) { // safety check
-            vector<Board> boardsVector(boards, boards + sizeof(boards)/sizeof(boards[0])); // convert boards array to vector so it can be passed by value
-            objPoints = getObjPoints(boardsVector, ids);
-        }
-        data->loadData( imageName, size, imgPoints, objPoints, ids );
-    }
-    return output;
-}
+//// Detect ChArUco markers & corners in an image, display a window visualizing them, and save them on user prompt.
+////  - main function, called by ProgramControl.swift
+////  - returns -1 on failure or the input keycode on success
+////  - saves a pointer to a calibration data structure to be passed back to swift
+//int trackCharucoMarkers(char *imageName, char **boardPaths, int numBoards, void *calibrationData)
+//{
+//    int output = -1;
+//    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
+//
+//    // Generate the path to the file and read the image
+//    string imgDir(data->imgDir), imgName(imageName);
+//    string imagePath = imgDir + "/" + imgName;
+//    Mat image = imread(imagePath);
+//    if(image.data == NULL) { // make sure we loaded an image successfully
+//        cout << "Image could not be read from path: " << imagePath;
+//        return -1;
+//    }
+//
+//    // Intitialize necessary parameters
+//    Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000); // assume all boards use the same ChArUco dict
+//    Ptr<aruco::DetectorParameters> params = aruco::DetectorParameters::create();
+//    params->cornerRefinementMethod = aruco::CORNER_REFINE_NONE;
+//    ImgMarkers imgMarkers;
+//
+//    // Load all boards
+//    Board boards[numBoards];
+//    for( int i = 0; i < numBoards; i++ ) {
+//        cout << "\nReading board " << i << " from file " << boardPaths[i];
+//        boards[i] = readBoardFromFile(boardPaths[i]);
+//    }
+//
+//    // Find markers and corners in the image and write them to our storage vectors
+//    findMarkersAndCorners(image,dictionary,params,boards,numBoards,&imgMarkers);
+//
+//    // If we found markers, create a copy of the image and draw indicators of all found markers and corners on it
+//    Mat imageCopy;
+//    image.copyTo(imageCopy);
+//    // If we found any ArUco markers, draw outlines around them
+//    if(imgMarkers.markerCorners.size() > 0) {
+//        cout << "\nDrawing detected marker indicators";
+//        aruco::drawDetectedMarkers(imageCopy, imgMarkers.markerCorners, imgMarkers.markerIds, Scalar(0, 0, 255));
+//        // If we found any chessboard corners, draw outlines around them
+//        if(imgMarkers.charucoCorners.size() > 0) {
+//            cout << "\nDrawing chessboard corners";
+//            for(int i = 0; i < imgMarkers.charucoIds.size(); i++) {
+//                aruco::drawDetectedCornersCharuco(imageCopy, imgMarkers.charucoCorners.at(i), imgMarkers.charucoIds.at(i), Scalar(0, 255, 0));
+//            }
+//        }
+//    } else {
+//        putText(imageCopy, "No markers were detected!", Point(10, imageCopy.rows/2), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(255, 0, 0), 2);
+//    }
+//
+//    // Open a visualization window and prompt user input
+//    printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
+//    putText(imageCopy, "Press any key to continue, r to retake, or q to quit.", Point(10, imageCopy.rows-15), FONT_HERSHEY_DUPLEX, 2.0, CV_RGB(118, 185, 0), 2);
+//    namedWindow("Marker Detection Image", WINDOW_NORMAL);
+//    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_FULLSCREEN); // it is necessary to toggle fullscreen to bring the display window to the front
+//    setWindowProperty("Marker Detection Image",WND_PROP_FULLSCREEN,WINDOW_NORMAL);
+//    imshow("Marker Detection Image", imageCopy);
+//    output = waitKey(0); // wait for a keystroke in the window. Note that the window must be open and active for the key command to be processed.
+//    destroyWindow("Marker Detection Image");
+//
+//    if( output != 114 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
+//        int width = image.cols;
+//        int height = image.rows;
+//        vector<int> size = { width, height };
+//        vector<vector<int>> ids = imgMarkers.charucoIds;
+//        vector<vector<Point2f>> imgPoints = imgMarkers.charucoCorners;
+//        vector<vector<Point3f>> objPoints;
+//        if(ids.size() > 0) { // safety check
+//            vector<Board> boardsVector(boards, boards + sizeof(boards)/sizeof(boards[0])); // convert boards array to vector so it can be passed by value
+//            objPoints = getObjPoints(boardsVector, ids);
+//        }
+//        data->loadData( imageName, size, imgPoints, objPoints, ids );
+//    }
+//    return output;
+//}

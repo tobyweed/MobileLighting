@@ -17,9 +17,9 @@
 extern "C" {
 #endif
 
-    int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData) {
-        return trackCharucoMarkers(imPath, boardPaths, numBoards, calibrationData);
-    }
+//    int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData) {
+//        return trackCharucoMarkers(imPath, boardPaths, numBoards, calibrationData);
+//    }
 
 
     int TrackMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores) {
