@@ -15,11 +15,11 @@
 using namespace cv;
 using namespace std;
 
-// Class for storage of data extracted from calibration of images before writing to disk.
+// Class for storage of data extracted from calibration images before writing to disk.
 class CalibrationData {
 public:
     CalibrationData(char *imgDirPath) { // constructor
-        imgDir = imgDirPath;
+        imgDir = string(imgDirPath);
     };
     
     // load data extracted from one image to the storage object
@@ -31,7 +31,7 @@ public:
         ids.push_back(idsVector);
     };
 
-    char *imgDir;
+    string imgDir;
     vector<string> fnames;
     vector<int> size;
     vector<vector<vector<Point2f>>> imgPoints;
@@ -39,6 +39,16 @@ public:
     vector<vector<vector<int>>> ids;
 };
 
+// Class for more temporary storage of data extracted from calibration images, eventually gets written to CalibrationData
+class ImgMarkers {
+public:
+    vector<int> markerIds;
+    vector<vector<Point2f>> markerCorners;
+    vector<vector<int>> charucoIds;
+    vector<vector<Point2f>> charucoCorners;
+};
+
 int trackCharucoMarkers(char *image, char **boardPaths, int numBoards, void *calibrationData);
+int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores);
 
 #endif //track_markers_h

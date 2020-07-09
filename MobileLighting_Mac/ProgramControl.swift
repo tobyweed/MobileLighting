@@ -408,7 +408,6 @@ func processCommand(_ input: String) -> Bool {
             while !receivedCalibrationImage {}
             
             // Make sure there is a photo where we think there is
-            var imgpath: [CChar]
             do {
                 try safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
             } catch let err {

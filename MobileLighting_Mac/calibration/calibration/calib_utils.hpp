@@ -61,7 +61,7 @@ public: // Parameters
     int start_code;
 };
 
-cv::Ptr<cv::aruco::CharucoBoard> convertBoardToCharuco(Board b);
+Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b);
 Board readBoardFromFile(string filePath);
 //int writeMarkersToFile(string filePath, string imgPath, vector<int> size, vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids);
 const void *initializeCalibDataStorage(char *imgDirPath);

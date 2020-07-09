@@ -21,6 +21,11 @@ extern "C" {
         return trackCharucoMarkers(imPath, boardPaths, numBoards, calibrationData);
     }
 
+
+    int TrackMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores) {
+        return trackCharucoMarkersStereo(imageNames, numImgs, boardPaths, numBoards, calibrationDataStores);
+    }
+
     const void *InitializeCalibDataStorage(char *imgDirPath) {
         return initializeCalibDataStorage(imgDirPath);
     }

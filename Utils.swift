@@ -37,7 +37,7 @@ prefix func * (swiftStringArray: [String]) -> [[CChar]] {
     }
 }
 
-// Convert [[CChar]] to [UnsafeMutablePointer<Int8>?]
+// Convert [[CChar]] to [UnsafeMutablePointer<CChar>?]
 prefix operator **
 prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
     var ptrs = [UnsafeMutablePointer<CChar>?]()
@@ -55,7 +55,7 @@ enum PathError: Error {
 
 func safePath(_ path: String) throws -> [CChar] {
     if(!pathExists(path)) {
-        print( "path \(path) does not exist." )
+        print( "Path \(path) does not exist." )
         throw PathError.invalidPath
     }
     return *path

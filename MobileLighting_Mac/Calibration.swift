@@ -85,18 +85,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         photoID = 0
     }
     
-    let settingsPath = dirStruc.calibrationSettingsFile
-    var cSettingsPath: [CChar]
-    do {
-        try cSettingsPath = safePath(settingsPath)
-    } catch let err {
-        print(err.localizedDescription)
-        return
-    }
-    let settings = CalibrationSettings(settingsPath)
-    settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
-    settings.set(key: .Mode, value: Yaml.string("STEREO"))
-    settings.save()
+    var keyCode:Int32 = 0;
     
     // take the photos
     while(true) {
@@ -110,6 +99,19 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             break
         }
         
+        // Load and create boards
+        print("Collecting board paths")
+        let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
+        guard boards.count > 0 else {
+            print("No boards were successfully initialized. Exiting.")
+            break
+        }
+        // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
+        var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
+        var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
+        
+        var calibDataPtrs: [UnsafeMutableRawPointer?] = []
+        var imgNames: [String] = []
         // Take set of calibration photos, one from each position
         while i < posIDs.count {
             // Move the robot to the right position
@@ -120,36 +122,44 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
 
             print("\nTaking image from position \(i)...")
 
-            // take photo at position i
+            // Take photo at position i
             guard let photoDir = stereoDirDict[i] else {
                 print("stereocalib: ERROR -- could not find directory for position \(i)")
                 return
             }
             receiveCalibrationImageSync(dir: photoDir, id: photoID)
             
-            if i > 0 {
-                print("\nDetecting objectPoints...")
-                var leftpath: [CChar]
-                var rightpath: [CChar]
-                do {
-                    try leftpath = safePath("\(stereoDirDict[i]!)/IMG\(photoID).JPG")
-                    try rightpath = safePath("\(stereoDirDict[i-1]!)/IMG\(photoID).JPG")
-                } catch let err {
-                    print(err.localizedDescription)
-                    break
-                }
-                // generate image lists for DetectionCheck to read
-                generateStereoImageList(left: stereoDirDict[i]!, right: stereoDirDict[i-1]!)
-                // make sure DetectionCheck will read from the right image list
-                settings.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
-                settings.save()
-                // now perform check what patterns were detected
-                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
+            print("\nChecking path \(photoDir)/IMG\(photoID).JPG")
+            do {
+                try _ = safePath("\(photoDir)/IMG\(photoID).JPG")
+            } catch let err {
+                print(err.localizedDescription)
+                break
             }
+            // Initialize an object to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+            var photoDirPtr = *photoDir;
+            let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirPtr));
+            calibDataPtrs.append(calibDataPtr)
+            
+            let imgName = "IMG\(photoID).JPG";
+            imgNames.append(imgName);
+            
             i += 1
         }
         print("\nFinished \(photoID + 1) set.")
-            
+//        print("Imgnames : \(&imgNames[0]) \n data pointers: \(&calibDataPtrs[0])");
+        var imgNamesCChar = *imgNames;
+        var imgNamesCpp = **(imgNamesCChar);
+        
+        DispatchQueue.main.sync(execute: {
+            keyCode = TrackMarkersStereo(&imgNamesCpp, Int32(imgNames.count), &boardPathsCpp, Int32(boards.count), &calibDataPtrs)
+        })
+        
+        if( keyCode == -1 ) {
+            print("Something went wrong with call to TrackMarkers. Exiting command.")
+            break;
+        }
+        
         // Ask the user if they'd like to retake the photo from that position
         print("Continue (c), retake the last set (r), or finish taking photos (q).")
         var quit = false

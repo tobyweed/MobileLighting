@@ -14,6 +14,7 @@
 int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData);
 const void *InitializeCalibDataStorage(char *imgDirPath);
 void SaveCalibDataToFile(char *filePath, void *calibrationData);
+int TrackMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores);
 
 #pragma GCC visibility pop
 
