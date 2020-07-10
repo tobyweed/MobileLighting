@@ -53,37 +53,38 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
     }
     
     // Get the directories to save photos to
-    let stereoDirs = posIDs.map {
-        return dirStruc.stereoPhotos($0)
-    }
-    let stereoDirDict = posIDs.reduce([Int : String]()) { (dict: [Int : String], id: Int) in
-        var dictNew = dict
-        dictNew[id] = dirStruc.stereoPhotos(id)
-        return dictNew
-    }
-    
-    // Determine whether to delete or append to photos already in directory
-    var photoID: Int // Determines what ID we should write photos with
-    switch mode { // Switch in case we want to add more flags later
-    case "-a":
-        // not yet implemented. TODO: add delete flag support
-        let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
-            let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
-            return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
-        }
-        let maxVal = idArray.map {
-            return $0.max() ?? -1 // find max photo ID, or -1 if no photos empty, so that counting will begin at 0
-            }.max() ?? -1
-        // maxVal = max(idArray)
-        photoID = maxVal + 1
-        break
-    default:
-        // erase directories
-        for dir in stereoDirs {
-            removeFiles(dir: dir)
-        }
-        photoID = 0
-    }
+//    let stereoDirs = posIDs.map {
+//        return dirStruc.stereoPhotos($0)
+//    }
+//    let stereoDirDict = posIDs.reduce([Int : String]()) { (dict: [Int : String], id: Int) in
+//        var dictNew = dict
+//        dictNew[id] = dirStruc.stereoPhotos(id)
+//        return dictNew
+//    }
+//
+    // Not currently supported. To implement, either read old tracks file and overwrite, or append to old tracks file.
+//    // Determine whether to delete or append to photos already in directory
+//    var photoID: Int // Determines what ID we should write photos with
+//    switch mode { // Switch in case we want to add more flags later
+//    case "-a":
+//        // not yet implemented. TODO: add delete flag support
+//        let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
+//            let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
+//            return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
+//        }
+//        let maxVal = idArray.map {
+//            return $0.max() ?? -1 // find max photo ID, or -1 if no photos empty, so that counting will begin at 0
+//            }.max() ?? -1
+//        // maxVal = max(idArray)
+//        photoID = maxVal + 1
+//        break
+//    default:
+//        // erase directories
+//        for dir in stereoDirs {
+//            removeFiles(dir: dir)
+//        }
+//        photoID = 0
+//    }
     
     print("\nHit Enter to begin taking photos, or q then enter to quit.")
     guard let input = readLine() else {
@@ -95,16 +96,29 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
     }
 
     // Insert photos starting at the correct index, stopping on user prompt
-    var keyCode:Int32 = 0;
-    var i: Int = photoID;
-        while(keyCode != 113) {
+    var keyCode:Int32 = 0; // user input key code
+    var i: Int = 0; // iteration count
+    
+    // Initialize objects to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+//    var calibDataPtrs = [UnsafeMutableRawPointer?](repeating: nil, count: posIDs.count)
+    var calibDataPtrs: [UnsafeMutableRawPointer?] = []
+    for pos in posIDs {
+//        guard let photoDir = \(dirStruc.stereoPhotos(pos)) else { // check stereo directories' safety
+//            print("Could not find directory for position \(pos). Exiting command.")
+//            return
+//        }
+        var photoDirCString = *dirStruc.stereoPhotos(pos)
+        print("Photo dir: \(photoDirCString)")
+        calibDataPtrs.append( UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirCString)) )
+    }
+    
+    while(keyCode != 113) {
         if keyCode == 114 {
             i -= 1
             print("Retaking last set")
         } else {
             print("Taking a photo set")
         }
-        var i = 0
         
         // Load and create boards
         print("Collecting board paths")
@@ -117,44 +131,28 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
         var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
         
-        var calibDataPtrs: [UnsafeMutableRawPointer?] = []
         var imgNames: [String] = []
         // Take set of calibration photos, one from each position
-        while i < posIDs.count {
+        for pos in posIDs {
             // Move the robot to the right position
             if (!debugMode) {
-                var posStr = *String(i)
+                var posStr = *String(pos)
                 GotoView(&posStr)
             }
 
-            print("\nTaking image from position \(i)...")
-
-            // Take photo at position i
-            guard let photoDir = stereoDirDict[i] else {
-                print("stereocalib: ERROR -- could not find directory for position \(i)")
-                return
-            }
-            receiveCalibrationImageSync(dir: photoDir, id: i)
-            
-            print("\nChecking path \(photoDir)/IMG\(i).JPG")
+            print("\nTaking image from position \(pos)...")
+            receiveCalibrationImageSync(dir: dirStruc.stereoPhotos(pos), id: i)
+            print("\nChecking path \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
             do {
-                try _ = safePath("\(photoDir)/IMG\(i).JPG")
+                try _ = safePath("\(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
             } catch let err {
                 print(err.localizedDescription)
                 break
             }
-            // Initialize an object to store the data (charuco corners, object points, etc..) gained during calibration photo capture
-            var photoDirPtr = *photoDir;
-            let calibDataPtr = UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirPtr));
-            calibDataPtrs.append(calibDataPtr)
-            
-            let imgName = "IMG\(i).JPG";
-            imgNames.append(imgName);
-            
-            i += 1
+            let imgName = "IMG\(i).JPG"
+            imgNames.append(imgName)
         }
-        print("\nFinished \(photoID + 1) set.")
-//        print("Imgnames : \(&imgNames[0]) \n data pointers: \(&calibDataPtrs[0])");
+        
         var imgNamesCChar = *imgNames;
         var imgNamesCpp = **(imgNamesCChar);
         
@@ -167,19 +165,15 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             return;
         }
         
-//        // Ask the user if they'd like to retake the photo from that position
-//        print("Continue (c), retake the last set (r), or finish taking photos (q).")
-//        var quit = false
-//        switch readLine() {
-//        case "c":
-//            photoID += 1
-//        case "r":
-//            print("Retaking...")
-//        case "q":
-//            quit = true
-//        default:
-//            photoID += 1
-//        }
-//        if(quit){ break }
+        i += 1
+        print("\nFinished \(i + 1) set.")
+    }
+    
+    // Loop through each position ID and save the corresponding track
+    for pos in posIDs {
+        let outputTrackPath = "\(dirStruc.stereoPhotos(pos))/pos\(pos)-track.json"
+        print("Saving track to path \(outputTrackPath)")
+        var outputTrackPathCString = *outputTrackPath;
+        SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file
     }
 }

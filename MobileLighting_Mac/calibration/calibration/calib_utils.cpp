@@ -39,17 +39,17 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>&
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
-//        out << "[";
+        out << "[";
         for(int j = 0; j < points.at(i).size(); j++) {
-            out << "[";
+//            out << "[";
             for(int k = 0; k < points.at(i).at(j).size(); k++) {
                 vector<float> point;
                 point = { points.at(i).at(j).at(k).x, points.at(i).at(j).at(k).y, points.at(i).at(j).at(k).z };
                 out << point;
             }
-            out << "]";
+//            out << "]";
         }
-//        out << "]";
+        out << "]";
     }
     return out << "]";
 }
@@ -57,17 +57,17 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>&
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
-//        out << "[";
+        out << "[";
         for(int j = 0; j < points.at(i).size(); j++) {
-            out << "[";
+//            out << "[";
             for(int k = 0; k < points.at(i).at(j).size(); k++) {
                 vector<float> point;
                 point = { (points.at(i).at(j).at(k).x), (points.at(i).at(j).at(k).y) };
                 out << point;
             }
-            out << "]";
+//            out << "]";
         }
-//        out << "]";
+        out << "]";
     }
     return out << "]";
 }

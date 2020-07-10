@@ -157,7 +157,7 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
     ImgMarkers imgsMarkers[numImgs];
     Mat imgsToAdd[numImgs];
     for( int i = 0; i < numImgs; i++ ) {
-        ImgMarkers imgMarkers = imgsMarkers[i];
+        ImgMarkers imgMarkers;
         CalibrationData *data = (CalibrationData *)calibrationDataStores[i]; // convert the given pointer from type void to CalibrationData
         
         // Generate the path to the file and read the image
@@ -176,6 +176,7 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
         // If we found markers, create a copy of the image and draw indicators of all found markers and corners on it
         Mat markerVis = drawMarkerVis(image, imgMarkers);
 
+        imgsMarkers[i] = imgMarkers;
         imgsToAdd[i] = markerVis;
     }
     
@@ -209,6 +210,7 @@ int trackCharucoMarkersStereo(char **imageNames, int numImgs, char **boardPaths,
                 objPoints = getObjPoints(boardsVector, ids);
             }
             
+            cout << "\n img name: " << imageName << "\n";
             data->loadData( imageName, size, imgPoints, objPoints, ids );
         }
     }

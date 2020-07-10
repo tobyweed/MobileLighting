@@ -11,6 +11,7 @@
 
 #include <opencv2/imgproc.hpp>
 #include <string>
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -20,11 +21,14 @@ class CalibrationData {
 public:
     CalibrationData(char *imgDirPath) { // constructor
         imgDir = string(imgDirPath);
+        cout << "\nimdir: " << imgDir << "\n";
     };
     
     // load data extracted from one image to the storage object
     void loadData(string fname, vector<int> imgSize, vector<vector<Point2f>> imgPointsVector, vector<vector<Point3f>> objPointsVector, vector<vector<int>> idsVector) {
-        fnames.push_back(fname);
+        cout << "\nfname: " << fname << "\n";
+        fnames.push_back( string(fname) );
+        cout << "\nfnames: " << fnames[0] << "\n";
         size = imgSize;
         imgPoints.push_back(imgPointsVector);
         objPoints.push_back(objPointsVector);

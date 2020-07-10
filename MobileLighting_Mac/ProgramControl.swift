@@ -376,7 +376,6 @@ func processCommand(_ input: String) -> Bool {
         var intrinsicsPhotosDir = *dirStruc.intrinsicsPhotos;
         var calibDataPtr: [UnsafeMutableRawPointer?] = [UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir))]; // wrapped in an array for compatibility with TrackMarkers
         
-        
         // Prepare for photo capture
         let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         print("\nHit Enter to begin taking photos, or q then enter to quit.")
@@ -410,13 +409,13 @@ func processCommand(_ input: String) -> Bool {
             
             // Make sure there is a photo where we think there is
             do {
-                try safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
+                try _ = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
             } catch let err {
                 print("No file found with name \(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
                 print(err.localizedDescription)
                 break
             }
-            var imgName = "IMG\(i).JPG"
+            let imgName = "IMG\(i).JPG"
             var imgNamesCChar = *[imgName]
             var imgNameCpp = **(imgNamesCChar); // wrap in ptr-to-ptr format for compatibility with TrackMarkers
             
@@ -436,8 +435,10 @@ func processCommand(_ input: String) -> Bool {
             i += 1
         }
         
-        var outputTrackPath = *"/Users/tobyweed/workspace/sandbox_scene/track.json";
-//        SaveCalibDataToFile( &outputTrackPath, calibDataPtr ); // write the data extracted by TrackMarkers to a file
+        let outputTrackPath = "\(dirStruc.intrinsicsPhotos)/intrinsics-track.json"
+        print("Saving track to path \(outputTrackPath)")
+        var outputTrackPathCString = *outputTrackPath
+        SaveCalibDataToFile( &outputTrackPathCString, calibDataPtr[0] ); // write the data extracted by TrackMarkers to a file
         
         print("Photo capture ended. Exiting command \(tokens[0])")
         break
@@ -482,6 +483,7 @@ func processCommand(_ input: String) -> Bool {
         
         let posIDs: [Int] = Array(0..<nPositions)
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
+        print("Photo capture ended. Exiting command.")
         break
         
     // captures scene using structured lighting from specified projector
