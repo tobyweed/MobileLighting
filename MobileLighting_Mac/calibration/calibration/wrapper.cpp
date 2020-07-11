@@ -10,6 +10,7 @@
 
 #include "track_markers.hpp"
 #include "calib_utils.hpp"
+#include "compute_params.hpp"
 #include <opencv2/aruco/charuco.hpp>
 #include <stdio.h>
 
@@ -17,13 +18,8 @@
 extern "C" {
 #endif
 
-//    int TrackMarkers(char *imPath, char **boardPaths, int numBoards, void *calibrationData) {
-//        return trackCharucoMarkers(imPath, boardPaths, numBoards, calibrationData);
-//    }
-
-
-    int TrackMarkersStereo(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores) {
-        return trackCharucoMarkersStereo(imageNames, numImgs, boardPaths, numBoards, calibrationDataStores);
+    int TrackMarkers(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores) {
+        return trackCharucoMarkers(imageNames, numImgs, boardPaths, numBoards, calibrationDataStores);
     }
 
     const void *InitializeCalibDataStorage(char *imgDirPath) {
@@ -32,6 +28,10 @@ extern "C" {
 
     void SaveCalibDataToFile(char *filePath, void *calibrationData) {
         return saveCalibDataToFile(filePath, calibrationData);
+    }
+
+    int ComputeIntrinsics(char *trackPath) {
+        return computeIntrinsics(trackPath);
     }
 
 #ifdef __cplusplus

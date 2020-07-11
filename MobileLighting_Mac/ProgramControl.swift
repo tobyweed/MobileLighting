@@ -25,8 +25,8 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case printsettings
     
     // photo capture
-    case calibrate, c
-    case stereocalib, sc
+    case takeintrinsics, ti
+    case takeextrinsics, te
     case struclight, sl
     case takeamb, ta
     
@@ -89,9 +89,9 @@ func getUsage(_ command: Command) -> String {
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
     // photo capture
-    case .calibrate, .c:
-        return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .stereocalib, .sc: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
+    case .takeintrinsics, .ti:
+        return "takeintrinsics (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
+    case .takeextrinsics, .te: return "takeextrinsics [resolution=high] (-a)?\n        -d: delete existing photos"
     case .struclight, .sl: return "struclight [projector pos id(s)] [projector #(s)] [position #(s)] [resolution=high]\n"
     case .takeamb, .ta: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
@@ -312,7 +312,7 @@ func processCommand(_ input: String) -> Bool {
         displayController.switcher?.endConnection()
         
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
-    case .calibrate, .c:
+    case .takeintrinsics, .ti:
         guard tokens.count == 1 || tokens.count == 2 else {
             print(usage)
             break
@@ -330,7 +330,7 @@ func processCommand(_ input: String) -> Bool {
         if tokens.count == 2 {
             let mode = tokens[1]
             guard ["-d","-a"].contains(mode) else {
-                print("calibrate: unrecognized flag \(mode)")
+                print("takeintrinsics: unrecognized flag \(mode)")
                 break
             }
             var photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
@@ -343,17 +343,17 @@ func processCommand(_ input: String) -> Bool {
                     catch { print("Could not remove \(photo)") }
                 }
                 startIndex = 0
-            case "-a":
-                photos = photos.map{
-                    return String($0.split(separator: "/").last!)
-                }
-                let ids: [Int] = photos.map{
-                    guard $0.hasPrefix("IMG"), $0.hasSuffix(".JPG"), let id = Int($0.dropFirst(3).dropLast(4)) else {
-                        return -1
-                    }
-                    return id
-                }
-                startIndex = ids.max()! + 1
+//            case "-a":
+//                photos = photos.map{
+//                    return String($0.split(separator: "/").last!)
+//                }
+//                let ids: [Int] = photos.map{
+//                    guard $0.hasPrefix("IMG"), $0.hasSuffix(".JPG"), let id = Int($0.dropFirst(3).dropLast(4)) else {
+//                        return -1
+//                    }
+//                    return id
+//                }
+//                startIndex = ids.max()! + 1
             default:
                 startIndex = 0
             }
@@ -423,7 +423,7 @@ func processCommand(_ input: String) -> Bool {
             
             // Track ChArUco markers: detect markers, show visualization, and save data on user prompt
             DispatchQueue.main.sync(execute: {
-                keyCode = TrackMarkersStereo(&imgNameCpp,Int32(1),&boardPathsCpp,Int32(boards.count),&calibDataPtr)
+                keyCode = TrackMarkers(&imgNameCpp,Int32(1),&boardPathsCpp,Int32(boards.count),&calibDataPtr)
             })
             
             if( keyCode == -1 ) {
@@ -443,7 +443,7 @@ func processCommand(_ input: String) -> Bool {
         print("Photo capture ended. Exiting command \(tokens[0])")
         break
         
-    case .stereocalib, .sc:
+    case .takeextrinsics, .te:
         let (params, flags) = partitionTokens([String](tokens[1...]))
         // Make sure we have the right number of tokens
         guard params.count <= 1, flags.count <= 1 else {
@@ -469,10 +469,10 @@ func processCommand(_ input: String) -> Bool {
         for flag in flags {
             switch flag {
             case "-a":
-                print("stereocalib: appending images.")
+                print("takeextrinsics: appending images.")
                 appending = true
             default:
-                print("stereocalib: unrecognized flag \(flag).")
+                print("takeextrinsics: unrecognized flag \(flag).")
             }
         }
         
@@ -1633,26 +1633,28 @@ func processCommand(_ input: String) -> Bool {
             }
             patternEnum = patternEnumTemp
         }
-        generateIntrinsicsImageList()
-        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
         
-        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-        calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
-        calib.save()
+//        generateIntrinsicsImageList()
+//        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
+//
+//        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
+//        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
+//        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
+//        calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
+//        calib.save()
         
         
         var path: [CChar]
         do {
-            try path = safePath(dirStruc.calibrationSettingsFile)
+            try path = safePath("\(dirStruc.intrinsicsPhotos)/intrinsics-track.json")
         } catch let err {
             print(err.localizedDescription)
             break
         }
         
         DispatchQueue.main.async {
-            CalibrateWithSettings(&path)
+            ComputeIntrinsics(&path)
+//            CalibrateWithSettings(&path)
         }
         break
         
@@ -1839,8 +1841,8 @@ func processCommand(_ input: String) -> Bool {
         
     case .clearpackets:
         photoReceiver.dataReceivers.removeAll()
+        
     }
-    
     return true
 }
 

@@ -157,7 +157,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         var imgNamesCpp = **(imgNamesCChar);
         
         DispatchQueue.main.sync(execute: {
-            keyCode = TrackMarkersStereo(&imgNamesCpp, Int32(imgNames.count), &boardPathsCpp, Int32(boards.count), &calibDataPtrs)
+            keyCode = TrackMarkers(&imgNamesCpp, Int32(imgNames.count), &boardPathsCpp, Int32(boards.count), &calibDataPtrs)
         })
         
         if( keyCode == -1 ) {

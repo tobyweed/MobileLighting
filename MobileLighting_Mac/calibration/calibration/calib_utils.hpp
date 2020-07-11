@@ -9,6 +9,7 @@
 #ifndef calib_utils_hpp
 #define calib_utils_hpp
 
+#include "track_markers.hpp"
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -20,8 +21,8 @@ using namespace std;
 
 // Intermediary class for managing ChArUco boards, especially loading their information from Yaml files
 class Board {
-public:
-    void write(FileStorage& fs) const // write serialization for this class
+public: // Methods
+    void write(FileStorage& fs) const // write serialization for this class. Incomplete & unused.
     {
         fs << "{" << "description" << description << "}";
     }
@@ -63,6 +64,7 @@ public: // Parameters
 
 Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b);
 Board readBoardFromFile(string filePath);
+CalibrationData readCalibDataFromFile(string filePath);
 //int writeMarkersToFile(string filePath, string imgPath, vector<int> size, vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids);
 const void *initializeCalibDataStorage(char *imgDirPath);
 void saveCalibDataToFile(char *filePath, void *calibrationData);

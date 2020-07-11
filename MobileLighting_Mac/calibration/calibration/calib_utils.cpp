@@ -23,10 +23,6 @@ using namespace std;
 FILE STORAGE, READING AND WRITING
 ========================================================================= */
 // Read and write function implementation necessary for FileStorage to work.
-static void write(FileStorage& fs, const string&, const Board& b)
-{
-    b.write(fs);
-}
 static void read(const FileNode& node, Board& b, const Board& default_value = Board()){
     if(node.empty())
         b = default_value;
@@ -135,6 +131,20 @@ void saveCalibDataToFile(char *filePath, void *calibrationData) {
     
     fs.release();
     cout << "Write Done." << endl;
+}
+
+// Reads a CalibrationData object from a track file
+CalibrationData readCalibDataFromFile(string filePath)
+{
+    FileStorage fs;
+    fs.open(filePath, FileStorage::READ);
+    if (!fs.isOpened())
+    {
+        cerr << "Failed to open " << filePath << endl;
+        exit (EXIT_FAILURE);
+    }
+    CalibrationData data(fs);
+    return data;
 }
 
 

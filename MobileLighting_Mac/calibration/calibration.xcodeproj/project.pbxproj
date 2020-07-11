@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		AA7746D824AE5AE200E5B883 /* calib_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AA7746D624AE5AE200E5B883 /* calib_utils.cpp */; };
 		AA7746D924AE5AE200E5B883 /* calib_utils.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AA7746D724AE5AE200E5B883 /* calib_utils.hpp */; };
+		AAED662924B9F67D00ECFA7C /* compute_params.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAED662724B9F67D00ECFA7C /* compute_params.cpp */; };
+		AAED662A24B9F67D00ECFA7C /* compute_params.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAED662824B9F67D00ECFA7C /* compute_params.hpp */; };
 		AAF79C7824A92F8600C7C4B3 /* track_markers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAF79C7524A92F8600C7C4B3 /* track_markers.hpp */; };
 		AAF79C7924A92F8600C7C4B3 /* track_markers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAF79C7624A92F8600C7C4B3 /* track_markers.cpp */; };
 		AAF79C8B24A931A200C7C4B3 /* libopencv_highgui.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAF79C8324A931A100C7C4B3 /* libopencv_highgui.4.3.0.dylib */; };
@@ -26,6 +28,8 @@
 /* Begin PBXFileReference section */
 		AA7746D624AE5AE200E5B883 /* calib_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = calib_utils.cpp; sourceTree = "<group>"; };
 		AA7746D724AE5AE200E5B883 /* calib_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = calib_utils.hpp; sourceTree = "<group>"; };
+		AAED662724B9F67D00ECFA7C /* compute_params.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = compute_params.cpp; sourceTree = "<group>"; };
+		AAED662824B9F67D00ECFA7C /* compute_params.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = compute_params.hpp; sourceTree = "<group>"; };
 		AAF79C6024A92F3400C7C4B3 /* libcalibration.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libcalibration.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAF79C7424A92F8600C7C4B3 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AAF79C7524A92F8600C7C4B3 /* track_markers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = track_markers.hpp; sourceTree = "<group>"; };
@@ -88,6 +92,8 @@
 				AAF79C9824A9356F00C7C4B3 /* wrapper.hpp */,
 				AA7746D624AE5AE200E5B883 /* calib_utils.cpp */,
 				AA7746D724AE5AE200E5B883 /* calib_utils.hpp */,
+				AAED662724B9F67D00ECFA7C /* compute_params.cpp */,
+				AAED662824B9F67D00ECFA7C /* compute_params.hpp */,
 			);
 			path = calibration;
 			sourceTree = "<group>";
@@ -114,6 +120,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAED662A24B9F67D00ECFA7C /* compute_params.hpp in Headers */,
 				AAF79C9A24A9356F00C7C4B3 /* wrapper.hpp in Headers */,
 				AAF79C7824A92F8600C7C4B3 /* track_markers.hpp in Headers */,
 				AA7746D924AE5AE200E5B883 /* calib_utils.hpp in Headers */,
@@ -179,6 +186,7 @@
 				AAF79C7924A92F8600C7C4B3 /* track_markers.cpp in Sources */,
 				AAF79C9924A9356F00C7C4B3 /* wrapper.cpp in Sources */,
 				AA7746D824AE5AE200E5B883 /* calib_utils.cpp in Sources */,
+				AAED662924B9F67D00ECFA7C /* compute_params.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
