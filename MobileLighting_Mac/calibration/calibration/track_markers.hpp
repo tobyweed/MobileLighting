@@ -30,10 +30,10 @@ private:
     };
     
     // Extract a 2D vector of point2f from a FileNode
-    vector<vector<Point2f>> extractImgPoints( const FileNode& array ) {
-        vector<vector<Point2f>> output;
+    vector<vector< Point2f>> extractImgPoints( const FileNode& array ) {
+        vector<vector< Point2f>> output;
         for( int i = 0; i < array.size(); i++ ) {
-            vector<Point2f> row;
+            vector< Point2f> row;
             for( int j = 0; j < array[i].size(); j++ ) {
                 Point2f point(array[i][j][0].real(), array[i][j][1].real());
                 row.push_back( point );
@@ -44,10 +44,10 @@ private:
     }
     
     // Extract a 2D vector of point3f from a FileNode
-    vector<vector<Point3f>> extractObjPoints( const FileNode& array ) {
-        vector<vector<Point3f>> output;
+    vector<vector< Point3f>> extractObjPoints( const FileNode& array ) {
+        vector<vector< Point3f>> output;
         for( int i = 0; i < array.size(); i++ ) {
-            vector<Point3f> row;
+            vector< Point3f> row;
             for( int j = 0; j < array[i].size(); j++ ) {
                 Point3f point(array[i][j][0].real(), array[i][j][1].real(), array[i][j][2].real());
                 row.push_back( point );
@@ -58,8 +58,8 @@ private:
     }
     
     // Extract a 2D vector of ids from a FileNode
-    vector<vector<int>> extractIds( const FileNode& array ) {
-        vector<vector<int>> output;
+    vector<vector< int>> extractIds( const FileNode& array ) {
+        vector<vector< int>> output;
         for( int i = 0; i < array.size(); i++ ) {
             vector<int> row;
             for( int j = 0; j < array[i].size(); j++ ) {
@@ -95,11 +95,11 @@ public: // Methods
     };
 public: // Parameters
     string imgDir;
-    vector<string> fnames;
-    vector<int> size;
-    vector<vector<vector<Point2f>>> imgPoints;
-    vector<vector<vector<Point3f>>> objPoints;
-    vector<vector<vector<int>>> ids;
+    vector< string> fnames;
+    vector< int> size;
+    vector< vector< vector< Point2f>> > imgPoints;
+    vector< vector< vector< Point3f>> > objPoints;
+    vector< vector< vector< int>> > ids;
 };
 
 // Class for more temporary storage of data extracted from calibration images, eventually gets written to CalibrationData

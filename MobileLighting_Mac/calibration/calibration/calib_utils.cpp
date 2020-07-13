@@ -31,7 +31,7 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
 }
 
 // << operator overloads for object points and image points. Convert openCV points to vectors of floats so that FileStorage can write them to disk. Also flatten 3D imgpoints vectors to 2D, so that each board no longer has its own array
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& points)
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>> >& points)
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
@@ -49,7 +49,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>&
     }
     return out << "]";
 }
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>& points)
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>> >& points)
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) {
@@ -67,7 +67,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>&
     }
     return out << "]";
 }
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int>>>& ids)
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int > >>& ids)
 {
     vector<vector<int>> output; // will consist of arrays of image outputs
     for(int i = 0; i < ids.size(); i++) {
