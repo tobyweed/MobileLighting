@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 
-int computeIntrinsics ( char *trackFile, char *outputFile );
+int computeIntrinsics ( char *trackFile, char *outputDirectory );
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size);
 
 #endif /* compute_params_hpp */

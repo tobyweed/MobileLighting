@@ -43,5 +43,7 @@ Board readBoardFromFile(string filePath);
 CalibrationData readCalibDataFromFile(string filePath);
 const void *initializeCalibDataStorage(char *imgDirPath);
 void saveCalibDataToFile(char *filePath, void *calibrationData);
+FileStorage& operator<<(FileStorage& out, const Mat& matrix);
+FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices);
 
 #endif /* calib_utils_hpp */

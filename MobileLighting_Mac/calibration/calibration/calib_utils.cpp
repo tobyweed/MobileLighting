@@ -30,8 +30,8 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
         b.read(node);
 }
 
-// << operator overloads for object points and image points. Convert openCV points to vectors of floats so that FileStorage can write them to disk. Also flatten 3D imgpoints vectors to 2D, so that each board no longer has its own array
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>> >& points)
+// << operator overloads for potentially multidimensional vectors of object points, image points, IDs, and matrices
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& points)
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) { // loop through images
@@ -49,7 +49,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>> >
     }
     return out << "]";
 }
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>> >& points)
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>>>& points)
 {
     out << "[";
     for(int i = 0; i < points.size(); i++) { // loop through images
@@ -67,7 +67,7 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>> >
     }
     return out << "]";
 }
-FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int > >>& ids)
+FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int>>>& ids)
 {
     vector<vector<int>> output; // will consist of arrays of image outputs
     for(int i = 0; i < ids.size(); i++) { // loop through images
@@ -81,7 +81,28 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int > >>& i
     }
     return out << output;
 }
-
+FileStorage& operator<<(FileStorage& out, const Mat& matrix)
+{
+    out << "[";
+    for(int i = 0; i < matrix.rows; i++)
+    {
+        out << "[";
+        for(int j = 0; j < matrix.cols; j++)
+        {
+            out << matrix.at<float>(i,j);
+        }
+        out << "]";
+    }
+    return out << "]";
+}
+FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices)
+{
+    out << "[";
+    for(int n = 0; n < matrices.size(); n++) {
+        out << matrices[n];
+    }
+    return out << "]";
+}
 
 /* ========================================================================
 CALIBRATIONDATA MANAGEMENT
@@ -93,10 +114,38 @@ const void *initializeCalibDataStorage(char *imgDirPath)
     return (void *)data;
 }
 
-// Write a file containing the important calibration data from each image
+// Write a file from the CalibrationData objects generated from calibration images
+void saveCameraParamsToFile(char *filePath, void *calibrationData) {
+    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
+    FileStorage fs(filePath, FileStorage::WRITE);
+    if (!fs.isOpened())
+    {
+        cerr << "Failed to open " << filePath << endl;
+        exit (EXIT_FAILURE);
+    }
+    cout << "Writing to file " << filePath << endl;
+    
+    fs << "imgdir" << data->imgDir;
+    fs << "fnames" << data->fnames;
+    fs << "size" << data->size;
+    fs << "img_points" << data->imgPoints;
+    fs << "obj_points" << data->objPoints;
+    fs << "ids" << data->ids;
+    
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Write a file from the CalibrationData objects generated from calibration images
 void saveCalibDataToFile(char *filePath, void *calibrationData) {
     CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
     FileStorage fs(filePath, FileStorage::WRITE);
+    if (!fs.isOpened())
+    {
+        cerr << "Failed to open " << filePath << endl;
+        exit (EXIT_FAILURE);
+    }
+    cout << "Writing to file " << filePath << endl;
     
     fs << "imgdir" << data->imgDir;
     fs << "fnames" << data->fnames;

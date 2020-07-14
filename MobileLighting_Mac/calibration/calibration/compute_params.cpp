@@ -13,12 +13,12 @@
 #include <stdio.h>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core.hpp>
-
+#include <cstdio>
 
 using namespace cv;
 using namespace std;
 
-int computeIntrinsics ( char *trackFile, char *outputFile ) {
+int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     int output = -1;
     
     cout << "\nComputing intrinsics\n";
@@ -49,11 +49,34 @@ int computeIntrinsics ( char *trackFile, char *outputFile ) {
     cout << "\ncameraMatrix: " << cameraMatrix <<"\n";
     cout << "\ndistCoeffs: " << distCoeffs <<"\n";
     cout << "\nreprojection err: " << err <<"\n";
-//    printf("%s. Avg reprojection error = %.4f\n",
-//           ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
-//           inCal.totalAvgErr);
+    
+    // convert to string to concatenate the correct output path
+    string outputDir(outputDirectory);
+    string outputPath = outputDir + "/intrinsics.json";
+    
+    saveCameraParamsToFile(outputPath, rvecs, tvecs, cameraMatrix, distCoeffs, size);
     
     return output;
+}
+
+// Write a file from the CalibrationData objects generated from calibration images
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size) {
+    FileStorage fs(filePath, FileStorage::WRITE);
+    if (!fs.isOpened())
+    {
+        cerr << "Failed to open " << filePath << endl;
+        exit (EXIT_FAILURE);
+    }
+    cout << "Writing to file " << filePath << endl;
+    
+    fs << "R" << R;
+    fs << "T" << T;
+    fs << "A" << A;
+    fs << "dist" << dist;
+    fs << "size" << size;
+
+    fs.release();
+    cout << "Write Done." << endl;
 }
 
 int main( int argc, const char* argv[] )
@@ -61,7 +84,7 @@ int main( int argc, const char* argv[] )
     if( argc != 3 ) {
         cout << "usage: " << argv[0] <<" <inputfilename> <outputfilename>\n";
     }
-    computeIntrinsics( (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics/calibdata.json" );
+    computeIntrinsics( (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics" );
 //    computeIntrinsics( argv[1], argv[2] );
 }
 

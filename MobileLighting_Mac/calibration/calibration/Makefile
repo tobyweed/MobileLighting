@@ -23,6 +23,9 @@ all: main
 main: $(OBJ)
 	$(CC) -c $(CPPFLAGS) $(SRC) # Compiles .cpp source files into .o object files
 	$(CC) -o main $(OBJ) $(CPPFLAGS) $(LDLIBS) # Links .o object files with dependencies to make an executable
+compute: compute_params.cpp
+	$(CC) -c $(CPPFLAGS) compute_params.cpp
+	$(CC) -o compute $(OBJ) $(CPPFLAGS) $(LDLIBS)
 
 clean:
 	rm -f *.o *.a
