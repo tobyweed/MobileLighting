@@ -18,8 +18,10 @@
 using namespace cv;
 using namespace std;
 
-int computeIntrinsics ( char *trackFile ) {
+int computeIntrinsics ( char *trackFile, char *outputFile ) {
     int output = -1;
+    
+    cout << "\nComputing intrinsics\n";
     
     CalibrationData calibData = readCalibDataFromFile(trackFile);
     
@@ -33,8 +35,20 @@ int computeIntrinsics ( char *trackFile ) {
     vector<Mat> rvecs, tvecs;
     Size size(calibData.size[0],calibData.size[1]);
     
-    calibrateCamera( calibData.objPoints[0], calibData.imgPoints[0], size, cameraMatrix, distCoeffs, rvecs, tvecs );
+    cout << "\nFiltering input points";
+    // at least 4 points are required by the function, but use a minimum of 10 for stability
+    vector<vector<Point2f>> filteredImgPoints;
+    vector<vector<Point3f>> filteredObjPoints;
+    // copy each vector entry with more than 9 points
+    copy_if( calibData.imgPoints[0].begin(), calibData.imgPoints[0].end(), back_inserter(filteredImgPoints), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
+    copy_if( calibData.objPoints[0].begin(), calibData.objPoints[0].end(), back_inserter(filteredObjPoints), [](vector<Point3f> imgVector) { return (imgVector.size() >= 10); } );
     
+    cout << "\nFinding calibration matrices";
+    double err = calibrateCamera( filteredObjPoints, filteredImgPoints, size, cameraMatrix, distCoeffs, rvecs, tvecs );
+    
+    cout << "\ncameraMatrix: " << cameraMatrix <<"\n";
+    cout << "\ndistCoeffs: " << distCoeffs <<"\n";
+    cout << "\nreprojection err: " << err <<"\n";
 //    printf("%s. Avg reprojection error = %.4f\n",
 //           ok ? "\nIntrinsic calibration succeeded" : "\nIntrinsic calibration failed",
 //           inCal.totalAvgErr);
@@ -44,7 +58,11 @@ int computeIntrinsics ( char *trackFile ) {
 
 int main( int argc, const char* argv[] )
 {
-    printf( "\nHello World\n\n" );
+    if( argc != 3 ) {
+        cout << "usage: " << argv[0] <<" <inputfilename> <outputfilename>\n";
+    }
+    computeIntrinsics( (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_scene/orig/calibration/intrinsics/calibdata.json" );
+//    computeIntrinsics( argv[1], argv[2] );
 }
 
 

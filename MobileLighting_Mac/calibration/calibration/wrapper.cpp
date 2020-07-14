@@ -30,9 +30,9 @@ extern "C" {
         return saveCalibDataToFile(filePath, calibrationData);
     }
 
-    int ComputeIntrinsics(char *trackPath) {
-        return computeIntrinsics(trackPath);
-    }
+//    int ComputeIntrinsics(char *trackPath) {
+//        return computeIntrinsics(trackPath);
+//    }
 
 #ifdef __cplusplus
 }

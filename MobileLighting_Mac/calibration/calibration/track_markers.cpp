@@ -20,6 +20,84 @@ using namespace std;
 
 
 /* ========================================================================
+CALIBRATIONDATA FUNCTIONS
+========================================================================= */
+
+// CONSTRUCTORS
+CalibrationData::CalibrationData(char *imgDirPath) {
+    imgDir = string(imgDirPath);
+};
+CalibrationData::CalibrationData(const FileStorage& fs) { // initialize an object from a track file
+    imgDir = (string)fs["imgdir"];
+    fnames = extractVector<string>(fs["fnames"]);
+    size = extractVector<int>(fs["size"]);
+    imgPoints = { extractImgPoints( fs["img_points"] ) }; // wrap extractImgPoints in another vector since imgPoints is 3D
+    objPoints = { extractObjPoints( fs["obj_points"] ) }; // ''
+    ids = { extractIds( fs["ids"] ) }; // ''
+};
+
+// VECTOR EXTRACTION
+template <typename T>
+vector<T> CalibrationData::extractVector( const FileNode& array ) {
+    vector<T> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        output.push_back( array[i] );
+    }
+    return output;
+};
+// Extract a 2D vector of point2f from a FileNode
+vector<vector< Point2f>> CalibrationData::extractImgPoints( const FileNode& array ) {
+    vector<vector< Point2f>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector< Point2f> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            Point2f point(array[i][j][0].real(), array[i][j][1].real());
+            row.push_back( point );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+// Extract a 2D vector of point3f from a FileNode
+vector<vector< Point3f>> CalibrationData::extractObjPoints( const FileNode& array ) {
+    vector<vector< Point3f>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector< Point3f> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            Point3f point(array[i][j][0].real(), array[i][j][1].real(), array[i][j][2].real());
+            row.push_back( point );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+// Extract a 2D vector of ids from a FileNode
+vector<vector< int>> CalibrationData::extractIds( const FileNode& array ) {
+    vector<vector< int>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector<int> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            int id = array[i][j];
+            row.push_back( id );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+
+// MISC
+// load data extracted from one image to the storage object
+void CalibrationData::loadData(string fname, vector<int> imgSize, vector<vector<Point2f>> imgPointsVector, vector<vector<Point3f>> objPointsVector, vector<vector<int>> idsVector) {
+    fnames.push_back( string(fname) );
+    size = imgSize;
+    imgPoints.push_back(imgPointsVector);
+    objPoints.push_back(objPointsVector);
+    ids.push_back(idsVector);
+};
+
+
+
+/* ========================================================================
 MARKER TRACKING FUNCTIONALITY
 ========================================================================= */
 // Find the ArUco markers and corners in a given image and interpolate the chessboard corners from that information.
@@ -28,7 +106,7 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
 {
     cout << "\nDetecting ArUco markers";
     detectMarkers(image, dictionary, imgMarkers->markerCorners, imgMarkers->markerIds, params);
-    
+
     if (imgMarkers->markerIds.size() > 0) {
         // loop through all provided board paths, initialize the Board objects, and detect chessboard corners
         for( int i = 0; i < numBoards; i++ ) {
@@ -60,6 +138,9 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
                 imgMarkers->charucoIds.push_back(boardCharucoIds);
             } else {
                 cout << "\nNo ChArUco corners were interpolated for board " << i;
+                // push empty vectors to maintain consistent structure
+                imgMarkers->charucoCorners.push_back({});
+                imgMarkers->charucoIds.push_back({});
             }
         }
     } else {
@@ -80,20 +161,18 @@ vector<vector<Point3f>> getObjPoints(vector<Board> boards,vector<vector<int>> id
         int nx = b.squares_x - 1;
         double ssize = b.square_size_mm;
         int start = b.start_code;
+
+        vector<Point3f> result;
+        vector<int> boardIds = ids.at(i);
         
-        // make sure we have IDs for the board under consideration
-        if ( ids.size() >= (i + 1) ) {
-            vector<Point3f> result;
-            vector<int> boardIds = ids.at(i);
-            
-            // calculate an object point for each ID
-            for(int k = 0; k < boardIds.size(); k++) {
-                int id = boardIds.at(k) - 2*start; // subtract ID offset
-                Point3f point = Point3f( id % nx + 1, floor(id / nx) + 1, 0 ); // calculate object point from ID
-                result.push_back(point * ssize); // multiply point coordinates by the square size to get the final 3D location
-            }
-            objPoints.push_back(result);
+        // calculate an object point for each ID
+        for(int k = 0; k < boardIds.size(); k++) {
+            int id = boardIds.at(k) - 2*start; // subtract ID offset
+            Point3f point = Point3f( id % nx + 1, floor(id / nx) + 1, 0 ); // calculate object point from ID
+            result.push_back(point * ssize); // multiply point coordinates by the square size to get the final 3D location
         }
+        objPoints.push_back(result);
+//        }
     }
     return objPoints;
 }
@@ -210,7 +289,6 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
                 objPoints = getObjPoints(boardsVector, ids);
             }
             
-            cout << "\n img name: " << imageName << "\n";
             data->loadData( imageName, size, imgPoints, objPoints, ids );
         }
     }

@@ -11,6 +11,6 @@
 
 #include <stdio.h>
 
-int computeIntrinsics ( char *trackFile );
+int computeIntrinsics ( char *trackFile, char *outputFile );
 
 #endif /* compute_params_hpp */

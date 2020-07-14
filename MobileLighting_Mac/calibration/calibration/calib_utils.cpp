@@ -34,46 +34,46 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>> >& points)
 {
     out << "[";
-    for(int i = 0; i < points.size(); i++) {
-        out << "[";
-        for(int j = 0; j < points.at(i).size(); j++) {
-//            out << "[";
-            for(int k = 0; k < points.at(i).at(j).size(); k++) {
+    for(int i = 0; i < points.size(); i++) { // loop through images
+//        out << "[";
+        for(int j = 0; j < points.at(i).size(); j++) { // loop through boards
+            out << "[";
+            for(int k = 0; k < points.at(i).at(j).size(); k++) { // loop through points
                 vector<float> point;
                 point = { points.at(i).at(j).at(k).x, points.at(i).at(j).at(k).y, points.at(i).at(j).at(k).z };
                 out << point;
             }
-//            out << "]";
+            out << "]";
         }
-        out << "]";
+//        out << "]";
     }
     return out << "]";
 }
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point2f>> >& points)
 {
     out << "[";
-    for(int i = 0; i < points.size(); i++) {
-        out << "[";
-        for(int j = 0; j < points.at(i).size(); j++) {
-//            out << "[";
-            for(int k = 0; k < points.at(i).at(j).size(); k++) {
+    for(int i = 0; i < points.size(); i++) { // loop through images
+//        out << "[";
+        for(int j = 0; j < points.at(i).size(); j++) { // loop through boards
+            out << "[";
+            for(int k = 0; k < points.at(i).at(j).size(); k++) { // loop through points
                 vector<float> point;
                 point = { (points.at(i).at(j).at(k).x), (points.at(i).at(j).at(k).y) };
                 out << point;
             }
-//            out << "]";
+            out << "]";
         }
-        out << "]";
+//        out << "]";
     }
     return out << "]";
 }
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int > >>& ids)
 {
     vector<vector<int>> output; // will consist of arrays of image outputs
-    for(int i = 0; i < ids.size(); i++) {
+    for(int i = 0; i < ids.size(); i++) { // loop through images
         vector<int> imgOutput; // output for one image
-        for(int j = 0; j < ids.at(i).size(); j++) {
-            for(int k = 0; k < ids.at(i).at(j).size(); k++) {
+        for(int j = 0; j < ids.at(i).size(); j++) { // loop through boards
+            for(int k = 0; k < ids.at(i).at(j).size(); k++) { // loop through points
                 imgOutput.push_back( ids.at(i).at(j).at(k) );
             }
         }
@@ -81,30 +81,6 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int > >>& i
     }
     return out << output;
 }
-
-
-// Write a file containing the important calibration data from each image
-//int writeMarkersToFile(string filePath, string imgPath, vector<int> size, vector<vector<Point2f>> imgPoints, vector<vector<Point3f>> objPoints, vector<vector<int>> ids) {
-//    FileStorage fs(filePath, FileStorage::APPEND);
-//
-//    fs << "imgPath" << imgPath;
-//    fs << "size" << size;
-//    fs << "imgPoints" << imgPoints;
-//    fs << "objPoints" << objPoints;
-//
-//    // "flatten" the IDs 2D vector to a 1D vector that doesn't differentiate between boards
-//    vector<int> flattenedIds;
-//    for(int i = 0; i < ids.size(); i++) {
-//        for(int k = 0; k < ids.at(i).size(); k++) {
-//            flattenedIds.push_back( ids.at(i).at(k) );
-//        }
-//    }
-//    fs << "ids" << flattenedIds;
-//
-//    fs.release();                                       // explicit close
-//    cout << "Write Done." << endl;
-//    return 0;
-//}
 
 
 /* ========================================================================
@@ -151,6 +127,36 @@ CalibrationData readCalibDataFromFile(string filePath)
 /* ========================================================================
 BOARDS
 ========================================================================= */
+void Board::write(FileStorage& fs) const // write serialization for this class. Incomplete & unused.
+{
+    fs << "{" << "description" << description << "}";
+}
+void Board::read(const FileNode& node) // read serialization for this class
+{
+    description = (string)node["description"];
+    squares_x = (int)node["squares_x"];
+    squares_y = (int)node["squares_y"];
+    square_size_mm = (double)node["square_size_mm"];
+    marker_size_mm = (double)node["marker_size_mm"];
+    board_width_mm = (double)node["board_width_mm"];
+    board_height_mm = (double)node["board_height_mm"];
+    dict = (string)node["dict"];
+    start_code = (int)node["start_code"];
+}
+
+// Convert a string to a supported predefined ChArUco dictionary
+Ptr<aruco::Dictionary> chDict(string dictString) {
+    if (dictString == "DICT_4x4") {
+        return getPredefinedDictionary(aruco::DICT_4X4_1000);
+    } else if (dictString == "DICT_5x5") {
+        return getPredefinedDictionary(aruco::DICT_5X5_1000);
+    } else if (dictString == "DICT_6x6") {
+        return getPredefinedDictionary(aruco::DICT_6X6_1000);
+    }
+    cout << "Unknown ChArUco dictionary: " << dictString;
+    exit (EXIT_FAILURE);
+}
+
 // Reads a Board object from a file
 Board readBoardFromFile(string filePath)
 {
@@ -168,7 +174,7 @@ Board readBoardFromFile(string filePath)
 
 // Convert an object of class Board to a ChArUco board object
 Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b) {
-    Ptr<aruco::Dictionary> dict = b.chDict(b.dict);
+    Ptr<aruco::Dictionary> dict = chDict(b.dict);
     Ptr<aruco::CharucoBoard> board = aruco::CharucoBoard::create(b.squares_x, b.squares_y, b.square_size_mm, b.marker_size_mm, dict);
     return board;
 }
@@ -182,3 +188,5 @@ void createBoard()
     board->draw(Size(800, 600), boardImage, 10, 1);
     imwrite("BoardImage.jpg", boardImage);
 }
+
+
