@@ -89,7 +89,7 @@ FileStorage& operator<<(FileStorage& out, const Mat& matrix)
         out << "[";
         for(int j = 0; j < matrix.cols; j++)
         {
-            out << matrix.at<float>(i,j);
+            out << matrix.at<double>(i,j);
         }
         out << "]";
     }
