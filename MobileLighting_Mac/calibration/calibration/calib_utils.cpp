@@ -8,7 +8,6 @@
 //  Functions to assist with loading ChArUco boards to and from Yaml files
 
 #include "calib_utils.hpp"
-#include "track_markers.hpp"
 
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
@@ -30,7 +29,7 @@ static void read(const FileNode& node, Board& b, const Board& default_value = Bo
         b.read(node);
 }
 
-// << operator overloads for potentially multidimensional vectors of object points, image points, IDs, and matrices
+// << operator overloads for writing various datatypes to FileStorage objects
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& points)
 {
     out << "[";
@@ -71,13 +70,13 @@ FileStorage& operator<<(FileStorage& out, const vector<vector<vector<int>>>& ids
 {
     vector<vector<int>> output; // will consist of arrays of image outputs
     for(int i = 0; i < ids.size(); i++) { // loop through images
-        vector<int> imgOutput; // output for one image
         for(int j = 0; j < ids.at(i).size(); j++) { // loop through boards
+            vector<int> boardOutput; // output for one board
             for(int k = 0; k < ids.at(i).at(j).size(); k++) { // loop through points
-                imgOutput.push_back( ids.at(i).at(j).at(k) );
+                boardOutput.push_back( ids.at(i).at(j).at(k) );
             }
+            output.push_back( boardOutput );
         }
-        output.push_back( imgOutput );
     }
     return out << output;
 }
@@ -104,9 +103,90 @@ FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices)
     return out << "]";
 }
 
+// extraction utilities for reading from FileNodes to various datatypes
+vector<vector<Point2f>> extractImgPoints( const FileNode& array ) {
+    vector<vector<Point2f>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector< Point2f> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            Point2f point(array[i][j][0].real(), array[i][j][1].real());
+            row.push_back( point );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+vector<vector<Point3f>> extractObjPoints( const FileNode& array ) {
+    vector<vector<Point3f>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector< Point3f> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            Point3f point(array[i][j][0].real(), array[i][j][1].real(), array[i][j][2].real());
+            row.push_back( point );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+vector<vector<int>> extractIds( const FileNode& array ) {
+    vector<vector<int>> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        vector<int> row;
+        for( int j = 0; j < array[i].size(); j++ ) {
+            int id = array[i][j];
+            row.push_back( id );
+        }
+        output.push_back( row );
+    }
+    return output;
+}
+Mat extractMatrix( const FileNode& array ) {
+    int rows = array.size();
+    int cols = array[0].size();
+    Mat m = Mat( rows, cols, CV_32F );
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            m.at<float>(i,j) = array[i][j].real();
+        }
+    }
+    return m;
+}
+vector<Mat> extractMatVector( const FileNode& array ) {
+    vector<Mat> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        output.push_back(extractMatrix(array[i]));
+    }
+    return output;
+}
+
 /* ========================================================================
-CALIBRATIONDATA MANAGEMENT
+CALIBRATIONDATA IMPLEMENTATION AND MANAGEMENT
 ========================================================================= */
+
+// CONSTRUCTORS
+CalibrationData::CalibrationData(char *imgDirPath) {
+    imgDir = string(imgDirPath);
+};
+CalibrationData::CalibrationData(const FileStorage& fs) { // initialize an object from a track file
+    imgDir = (string)fs["imgdir"];
+    fnames = extractVector<string>(fs["fnames"]);
+    size = extractVector<int>(fs["size"]);
+    imgPoints = { extractImgPoints( fs["img_points"] ) }; // wrap extractImgPoints in another vector since imgPoints is 3D
+    objPoints = { extractObjPoints( fs["obj_points"] ) }; // ''
+    ids = { extractIds( fs["ids"] ) }; // ''
+};
+
+// MISC
+// load data extracted from one image to the storage object
+void CalibrationData::loadData(string fname, vector<int> imgSize, vector<vector<Point2f>> imgPointsVector, vector<vector<Point3f>> objPointsVector, vector<vector<int>> idsVector) {
+    fnames.push_back( string(fname) );
+    size = imgSize;
+    imgPoints.push_back(imgPointsVector);
+    objPoints.push_back(objPointsVector);
+    ids.push_back(idsVector);
+};
+
+// HELPERS
 // Initialize a CalibrationData object and return a pointer to it
 const void *initializeCalibDataStorage(char *imgDirPath)
 {

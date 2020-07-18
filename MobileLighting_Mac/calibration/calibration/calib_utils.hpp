@@ -9,7 +9,6 @@
 #ifndef calib_utils_hpp
 #define calib_utils_hpp
 
-#include "track_markers.hpp"
 #include <opencv2/aruco/charuco.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -36,6 +35,28 @@ public: // Parameters
     int start_code;
 };
 
+// Class for storage of data extracted from calibration images before writing to disk.
+//  - each object represents the data from several images.
+//  - in practice, each object is used to store data from a set of images taken from a single pose.
+class CalibrationData {
+// Functions
+public:
+    // constructors
+    CalibrationData(char *imgDirPath);
+    CalibrationData(const FileStorage& fs);
+    
+    // load data extracted from one image to the storage object
+    void loadData(string fname, vector<int> imgSize, vector<vector<Point2f>> imgPointsVector, vector<vector<Point3f>> objPointsVector, vector<vector<int>> idsVector);
+    
+// Instance variables
+public:
+    string imgDir;
+    vector<string> fnames;
+    vector<int> size;
+    vector<vector<vector<Point2f>>> imgPoints;
+    vector<vector<vector<Point3f>>> objPoints;
+    vector<vector<vector<int>>> ids;
+};
 
 Ptr<aruco::Dictionary> chDict(string dictString);
 Ptr<aruco::CharucoBoard> convertBoardToCharuco(Board b);
@@ -43,7 +64,23 @@ Board readBoardFromFile(string filePath);
 CalibrationData readCalibDataFromFile(string filePath);
 const void *initializeCalibDataStorage(char *imgDirPath);
 void saveCalibDataToFile(char *filePath, void *calibrationData);
+
+// << overloads and FileNode extraction functions
 FileStorage& operator<<(FileStorage& out, const Mat& matrix);
 FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices);
+template <typename T> // templates need to be defined in the header file to be portable
+vector<T> extractVector( const FileNode& array ) {
+    vector<T> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        output.push_back( array[i] );
+    }
+    return output;
+};
+vector<vector<Point2f>> extractImgPoints( const FileNode& array );
+vector<vector<Point3f>> extractObjPoints( const FileNode& array );
+vector<vector<int>> extractIds( const FileNode& array );
+Mat extractMatrix( const FileNode& array );
+vector<Mat> extractMatVector( const FileNode& array );
+
 
 #endif /* calib_utils_hpp */

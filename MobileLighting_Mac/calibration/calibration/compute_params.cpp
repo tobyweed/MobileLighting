@@ -7,7 +7,6 @@
 //
 
 #include "calib_utils.hpp"
-#include "track_markers.hpp"
 #include "compute_params.hpp"
 
 #include <stdio.h>
@@ -18,32 +17,8 @@
 using namespace cv;
 using namespace std;
 
-Mat extractMatrix( const FileNode& array ) {
-    int rows = array.size();
-    int cols = array[0].size();
-    Mat m = Mat( rows, cols, CV_32F );
-    for(int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            m.at<float>(i,j) = array[i][j].real();
-        }
-    }
-    return m;
-}
-
-// Extract a vector of matrices
-vector<Mat> extractMatVector( const FileNode& array ) {
-    vector<Mat> output;
-    for( int i = 0; i < array.size(); i++ ) {
-        output.push_back(extractMatrix(array[i]));
-    }
-    return output;
-}
-
 class Intrinsics {
-public:
-    vector<Mat> R, T;
-    Mat A,dist;
-    Size size;
+// Functions
 public:
     Intrinsics(const FileStorage& fs) { // initialize an object from a track file
         R = extractMatVector(fs["R"]);
@@ -52,6 +27,12 @@ public:
         dist = extractMatrix(fs["dist"]);
         size = Size(fs["size"][0],fs["size"][1]);
     };
+
+// Instance variables
+public:
+    vector<Mat> R, T;
+    Mat A,dist;
+    Size size;
 };
 
 Intrinsics readIntrinsicsFromFile( string filePath ) {
@@ -73,11 +54,48 @@ int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile
     CalibrationData calibData2 = readCalibDataFromFile(trackFile2);
     Intrinsics intrinsics = readIntrinsicsFromFile(intrinsicsFile);
     
-    cout << "\nCamera matrix loaded from file: " << intrinsics.A << endl;
+    cout << "\nFiltering image and object points";
+    // at least 4 points are required by the function, but use a minimum of 10 for stability
+    vector<vector<Point3f>> filteredObjPoints;
+    vector<vector<Point2f>> filteredImgPoints1;
+    vector<vector<Point2f>> filteredImgPoints2;
+    // copy each vector entry with 10 or more points
+    copy_if( calibData1.imgPoints[0].begin(), calibData1.imgPoints[0].end(), back_inserter(filteredImgPoints1), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
+    copy_if( calibData2.imgPoints[0].begin(), calibData2.imgPoints[0].end(), back_inserter(filteredImgPoints2), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
+    copy_if( calibData1.objPoints[0].begin(), calibData1.objPoints[0].end(), back_inserter(filteredObjPoints), [](vector<Point3f> imgVector) { return (imgVector.size() >= 10); } );
+    
+    Mat R, T, E, F;
+    
+    double err = stereoCalibrate(filteredObjPoints, filteredImgPoints1, filteredImgPoints2, intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
+    
+    cout << "\nStereo reprojection error: " << err << endl;
+    cout << "\n R: " << R << endl;
+    cout << "\n T: " << T << endl;
     
     return 0;
 }
 
+// Filter a vector of vectors s.t. each vector contained by the ouput vector has at least 10 elements
+template <typename T>
+vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
+    vector<vector<T>> filteredPoints;
+    copy_if( points.begin(), points.end(), back_inserter(filteredPoints), [](vector<T> pointsVector) { return (pointsVector.size() >= 10); } );
+    return filteredPoints;
+}
+//
+//template <typename T>
+//void getSharedPoints( vector<vector<int>> ids1, vector<vector<int>> ids2, vector<vector<T>> points1, vector<vector<T>> points2, vector<vector<T>> &out1, vector<vector<T>> &out2 ) {
+//    // create a new list which is the intersection of ids1 & ids2
+//    
+//}
+
+// Filter the image and object points of given CalibrationData objects to contain only points which are shared and lists of points with at least 10 elements
+//void filterPoints( CalibrationData &calibrationData1, CalibrationData &data2) {
+//    CalibrationData *data1 = (CalibrationData *)calibrationData1;
+//
+//}
+
+//void filterPoints( vector<vector<int>> ids1, vector<vector<int>> ids2, vector<vector<Point2f>> imgPoints1, vector<vector<Point2f>> imgPoints2, vector<vector<Point3f>> objPoints1, vector<vector<Point3f>> objPoints2,)
 
 // Intrinsics
 int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
@@ -95,13 +113,9 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     vector<Mat> rvecs, tvecs;
     Size size(calibData.size[0],calibData.size[1]);
     
-    cout << "\nFiltering input points";
-    // at least 4 points are required by the function, but use a minimum of 10 for stability
-    vector<vector<Point2f>> filteredImgPoints;
-    vector<vector<Point3f>> filteredObjPoints;
-    // copy each vector entry with 10 or more points
-    copy_if( calibData.imgPoints[0].begin(), calibData.imgPoints[0].end(), back_inserter(filteredImgPoints), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
-    copy_if( calibData.objPoints[0].begin(), calibData.objPoints[0].end(), back_inserter(filteredObjPoints), [](vector<Point3f> imgVector) { return (imgVector.size() >= 10); } );
+    cout << "\nFiltering image and object points";
+    vector<vector<Point2f>> filteredImgPoints = filterPointsVectorsByMinSize<Point2f>(calibData.imgPoints[0]);
+    vector<vector<Point3f>> filteredObjPoints = filterPointsVectorsByMinSize<Point3f>(calibData.objPoints[0]);;
     
     cout << "\nFinding calibration matrices";
     double err = calibrateCamera( filteredObjPoints, filteredImgPoints, size, cameraMatrix, distCoeffs, rvecs, tvecs );
