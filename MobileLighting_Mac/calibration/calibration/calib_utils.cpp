@@ -141,8 +141,8 @@ vector<vector<int>> extractIds( const FileNode& array ) {
     return output;
 }
 Mat extractMatrix( const FileNode& array ) {
-    size_t rows = array.size();
-    size_t cols = array[0].size();
+    int rows = (int)array.size();
+    int cols = (int)array[0].size();
     Mat m = Mat( rows, cols, CV_32F );
     for(int i = 0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {

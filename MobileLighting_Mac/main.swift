@@ -190,7 +190,7 @@ if( !debugMode ) {
     // Attempt to load the path listed in the sceneSettings file to the Rosvita server
     let path: String = sceneSettings.robotPathName
     var pathPointer = *path
-    var status = LoadPath(&pathPointer) // load the path on Rosvita server
+    let status = LoadPath(&pathPointer) // load the path on Rosvita server
     if status < 0 { // print a message if the LoadPath doesn't return 0
         print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
     } else {

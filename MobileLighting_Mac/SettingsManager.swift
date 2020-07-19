@@ -384,7 +384,7 @@ class CalibrationSettings {
     }
 
     func get(key: Key) -> Yaml? {
-        guard var dict = self.yml.dictionary else { return nil }
+        guard let dict = self.yml.dictionary else { return nil }
         return dict[Yaml.string(key.rawValue)]
     }
 

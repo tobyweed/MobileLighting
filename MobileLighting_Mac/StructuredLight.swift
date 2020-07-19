@@ -103,7 +103,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             
             
             if (shouldSendThreshImgs) {
-                let direction = horizontal ? 1 : 0
+                let direction = horizontal ? 1 : 0 
                 let prethreshpath = dirStruc.prethresh + "/proj\(projector)/pos\(position)"//dirStruc.subdir(dirStruc.prethresh)
                 let threshpath = dirStruc.thresh + "/proj\(projector)/pos\(position)"
                 for path in [prethreshpath, threshpath] { try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
@@ -150,7 +150,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         DecodedImageReceiver(completionHandler, path: imgpath, horizontal: false)
     )
     
-    var metadataCompletionHandler: ()->Void = {
+    let metadataCompletionHandler: ()->Void = {
         //        if rectificationMode == .NONE || rectificationMode == .ON_PHONE {
         let direction: Int = horizontal ? 1 : 0
         let filepath = dirStruc.metadataFile(direction, proj: projector, pos: position)

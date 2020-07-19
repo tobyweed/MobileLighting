@@ -674,10 +674,9 @@
 			};
 			buildConfigurationList = E11F1F991EE1B3B4008F9F0F /* Build configuration list for PBXProject "MobileLighting" */;
 			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
 				Base,
 			);

@@ -56,7 +56,8 @@ int client()
 }
 
 int sendCommand(char *script){
-    int client_sock = client(), result;
+    int client_sock = client();
+    ssize_t result;
     char buffer[1024] = {0};
     if(client_sock<1)
         return -1;
@@ -75,12 +76,13 @@ int sendCommand(char *script){
 // Load the path to the Rosvita server. Return -1 if unsuccessful, number of positions if successful
 int loadPath(string pathName){
     string script = "load " + pathName + ".obj";
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
 
     // Send command
-    int client_sock = client(), result;
+    int client_sock = client();
+    ssize_t result;
     char buffer[1024] = {0};
     
     if(client_sock<1)
@@ -104,7 +106,7 @@ int loadPath(string pathName){
 
 int gotoVideoStart(){
     string script = "s";
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
     if(sendCommand(command)<0)
@@ -115,7 +117,7 @@ int gotoVideoStart(){
 
 int gotoView(string num){
     string script = num;
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
     if(sendCommand(command)<0)
@@ -126,7 +128,7 @@ int gotoView(string num){
 // move smoothly through the main viewpoints at velocity atV, then revert to velocity revert2V
 int executePath(float atV, float revert2V){
     string script = "e";
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
     
@@ -143,7 +145,7 @@ int executePath(float atV, float revert2V){
 // go through the motion recorded by the VIVE motion tracker
 int executeHumanPath(){
     string script = "t";
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
     if(sendCommand(command)<0)
@@ -154,7 +156,7 @@ int executeHumanPath(){
 
 int setVelocity(float v){
     string script = "v " +  std::to_string(v);
-    int n = script.length();
+    ssize_t n = script.length();
     char command[n+1];
     strcpy(command, script.c_str());
     if(sendCommand(command)<0)

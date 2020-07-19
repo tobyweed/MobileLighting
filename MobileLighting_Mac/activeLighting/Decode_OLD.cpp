@@ -448,7 +448,7 @@ CFloatImage decode(char* outdir, char* codefile, int direction, int eraseForegro
     }
 
 
-    if (0) { // don't need anymore now that I can view pfms in color
+    if (/* DISABLES CODE */ (0)) { // don't need anymore now that I can view pfms in color
 	fprintf(stderr, "encoding in ppm:\n");
 	CByteImage result;
 

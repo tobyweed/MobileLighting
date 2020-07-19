@@ -325,7 +325,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         // Handle flags
-        let nPhotos: Int
+        let _: Int
         let startIndex: Int
         if tokens.count == 2 {
             let mode = tokens[1]
@@ -333,7 +333,7 @@ func processCommand(_ input: String) -> Bool {
                 print("takeintrinsics: unrecognized flag \(mode)")
                 break
             }
-            var photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
+            let photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
                 return "\(dirStruc.intrinsicsPhotos)/\($0)"
             }
             switch mode {
@@ -363,7 +363,7 @@ func processCommand(_ input: String) -> Bool {
         
         // Load and create boards
         print("Collecting board paths")
-        var (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
+        let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
         guard boards.count > 0 else {
             print("No boards were successfully initialized. Exiting command \(tokens[0]).")
             break
@@ -464,17 +464,17 @@ func processCommand(_ input: String) -> Bool {
         if flags.count == 1 {
             mode = flags[0]
         }
-        
-        var appending = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                print("takeextrinsics: appending images.")
-                appending = true
-            default:
-                print("takeextrinsics: unrecognized flag \(flag).")
-            }
-        }
+//        
+//        var appending = false
+//        for flag in flags {
+//            switch flag {
+//            case "-a":
+//                print("takeextrinsics: appending images.")
+//                appending = true
+//            default:
+//                print("takeextrinsics: unrecognized flag \(flag).")
+//            }
+//        }
         
         if calibrationExposure != (0, 0) {
             let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
@@ -532,7 +532,7 @@ func processCommand(_ input: String) -> Bool {
         let arg3 = tokens[3]
         if arg3.hasPrefix("[") { // if the string starts with [ assume we're being passed an array of strings
             multiPos = true
-            var poses_ = stringToIntArray(arg3)
+            let poses_ = stringToIntArray(arg3)
             for pos in poses_ {
                 if pos < 0 || pos >= nPositions {
                     print("pos \(pos) is not a valid robot position; not including it in poses array.")
@@ -655,7 +655,7 @@ func processCommand(_ input: String) -> Bool {
                 case "-d":
                     print("deleting all ambient photos...")
                     // delete ALL contents of the ambient/photos directory
-                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                    let photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
                         return "\(dirStruc.ambientPhotos(ball))/\($0)"
                     }
                     for item in photoDirectoryContents {
@@ -766,7 +766,7 @@ func processCommand(_ input: String) -> Bool {
             }
             
             // get the right lighting to write to
-            var startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
+            let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
             
             // capture video at all selected exposures
             for exp in exps {
@@ -1004,7 +1004,7 @@ func processCommand(_ input: String) -> Bool {
         
         let path: String = tokens[1] // the first argument should specify a pathname
         var pathPointer = *path // get cchar version of the string
-        var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
+        let status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
         
         if status == -1 { // print a message if the LoadPath doesn't return 0
             print("Could not load path \"\(path)\"")
@@ -1617,6 +1617,7 @@ func processCommand(_ input: String) -> Bool {
         // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
         // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
     // ABSOLUTE PATHS NOT REQUIRED
+    // Not currently implemented!
     case .getintrinsics, .gi:
         guard tokens.count <= 2 else {
             print(usage)
@@ -1653,7 +1654,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         DispatchQueue.main.async {
-            ComputeIntrinsics(&path)
+//            ComputeIntrinsics(&path)
 //            CalibrateWithSettings(&path)
         }
         break
@@ -1737,7 +1738,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         // later insert functionality to not automatically use all projectors & positions
-        var allproj = true
+        let allproj = true
         var projs: [Int] = []
         if allproj {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))

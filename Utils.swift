@@ -187,7 +187,6 @@ func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
 // used for supporting arrays as command line arguments
 func stringToIntArray(_ string: String ) -> [Int] {
     // initialize an array of the connected ports on the switcher.
-    let startlist = string.index(string.startIndex, offsetBy: 1)
     var liststr = string.dropFirst()// cut off the first character
     // if last character is ], cut it off too
     // this isn't a requirement because Xcode will sometimes automatically appear to add "]" without actially doing so

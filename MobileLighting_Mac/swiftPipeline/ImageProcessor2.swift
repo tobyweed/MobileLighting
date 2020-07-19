@@ -100,10 +100,10 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
         return
     }
     
-    var in_suffix_x = "/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm".cString(using: .ascii)!
-    var in_suffix_y = "/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm".cString(using: .ascii)!
-    var out_suffix_x = "/disp\(leftpos)\(rightpos)x-2filtered.pfm".cString(using: .ascii)!
-    var out_suffix_y = "/disp\(leftpos)\(rightpos)y-2filtered.pfm".cString(using: .ascii)!
+    let in_suffix_x = "/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm".cString(using: .ascii)!
+    let in_suffix_y = "/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm".cString(using: .ascii)!
+    let out_suffix_x = "/disp\(leftpos)\(rightpos)x-2filtered.pfm".cString(using: .ascii)!
+    let out_suffix_y = "/disp\(leftpos)\(rightpos)y-2filtered.pfm".cString(using: .ascii)!
     
     var dispx, dispy, outx, outy: [CChar]
     
@@ -154,7 +154,7 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
     }
     computeMaps(&result0l, &intr, &extr, &settings)
 
-    var outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
+    let outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
         rectdirleft + "/result\(left)\(right)v-0rectified.pfm",
         rectdirright + "/result\(left)\(right)u-0rectified.pfm",
         rectdirright + "/result\(left)\(right)v-0rectified.pfm",
@@ -197,7 +197,7 @@ func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, light
     }
     
     //paths for storing output
-    var outpaths: [String] = [dirStruc.ambientComputed(ball: ball, mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
+    let outpaths: [String] = [dirStruc.ambientComputed(ball: ball, mode: mode, pos: left, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png",
         dirStruc.ambientComputed(ball: ball, mode: mode, pos: right, lighting: lighting, rectified: true) + "/\(left)\(right)rectified-exp\(exp).png"
     ]
     
@@ -223,7 +223,7 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         return
     }
     let projectors = getIDs(projectorDirs, prefix: "proj", suffix: "")
-    var positionDirs = projectors.map {
+    let positionDirs = projectors.map {
         return (dirStruc.disparity(proj: $0, pos: leftpos, rectified: rectified), dirStruc.disparity(proj: $0, pos: rightpos, rectified: rectified))
     }
 //    var positionDirs: [(String, String)] = projectorDirs.map {
@@ -351,11 +351,11 @@ func reproject(left leftpos: Int, right rightpos: Int) {
             need to add code for using nonlinear reprojection -- but need warpdisp code first.
             */
             
-            var dir = *dirStruc.reprojected(proj: proj, pos: pos)
+            let dir = *dirStruc.reprojected(proj: proj, pos: pos)
             
-            var in_suffix_x = *"/disp\(leftpos)\(rightpos)x-0initial.pfm"
-            var out_suffix_x = *"/disp\(leftpos)\(rightpos)x-1filtered.pfm"
-            var out_suffix_y = *"/disp\(leftpos)\(rightpos)y-1filtered.pfm"
+            let in_suffix_x = *"/disp\(leftpos)\(rightpos)x-0initial.pfm"
+            let out_suffix_x = *"/disp\(leftpos)\(rightpos)x-1filtered.pfm"
+            let out_suffix_y = *"/disp\(leftpos)\(rightpos)y-1filtered.pfm"
             
             dispx = dir + in_suffix_x
             outx = dir + out_suffix_x
@@ -368,9 +368,9 @@ func reproject(left leftpos: Int, right rightpos: Int) {
 
 func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     for pos in [leftpos, rightpos] {
-        var premerged = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm")
+        _ = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm") // premerged. Currently unused?
         
-        var dispProjectors = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(true)), prefix: "proj", suffix: "")
+        let dispProjectors = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(true)), prefix: "proj", suffix: "")
         // viewDisps: [[CChar]], contains all cross-checked, filtered PFM files that exist
         var viewDisps = *dispProjectors.map {
             return dirStruc.disparity(proj: $0, pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-2filtered.pfm"
@@ -440,9 +440,9 @@ func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right 
             }
         }
         let frac0 = logVals[0][0], frac1 = logVals[1][0]
-        let rms0 = logVals[0][1], rms1 = logVals[1][1]
+        let rms0 = logVals[0][1], rms1 = logVals[1][1] // unused, old name: rms0
         let bad0 = logVals[0][2], bad1 = logVals[1][2]
-        let thresh0 = logVals[0][3], thresh1 = logVals[1][3]
+        let thresh0 = logVals[0][3], thresh1 = logVals[1][3] // unused, old name: thresh0, thresh1
         let fracfrac = frac1 / frac0 // fraction of reproj frac vs orig frac
         
         let reliable = fracfrac >= 0.3 && frac1 >= 5 && bad0 <= 50 && bad1 <= 10 && rms1 <= 0.75
