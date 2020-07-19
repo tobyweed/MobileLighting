@@ -14,6 +14,8 @@
 #include <opencv2/core.hpp>
 #include <cstdio>
 
+#include <map>
+
 using namespace cv;
 using namespace std;
 
@@ -47,6 +49,125 @@ Intrinsics readIntrinsicsFromFile( string filePath ) {
     return data;
 }
 
+// Stereo calibration requires both images to have the same # of image and object points, but
+// ArUco detections can include an arbitrary subset of all markers.
+// This function limits the points lists to only those points shared between each image.
+//  - this function is recycled from the old calibration code
+void getSharedPoints(CalibrationData &inCal, CalibrationData &inCal2)
+{
+    // pointers to make code more legible
+    vector<Point3f> *oPoints, *oPoints2;
+    vector<Point2f> *iPoints, *iPoints2;
+    int shared;     //index of a shared object point
+    bool paddingPoints = false;
+    
+    //for each objPoints vector in overall objPoints vector of vectors
+    for (int i  = 0; i < (int)inCal.objPoints.size(); i++)
+    {
+        map<string,int> countMap;
+        vector<Point3f> sharedObjPoints;
+        vector<Point2f> sharedImgPoints, sharedImgPoints2; //shared image points for each inCal
+        
+        oPoints = &inCal.objPoints[0].at(i);
+        oPoints2 = &inCal2.objPoints[0].at(i);
+        iPoints  = &inCal.imgPoints[0].at(i);
+        iPoints2 = &inCal2.imgPoints[0].at(i);
+        
+        if ((int)oPoints->size() >= (int)oPoints2->size()){
+            for (int j=0; j<(int)oPoints->size(); j++)
+            {
+                if (oPoints->at(0) == Point3f(-1,-1,0)) {
+                    
+                    paddingPoints = true;
+                    break;
+                }
+                for (shared=0; shared<(int)oPoints2->size(); shared++)
+                    if (oPoints->at(j) == oPoints2->at(shared)) break;
+                if (shared != (int)oPoints2->size())       //object point is shared
+                {
+                    stringstream temp;
+                    temp << "(" << oPoints->at(j).x
+                    << "," << oPoints->at(j).y
+                    << "," << oPoints->at(j).z << ")";
+                    auto result = countMap.insert(std::pair< string, int>(temp.str() , 1));
+                    if (result.second == false)
+                        result.first->second++;
+                    if (result. second != 1)
+                        continue;
+                    
+                    sharedObjPoints.push_back(oPoints->at(j));
+                    sharedImgPoints.push_back(iPoints->at(j));
+                    sharedImgPoints2.push_back(iPoints2->at(shared));
+                    
+                }
+                paddingPoints = false;
+            }
+        }
+        else {
+            for (int j=0; j<(int)oPoints2->size(); j++) {
+                if (oPoints2->at(0) == Point3f(-1,-1,0)) {
+                    paddingPoints = true;
+                    break;
+                }
+                
+                for (shared=0; shared<(int)oPoints->size(); shared++)
+                    if (oPoints2->at(j) == oPoints->at(shared)) break;
+                if (shared != (int)oPoints->size())       //object point is shared
+                {
+                    stringstream temp;
+                    temp << "(" << oPoints2->at(j).x
+                    << "," << oPoints2->at(j).y
+                    << "," << oPoints2->at(j).z << ")";
+                    auto result = countMap.insert(std::pair< string, int>(temp.str() , 1));
+                    if (result.second == false)
+                        result.first->second++;
+                    if (result. second != 1)
+                        continue;
+                    
+                    sharedObjPoints.push_back(oPoints2->at(j));
+                    sharedImgPoints2.push_back(iPoints2->at(j));
+                    sharedImgPoints.push_back(iPoints->at(shared));
+                    
+                }
+                paddingPoints = false;
+            }
+        }
+        
+        if ((int) sharedObjPoints.size() >= 10){
+            *oPoints = sharedObjPoints;
+            *oPoints2 = sharedObjPoints;
+            *iPoints = sharedImgPoints;
+            *iPoints2 = sharedImgPoints2;
+        }
+        
+        else if ((int) sharedObjPoints.size() < 10 || paddingPoints) {
+            inCal.objPoints[0].erase(inCal.objPoints[0].begin()+i);
+            inCal2.objPoints[0].erase(inCal2.objPoints[0].begin()+i);
+            inCal.imgPoints[0].erase(inCal.imgPoints[0].begin()+i);
+            inCal2.imgPoints[0].erase(inCal2.imgPoints[0].begin()+i);
+            
+            // temp: if no objPoints left, then break from loop already
+            if (inCal.objPoints[0].size() <= 0){
+                inCal.objPoints[0][0].clear();
+                inCal2.objPoints[0][0].clear();
+                break;
+            }
+            
+            // decrement i because we removed one element
+            //  from the beginning of the vector, inCal.objPoints.
+            i--;
+        }
+    }
+}
+
+// Filter a vector of vectors s.t. each vector contained by the ouput vector has at least 10 elements
+template <typename T>
+vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
+    vector<vector<T>> filteredPoints;
+    copy_if( points.begin(), points.end(), back_inserter(filteredPoints), [](vector<T> pointsVector) { return (pointsVector.size() >= 10); } );
+    return filteredPoints;
+}
+
 int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
     cout << "\nComputing extrinsics\n";
     
@@ -55,14 +176,11 @@ int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile
     Intrinsics intrinsics = readIntrinsicsFromFile(intrinsicsFile);
     
     cout << "\nFiltering image and object points";
+    getSharedPoints(calibData1, calibData2);
     // at least 4 points are required by the function, but use a minimum of 10 for stability
-    vector<vector<Point3f>> filteredObjPoints;
-    vector<vector<Point2f>> filteredImgPoints1;
-    vector<vector<Point2f>> filteredImgPoints2;
-    // copy each vector entry with 10 or more points
-    copy_if( calibData1.imgPoints[0].begin(), calibData1.imgPoints[0].end(), back_inserter(filteredImgPoints1), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
-    copy_if( calibData2.imgPoints[0].begin(), calibData2.imgPoints[0].end(), back_inserter(filteredImgPoints2), [](vector<Point2f> imgVector) { return (imgVector.size() >= 10); } );
-    copy_if( calibData1.objPoints[0].begin(), calibData1.objPoints[0].end(), back_inserter(filteredObjPoints), [](vector<Point3f> imgVector) { return (imgVector.size() >= 10); } );
+    vector<vector<Point3f>> filteredObjPoints = filterPointsVectorsByMinSize<Point3f>(calibData1.objPoints[0]);
+    vector<vector<Point2f>> filteredImgPoints1 = filterPointsVectorsByMinSize<Point2f>(calibData1.imgPoints[0]);
+    vector<vector<Point2f>> filteredImgPoints2 = filterPointsVectorsByMinSize<Point2f>(calibData2.imgPoints[0]);
     
     Mat R, T, E, F;
     
@@ -74,28 +192,6 @@ int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile
     
     return 0;
 }
-
-// Filter a vector of vectors s.t. each vector contained by the ouput vector has at least 10 elements
-template <typename T>
-vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
-    vector<vector<T>> filteredPoints;
-    copy_if( points.begin(), points.end(), back_inserter(filteredPoints), [](vector<T> pointsVector) { return (pointsVector.size() >= 10); } );
-    return filteredPoints;
-}
-//
-//template <typename T>
-//void getSharedPoints( vector<vector<int>> ids1, vector<vector<int>> ids2, vector<vector<T>> points1, vector<vector<T>> points2, vector<vector<T>> &out1, vector<vector<T>> &out2 ) {
-//    // create a new list which is the intersection of ids1 & ids2
-//    
-//}
-
-// Filter the image and object points of given CalibrationData objects to contain only points which are shared and lists of points with at least 10 elements
-//void filterPoints( CalibrationData &calibrationData1, CalibrationData &data2) {
-//    CalibrationData *data1 = (CalibrationData *)calibrationData1;
-//
-//}
-
-//void filterPoints( vector<vector<int>> ids1, vector<vector<int>> ids2, vector<vector<Point2f>> imgPoints1, vector<vector<Point2f>> imgPoints2, vector<vector<Point3f>> objPoints1, vector<vector<Point3f>> objPoints2,)
 
 // Intrinsics
 int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
