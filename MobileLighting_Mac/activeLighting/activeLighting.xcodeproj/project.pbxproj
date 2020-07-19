@@ -56,7 +56,6 @@
 		AACFBC99249D88430033E0C0 /* libopencv_imgcodecs.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.4.3.0.dylib; path = ../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_imgcodecs.4.3.0.dylib; sourceTree = "<group>"; };
 		AACFBC9F249D88540033E0C0 /* libopencv_calib3d.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.4.3.0.dylib; path = ../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_calib3d.4.3.0.dylib; sourceTree = "<group>"; };
 		AACFBCA5249E50AD0033E0C0 /* libopencv_features2d.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.4.3.0.dylib; path = ../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_features2d.4.3.0.dylib; sourceTree = "<group>"; };
-		AAED663024C48DD200ECFA7C /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E1052C4F20C81328004A65C0 /* libactiveLighting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libactiveLighting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		E114D51720CF0F9D00020017 /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = pfmLib/libpfm.a; sourceTree = "<group>"; };
 		E114D51920CF106600020017 /* Rectify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectify.cpp; sourceTree = "<group>"; };
@@ -107,7 +106,6 @@
 		E1052C4620C81328004A65C0 = {
 			isa = PBXGroup;
 			children = (
-				AAED663024C48DD200ECFA7C /* CocoaAsyncSocket.framework */,
 				AAC1501322F3283400022491 /* pfmLib */,
 				AAAF15BC22DE6E3A006AEB79 /* Decode_OLD.cpp */,
 				AAC1501422F332B700022491 /* TransformPFM.cpp */,

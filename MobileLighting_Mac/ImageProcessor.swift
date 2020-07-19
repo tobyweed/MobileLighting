@@ -1,5 +1,5 @@
 //
-//  ImageProcessor2.swift
+//  ImageProcessor.swift
 //  demo
 //
 //  Created by Nicholas Mosier on 6/28/17.

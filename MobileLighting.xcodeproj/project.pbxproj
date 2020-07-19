@@ -19,7 +19,6 @@
 		AA6BE3C624ACF80300C8E72E /* libopencv_aruco.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6BE3C524ACF80300C8E72E /* libopencv_aruco.4.3.0.dylib */; };
 		AA7746E124B3AE3A00E5B883 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA7746E024B3AE3A00E5B883 /* opencv2.framework */; };
 		AABB840B24A7EF5C00BB636B /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = AABB840924A7EF5B00BB636B /* Makefile */; };
-		AAED664324C491C000ECFA7C /* CocoaAsyncSocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAED664224C491BF00ECFA7C /* CocoaAsyncSocket.framework */; };
 		AAF79C7C24A930C200C7C4B3 /* libcalibration.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAF79C7324A92F6200C7C4B3 /* libcalibration.dylib */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
@@ -62,15 +61,13 @@
 		E1682DF620F94C4400DF0FD4 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */; };
 		E1682DF720F94C5200DF0FD4 /* libcalib.i386.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E19CC8BF20D41C00009DA6FC /* libcalib.i386.a */; };
 		E1682E0520F94ED500DF0FD4 /* calibration_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E19CC8C120D41D6D009DA6FC /* calibration_wrapper.cpp */; };
-		E1682E0620F94EDE00DF0FD4 /* ImageProcessor2.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */; };
+		E1682E0620F94EDE00DF0FD4 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15F3A281F0427DA00FB11B6 /* ImageProcessor.swift */; };
 		E1682E0B20F9580700DF0FD4 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1682E0A20F9580700DF0FD4 /* main.swift */; };
 		E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E17AC73E20FE29430007EF77 /* CocoaAsyncSocket.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E17AC73B20FE29300007EF77 /* CocoaAsyncSocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E17AC78220FE38C40007EF77 /* Yaml.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17AC77B20FE38860007EF77 /* Yaml.framework */; };
 		E17AC78320FE38C40007EF77 /* Yaml.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E17AC77B20FE38860007EF77 /* Yaml.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		E17AC78620FE38CE0007EF77 /* Yaml.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17AC77720FE38860007EF77 /* Yaml.framework */; };
-		E196122320D1AC9200D85EDB /* extrinsics.yml in Resources */ = {isa = PBXBuildFile; fileRef = E196122120D1AC9100D85EDB /* extrinsics.yml */; };
-		E196122420D1AC9200D85EDB /* intrinsics.yml in Resources */ = {isa = PBXBuildFile; fileRef = E196122220D1AC9200D85EDB /* intrinsics.yml */; };
 		E1971F4620D18D57005B5DAF /* Rectify.mm in Sources */ = {isa = PBXBuildFile; fileRef = E1971F4520D18D57005B5DAF /* Rectify.mm */; };
 		E19A62111EFC17DB0013EA58 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */; };
 		E1A57AD72108D4E300C208C6 /* SerialUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A57AC82108D4AE00C208C6 /* SerialUtils.framework */; };
@@ -279,7 +276,6 @@
 		AAA0AA1E22AEE5CB00002E78 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
 		AABB840924A7EF5B00BB636B /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AABB840A24A7EF5C00BB636B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		AAED664224C491BF00ECFA7C /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaAsyncSocket.framework; sourceTree = SOURCE_ROOT; };
 		AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = calibration.xcodeproj; path = calibration/calibration.xcodeproj; sourceTree = "<group>"; };
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -309,7 +305,7 @@
 		E14CDBD820F4ED5E004AF1B6 /* Parameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E15D3BC020BF47880058AD1A /* SceneMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMetadata.swift; sourceTree = "<group>"; };
-		E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor2.swift; sourceTree = "<group>"; };
+		E15F3A281F0427DA00FB11B6 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		E162D52620B5CE93001702BD /* libpng16.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng16.a; path = ../../../../../../usr/local/Cellar/libpng/1.6.34/lib/libpng16.a; sourceTree = "<group>"; };
 		E1682DB020F947C700DF0FD4 /* MobileLighting_Mac */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MobileLighting_Mac; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1682E0A20F9580700DF0FD4 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
@@ -319,8 +315,6 @@
 		E1860DC020C8199200206D40 /* activeLighting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = activeLighting.xcodeproj; path = activeLighting/activeLighting.xcodeproj; sourceTree = "<group>"; };
 		E196121920D18EFA00D85EDB /* Rectify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rectify.h; sourceTree = "<group>"; };
 		E196121F20D19BA000D85EDB /* MobileLighting_iPhone_Bridging_Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MobileLighting_iPhone_Bridging_Header.h; sourceTree = "<group>"; };
-		E196122120D1AC9100D85EDB /* extrinsics.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = extrinsics.yml; sourceTree = "<group>"; };
-		E196122220D1AC9200D85EDB /* intrinsics.yml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = intrinsics.yml; sourceTree = "<group>"; };
 		E1971F4520D18D57005B5DAF /* Rectify.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Rectify.mm; sourceTree = "<group>"; };
 		E19A62101EFC17DB0013EA58 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		E19CC8B020D41B0F009DA6FC /* calibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = calibration.cpp; sourceTree = "<group>"; };
@@ -359,7 +353,6 @@
 			files = (
 				AA6BE3C624ACF80300C8E72E /* libopencv_aruco.4.3.0.dylib in Frameworks */,
 				AA6BE3BE24ACF7E800C8E72E /* libopencv_videoio.4.3.0.dylib in Frameworks */,
-				AAED664324C491C000ECFA7C /* CocoaAsyncSocket.framework in Frameworks */,
 				AA6BE3BF24ACF7E800C8E72E /* libopencv_imgproc.4.3.0.dylib in Frameworks */,
 				AA6BE3C024ACF7E800C8E72E /* libopencv_features2d.4.3.0.dylib in Frameworks */,
 				AA6BE3C124ACF7E800C8E72E /* libopencv_core.4.3.0.dylib in Frameworks */,
@@ -383,13 +376,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AA9486B222D5061800BE7A0E /* bin */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = bin;
-			sourceTree = "<group>";
-		};
 		AAF79C6F24A92F6200C7C4B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -401,11 +387,8 @@
 		E11F1F951EE1B3B4008F9F0F = {
 			isa = PBXGroup;
 			children = (
-				AA9486B222D5061800BE7A0E /* bin */,
 				E1AE6D90210AA4FD00B6E3C6 /* README.md */,
 				E17AC76D20FE38860007EF77 /* Yaml.xcodeproj */,
-				E196122120D1AC9100D85EDB /* extrinsics.yml */,
-				E196122220D1AC9200D85EDB /* intrinsics.yml */,
 				E136681D1F1E505800BC561A /* Utils.swift */,
 				E14CDBD820F4ED5E004AF1B6 /* Parameters.h */,
 				E1BBBACF20BC76A100E57123 /* Debug.swift */,
@@ -480,7 +463,6 @@
 		E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXGroup;
 			children = (
-				AAED664224C491BF00ECFA7C /* CocoaAsyncSocket.framework */,
 				AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */,
 				E1A57ABC2108D4AE00C208C6 /* SerialTools.xcodeproj */,
 				E147575520F78D4900BE5219 /* swiftPipeline */,
@@ -488,6 +470,7 @@
 				E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */,
 				E1860DC020C8199200206D40 /* activeLighting.xcodeproj */,
 				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
+				E15F3A281F0427DA00FB11B6 /* ImageProcessor.swift */,
 				E11F1FE51EE1B7C1008F9F0F /* CameraServiceBrowser.swift */,
 				E1682E0A20F9580700DF0FD4 /* main.swift */,
 				E11F1FE81EE1B7C1008F9F0F /* PhotoReceiver.swift */,
@@ -508,7 +491,6 @@
 		E147575520F78D4900BE5219 /* swiftPipeline */ = {
 			isa = PBXGroup;
 			children = (
-				E15F3A281F0427DA00FB11B6 /* ImageProcessor2.swift */,
 			);
 			path = swiftPipeline;
 			sourceTree = "<group>";
@@ -798,8 +780,6 @@
 				E11F1FBA1EE1B521008F9F0F /* Assets.xcassets in Resources */,
 				E11F1FB81EE1B521008F9F0F /* Main.storyboard in Resources */,
 				E1765EB61EF9B997003A2BB3 /* minSW.dat in Resources */,
-				E196122420D1AC9200D85EDB /* intrinsics.yml in Resources */,
-				E196122320D1AC9200D85EDB /* extrinsics.yml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -856,7 +836,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E1682E0620F94EDE00DF0FD4 /* ImageProcessor2.swift in Sources */,
+				E1682E0620F94EDE00DF0FD4 /* ImageProcessor.swift in Sources */,
 				E1682E0520F94ED500DF0FD4 /* calibration_wrapper.cpp in Sources */,
 				E1682DD120F94B7300DF0FD4 /* minStripeWidthCodes.dat in Sources */,
 				E1682DD220F94B7300DF0FD4 /* CameraServiceBrowser.swift in Sources */,
