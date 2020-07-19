@@ -37,7 +37,6 @@
 		E136681E1F1E505800BC561A /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
 		E15D3BC120BF47880058AD1A /* SceneMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15D3BC020BF47880058AD1A /* SceneMetadata.swift */; };
 		E1682DC820F94B5200DF0FD4 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = E136681D1F1E505800BC561A /* Utils.swift */; };
-		E1682DC920F94B5200DF0FD4 /* Parameters.h in Sources */ = {isa = PBXBuildFile; fileRef = E14CDBD820F4ED5E004AF1B6 /* Parameters.h */; };
 		E1682DCA20F94B5200DF0FD4 /* Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1BBBACF20BC76A100E57123 /* Debug.swift */; };
 		E1682DCB20F94B5200DF0FD4 /* minSW.dat in Sources */ = {isa = PBXBuildFile; fileRef = E1765EB51EF9B997003A2BB3 /* minSW.dat */; };
 		E1682DCC20F94B5200DF0FD4 /* BinaryCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */; };
@@ -302,7 +301,6 @@
 		E136681D1F1E505800BC561A /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MobileLighting_Mac-Bridging-Header.h"; sourceTree = "<group>"; };
 		E147578420F7D55B00BE5219 /* CocoaAsyncSocket.framework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = CocoaAsyncSocket.framework.dSYM; path = Carthage/Build/iOS/CocoaAsyncSocket.framework.dSYM; sourceTree = "<group>"; };
-		E14CDBD820F4ED5E004AF1B6 /* Parameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
 		E152C9FA1EE6FA8100AAD824 /* BinaryCodeDrawer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BinaryCodeDrawer.swift; sourceTree = "<group>"; };
 		E15D3BC020BF47880058AD1A /* SceneMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneMetadata.swift; sourceTree = "<group>"; };
 		E15F3A281F0427DA00FB11B6 /* ImageProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
@@ -390,7 +388,6 @@
 				E1AE6D90210AA4FD00B6E3C6 /* README.md */,
 				E17AC76D20FE38860007EF77 /* Yaml.xcodeproj */,
 				E136681D1F1E505800BC561A /* Utils.swift */,
-				E14CDBD820F4ED5E004AF1B6 /* Parameters.h */,
 				E1BBBACF20BC76A100E57123 /* Debug.swift */,
 				E1765EB51EF9B997003A2BB3 /* minSW.dat */,
 				E1B6BAF21EF99CDC00E7531C /* BinaryCodes.swift */,
@@ -851,7 +848,6 @@
 				E1682DDA20F94B7300DF0FD4 /* MobileLighting_Mac-Bridging-Header.h in Sources */,
 				E1682DDC20F94B7300DF0FD4 /* DirectoryStructure.swift in Sources */,
 				E1682DC820F94B5200DF0FD4 /* Utils.swift in Sources */,
-				E1682DC920F94B5200DF0FD4 /* Parameters.h in Sources */,
 				E1682E0B20F9580700DF0FD4 /* main.swift in Sources */,
 				AABB840B24A7EF5C00BB636B /* Makefile in Sources */,
 				E1682DCA20F94B5200DF0FD4 /* Debug.swift in Sources */,

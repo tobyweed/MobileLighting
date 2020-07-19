@@ -9,8 +9,10 @@
 #ifndef MobileLighting_Mac_Bridging_Header_h
 #define MobileLighting_Mac_Bridging_Header_h
 
-#include "Parameters.h"
+#define MERGE2_MAXDIFF (float) 1.0 // Not sure this is necessary
+
 #include <stdbool.h>
+
 
 #include "activeLighting/activeLighting.h"
 int calibrateWithSettings(char *settingspath);
