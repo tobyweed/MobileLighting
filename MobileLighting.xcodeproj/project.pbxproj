@@ -462,7 +462,6 @@
 			children = (
 				AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */,
 				E1A57ABC2108D4AE00C208C6 /* SerialTools.xcodeproj */,
-				E147575520F78D4900BE5219 /* swiftPipeline */,
 				E19CC8AF20D41B0F009DA6FC /* calib */,
 				E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */,
 				E1860DC020C8199200206D40 /* activeLighting.xcodeproj */,
@@ -483,13 +482,6 @@
 				AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */,
 			);
 			path = MobileLighting_Mac;
-			sourceTree = "<group>";
-		};
-		E147575520F78D4900BE5219 /* swiftPipeline */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = swiftPipeline;
 			sourceTree = "<group>";
 		};
 		E147576220F78F6D00BE5219 /* Products */ = {
@@ -1145,7 +1137,6 @@
 					"$(inherited)",
 					"/usr/local/Cellar/opencv/4.3.0_5/lib/**",
 					/usr/local/Cellar/libpng/1.6.34/lib,
-					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
@@ -1195,7 +1186,6 @@
 					"$(inherited)",
 					"/usr/local/Cellar/opencv/4.3.0_5/lib/**",
 					/usr/local/Cellar/libpng/1.6.34/lib,
-					/usr/local/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",

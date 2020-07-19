@@ -8,7 +8,7 @@
 
 int client();
 int sendCommand(char *script);
-int loadPath(std::string pathName);
+int loadPath(std::string pathName, char *buffer);
 int gotoVideoStart();
 int gotoView(std::string num);
 int executePath(float atV, float revert2V);

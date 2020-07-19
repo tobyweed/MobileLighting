@@ -21,7 +21,7 @@ import Yaml
 var app = NSApplication.shared
 
 // when debugMode == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
-var debugMode = true
+var debugMode = false
 
 // communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
@@ -190,7 +190,11 @@ if( !debugMode ) {
     // Attempt to load the path listed in the sceneSettings file to the Rosvita server
     let path: String = sceneSettings.robotPathName
     var pathPointer = *path
-    let status = LoadPath(&pathPointer) // load the path on Rosvita server
+    var buffer = UnsafeMutablePointer<CChar>.allocate(capacity: 1024)
+    print(buffer.pointee)
+    let status = LoadPath(&pathPointer, buffer) // load the path on Rosvita server
+    print(String(cString: buffer))
+
     if status < 0 { // print a message if the LoadPath doesn't return 0
         print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
     } else {

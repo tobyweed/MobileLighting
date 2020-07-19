@@ -17,8 +17,8 @@ extern "C" int SendCommand(char *script) {
   return sendCommand(script);
 }
 
-extern "C" int LoadPath(char *pathName){
-  return loadPath(std::string(pathName));
+extern "C" int LoadPath(char *pathName, char *buffer){
+  return loadPath(std::string(pathName), buffer);
 }
 
 extern "C" int GotoView(char *num){

@@ -74,7 +74,7 @@ int sendCommand(char *script){
 }
 
 // Load the path to the Rosvita server. Return -1 if unsuccessful, number of positions if successful
-int loadPath(string pathName){
+int loadPath(string pathName, char *output){
     string script = "load " + pathName + ".obj";
     ssize_t n = script.length();
     char command[n+1];
@@ -85,11 +85,16 @@ int loadPath(string pathName){
     ssize_t result;
     char buffer[1024] = {0};
     
-    if(client_sock<1)
+    if(client_sock<1) {
+//        cerr << "Issue establishing conection with server" << endl;
+//        exit (EXIT_FAILURE);
         return -1;
+    }
 
     result = send(client_sock,command,strlen(command),0);
     if (result<0){
+//        cerr << "Issue establishing conection with server" << endl;
+//        exit (EXIT_FAILURE);
         printf("Sending Failed\n");
         return -1;
     }
@@ -99,9 +104,26 @@ int loadPath(string pathName){
 
     usleep(1000000);
 
-    int numViews = std::stoi(buffer);
-
-    return numViews;
+    cout << "\nbuffer: " << buffer << endl;
+//    return &buffer[0];
+//    *output = buffer;
+    strcpy(output, buffer);
+//    int i = 0;
+////    vector<string> out;
+//    while (true) {
+//        char current = buffer[i];
+//        if( current == '\0') {
+//            break;
+//        } else if( current == '[' ){
+//            cout << current << endl;
+//        }
+//        i++;
+////        if (current == '[') {
+////
+////        }
+//    }
+//    int numViews = std::stoi(buffer);
+    return 0;
 }
 
 int gotoVideoStart(){
