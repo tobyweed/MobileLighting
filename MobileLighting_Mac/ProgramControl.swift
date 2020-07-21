@@ -1647,9 +1647,11 @@ func processCommand(_ input: String) -> Bool {
             print(err.localizedDescription)
             break
         }
+        var outputDir = *"\(dirStruc.tracks)"
+
         
         DispatchQueue.main.async {
-//            ComputeIntrinsics(&path)
+            ComputeIntrinsics(&path, &outputDir)
 //            CalibrateWithSettings(&path)
         }
         break
@@ -1717,7 +1719,8 @@ func processCommand(_ input: String) -> Bool {
                 print(err.localizedDescription)
                 break
             }
-            CalibrateWithSettings(&path)
+            
+//            CalibrateWithSettings(&path)
         }
         
         

@@ -21,7 +21,6 @@ using namespace std;
 // Intermediary class for managing ChArUco boards, especially loading their information from Yaml files
 class Board {
 public: // Functions
-    void write(FileStorage& fs) const;
     Board();
     Board(const FileNode& node);
 public: // Parameters

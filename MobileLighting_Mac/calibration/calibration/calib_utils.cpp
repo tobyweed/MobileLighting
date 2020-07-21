@@ -104,14 +104,6 @@ Board readBoardFromFile(string filePath)
     return b;
 }
 
-//// Read and write function implementation necessary for FileStorage to work.
-//static void read(const FileNode& node, Board& b, const Board& default_value = Board()){
-//    if(node.empty())
-//        b = default_value;
-//    else
-//        b.read(node);
-//}
-
 // << operator overloads for writing various datatypes to FileStorage objects
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& points)
 {
@@ -281,10 +273,8 @@ const void *initializeCalibDataStorage(char *imgDirPath)
 /* ========================================================================
 BOARDS
 ========================================================================= */
-void Board::write(FileStorage& fs) const // write serialization for this class. Incomplete & unused.
-{
-    fs << "{" << "description" << description << "}";
-}
+// Constructors
+Board::Board(){}
 Board::Board(const FileNode& node) // read serialization for this class
 {
     description = (string)node["description"];
@@ -297,7 +287,7 @@ Board::Board(const FileNode& node) // read serialization for this class
     dict = (string)node["dict"];
     start_code = (int)node["start_code"];
 }
-Board::Board(){}
+
 
 // Convert a string to a supported predefined ChArUco dictionary
 Ptr<aruco::Dictionary> chDict(string dictString) {

@@ -168,7 +168,7 @@ vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
     return filteredPoints;
 }
 
-int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
+int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
     cout << "\nComputing extrinsics\n";
     
     CalibrationData calibData1 = readCalibDataFromFile(trackFile1);
@@ -240,7 +240,7 @@ int main( int argc, const char* argv[] )
     
     cout << "\nEXTRINSICS: " << endl;
     
-    computeExtrinsics((char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/");
+    computeExtrinsics(0,0,(char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics-track.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/intrinsics.json", (char*)"/Users/tobyweed/workspace/sandbox_dir/");
 //    computeIntrinsics( argv[1], argv[2] );
 }
 

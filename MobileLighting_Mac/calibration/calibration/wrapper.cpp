@@ -31,9 +31,13 @@ extern "C" {
         return saveCalibDataToFile(filePath, calibrationData);
     }
 
-//    int ComputeIntrinsics(char *trackPath) {
-//        return computeIntrinsics(trackPath);
-//    }
+    int ComputeIntrinsics(char *trackPath, char *outputDirectory ) {
+        return computeIntrinsics(trackPath, outputDirectory);
+    }
+
+    int ComputeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
+        return computeExtrinsics( posid1, posid2, trackFile1, trackFile2, intrinsicsFile, outputDirectory );
+    }
 
 #ifdef __cplusplus
 }

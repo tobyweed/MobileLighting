@@ -14,7 +14,8 @@
 const void *InitializeCalibDataStorage(char *imgDirPath);
 void SaveCalibDataToFile(char *filePath, void *calibrationData);
 int TrackMarkers(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores);
-int ComputeIntrinsics(char *trackPath);
+int ComputeIntrinsics(char *trackPath, char *outputDirectory );
+int ComputeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory );
 
 #pragma GCC visibility pop
 
