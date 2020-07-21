@@ -186,9 +186,11 @@ int computeExtrinsics ( char *trackFile1, char *trackFile2, char *intrinsicsFile
     
     double err = stereoCalibrate(filteredObjPoints, filteredImgPoints1, filteredImgPoints2, intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
     
-    cout << "\nStereo reprojection error: " << err << endl;
-    cout << "\n R: " << R << endl;
-    cout << "\n T: " << T << endl;
+    // convert to string to concatenate the correct output path
+    string outputDir(outputDirectory);
+    string outputPath = outputDir + "/extrinsics.json";
+    
+    saveExtrinsicsToFile(outputPath, R, T, E, F);
     
     return 0;
 }
@@ -227,26 +229,6 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     saveCameraParamsToFile(outputPath, rvecs, tvecs, cameraMatrix, distCoeffs, size);
     
     return 0;
-}
-
-// Write a file from the CalibrationData objects generated from calibration images
-void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size) {
-    FileStorage fs(filePath, FileStorage::WRITE);
-    if (!fs.isOpened())
-    {
-        cerr << "Failed to open " << filePath << endl;
-        exit (EXIT_FAILURE);
-    }
-    cout << "Writing to file " << filePath << endl;
-    
-    fs << "R" << R;
-    fs << "T" << T;
-    fs << "A" << A;
-    fs << "dist" << dist;
-    fs << "size" << size;
-
-    fs.release();
-    cout << "Write Done." << endl;
 }
 
 int main( int argc, const char* argv[] )

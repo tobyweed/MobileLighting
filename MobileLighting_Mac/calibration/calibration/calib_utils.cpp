@@ -21,13 +21,96 @@ using namespace std;
 /* ========================================================================
 FILE STORAGE, READING AND WRITING
 ========================================================================= */
-// Read and write function implementation necessary for FileStorage to work.
-static void read(const FileNode& node, Board& b, const Board& default_value = Board()){
-    if(node.empty())
-        b = default_value;
-    else
-        b.read(node);
+// Return a FileStorage object, opened for either reading or writing
+FileStorage openFile( string filePath, bool reading ) {
+    FileStorage::Mode mode = FileStorage::WRITE;
+    if( reading ) {
+        mode = FileStorage::READ;
+    }
+    FileStorage fs(filePath, mode);
+    if (!fs.isOpened())
+    {
+        cerr << "Failed to open " << filePath << endl;
+        exit (EXIT_FAILURE);
+    }
+    if( reading ) {
+        cout << "Reading from file " << filePath << endl;
+    } else {
+        cout << "Writing to file " << filePath << endl;
+    }
+    return fs;
 }
+
+// Write a file from the camera parameters obtained via intrinsics calibration
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size) {
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "R" << R;
+    fs << "T" << T;
+    fs << "A" << A;
+    fs << "dist" << dist;
+    fs << "size" << size;
+
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Write a file containing the matrices obtained via extrinsics calibration
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F) {
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "R" << R;
+    fs << "T" << T;
+    fs << "E" << E;
+    fs << "F" << F;
+
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Write a file from the CalibrationData objects generated from calibration images
+void saveCalibDataToFile(char *filePath, void *calibrationData) {
+    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "imgdir" << data->imgDir;
+    fs << "fnames" << data->fnames;
+    fs << "size" << data->size;
+    fs << "img_points" << data->imgPoints;
+    fs << "obj_points" << data->objPoints;
+    fs << "ids" << data->ids;
+    
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Reads a CalibrationData object from a track file
+CalibrationData readCalibDataFromFile(string filePath)
+{
+    FileStorage fs = openFile(filePath,true);
+    CalibrationData data(fs);
+    return data;
+}
+
+// Reads a Board object from a file
+Board readBoardFromFile(string filePath)
+{
+    FileStorage fs = openFile(filePath,true);
+    Board b(fs["Board"]);
+//    fs["Board"] >> b;
+    return b;
+}
+
+//// Read and write function implementation necessary for FileStorage to work.
+//static void read(const FileNode& node, Board& b, const Board& default_value = Board()){
+//    if(node.empty())
+//        b = default_value;
+//    else
+//        b.read(node);
+//}
 
 // << operator overloads for writing various datatypes to FileStorage objects
 FileStorage& operator<<(FileStorage& out, const vector<vector<vector<Point3f>>>& points)
@@ -194,64 +277,6 @@ const void *initializeCalibDataStorage(char *imgDirPath)
     return (void *)data;
 }
 
-// Write a file from the CalibrationData objects generated from calibration images
-void saveCameraParamsToFile(char *filePath, void *calibrationData) {
-    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
-    FileStorage fs(filePath, FileStorage::WRITE);
-    if (!fs.isOpened())
-    {
-        cerr << "Failed to open " << filePath << endl;
-        exit (EXIT_FAILURE);
-    }
-    cout << "Writing to file " << filePath << endl;
-    
-    fs << "imgdir" << data->imgDir;
-    fs << "fnames" << data->fnames;
-    fs << "size" << data->size;
-    fs << "img_points" << data->imgPoints;
-    fs << "obj_points" << data->objPoints;
-    fs << "ids" << data->ids;
-    
-    fs.release();
-    cout << "Write Done." << endl;
-}
-
-// Write a file from the CalibrationData objects generated from calibration images
-void saveCalibDataToFile(char *filePath, void *calibrationData) {
-    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
-    FileStorage fs(filePath, FileStorage::WRITE);
-    if (!fs.isOpened())
-    {
-        cerr << "Failed to open " << filePath << endl;
-        exit (EXIT_FAILURE);
-    }
-    cout << "Writing to file " << filePath << endl;
-    
-    fs << "imgdir" << data->imgDir;
-    fs << "fnames" << data->fnames;
-    fs << "size" << data->size;
-    fs << "img_points" << data->imgPoints;
-    fs << "obj_points" << data->objPoints;
-    fs << "ids" << data->ids;
-    
-    fs.release();
-    cout << "Write Done." << endl;
-}
-
-// Reads a CalibrationData object from a track file
-CalibrationData readCalibDataFromFile(string filePath)
-{
-    FileStorage fs;
-    fs.open(filePath, FileStorage::READ);
-    if (!fs.isOpened())
-    {
-        cerr << "Failed to open " << filePath << endl;
-        exit (EXIT_FAILURE);
-    }
-    CalibrationData data(fs);
-    return data;
-}
-
 
 /* ========================================================================
 BOARDS
@@ -260,7 +285,7 @@ void Board::write(FileStorage& fs) const // write serialization for this class. 
 {
     fs << "{" << "description" << description << "}";
 }
-void Board::read(const FileNode& node) // read serialization for this class
+Board::Board(const FileNode& node) // read serialization for this class
 {
     description = (string)node["description"];
     squares_x = (int)node["squares_x"];
@@ -272,6 +297,7 @@ void Board::read(const FileNode& node) // read serialization for this class
     dict = (string)node["dict"];
     start_code = (int)node["start_code"];
 }
+Board::Board(){}
 
 // Convert a string to a supported predefined ChArUco dictionary
 Ptr<aruco::Dictionary> chDict(string dictString) {
@@ -284,21 +310,6 @@ Ptr<aruco::Dictionary> chDict(string dictString) {
     }
     cout << "Unknown ChArUco dictionary: " << dictString;
     exit (EXIT_FAILURE);
-}
-
-// Reads a Board object from a file
-Board readBoardFromFile(string filePath)
-{
-    FileStorage fs;
-    fs.open(filePath, FileStorage::READ);
-    if (!fs.isOpened())
-    {
-        cerr << "Failed to open " << filePath << endl;
-        exit (EXIT_FAILURE);
-    }
-    Board b;
-    fs["Board"] >> b;
-    return b;
 }
 
 // Convert an object of class Board to a ChArUco board object

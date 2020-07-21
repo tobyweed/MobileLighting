@@ -22,7 +22,8 @@ using namespace std;
 class Board {
 public: // Functions
     void write(FileStorage& fs) const;
-    void read(const FileNode& node);
+    Board();
+    Board(const FileNode& node);
 public: // Parameters
     string description;
     int squares_x;
@@ -81,6 +82,9 @@ vector<vector<Point3f>> extractObjPoints( const FileNode& array );
 vector<vector<int>> extractIds( const FileNode& array );
 Mat extractMatrix( const FileNode& array );
 vector<Mat> extractMatVector( const FileNode& array );
+
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size);
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F);
 
 
 #endif /* calib_utils_hpp */
