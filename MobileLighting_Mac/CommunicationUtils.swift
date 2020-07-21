@@ -36,7 +36,7 @@ func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
         let status = LoadPath(&pathChars, jsonBuffer)
         
         if status < 0 { // print a message if the LoadPath indicates failure
-            print("Could not load path \"\(path)\" to robot. Positions not initialized.")
+            print("Could not load path \"\(path)\" to Rosvita server. Positions not initialized.")
         } else {
             let jsonString = String(cString: jsonBuffer) // convert the C-string to String
             if(jsonString.isEmpty) {
@@ -49,9 +49,10 @@ func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
                 poses = try JSONDecoder().decode([RobotPose].self, from: data!) // attempt to decode Data to [Poses]
             } catch {
                 print(error)
+                print("Issue loading path \"\(path)\" to Rosvita server. No poses initialized.")
                 return []
             }
-            print("Succesfully loaded path \(path).")
+            print("Succesfully loaded path \"\(path)\".")
         }
     } else {
         print("Emulating robot motion, assigning empty path with 3 positions.")

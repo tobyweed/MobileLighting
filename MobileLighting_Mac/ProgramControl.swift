@@ -997,21 +997,16 @@ func processCommand(_ input: String) -> Bool {
         
     // Select the appropriate robot arm path for the Rosvita server to load
     case .loadpath:
-//        guard tokens.count == 2 else {
-//            print(usage)
-//            break
-//        }
-//
-//        let path: String = tokens[1] // the first argument should specify a pathname
-//        var pathPointer = *path // get cchar version of the string
-//        let status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
-//
-//        if status == -1 { // print a message if the LoadPath doesn't return 0
-//            print("Could not load path \"\(path)\"")
-//        } else {
-//            nPositions = Int(status)
-//            print("Succesfully loaded path with \(nPositions) positions")
-//        }
+        guard tokens.count == 2 else {
+            print(usage)
+            break
+        }
+
+        let path: String = tokens[1] // the first argument should specify a pathname
+        // Load a path from the robot server
+        print("Attempting to load path \(path) from Rosvita server...")
+        robotPoses = loadPathFromRobotServer(path: path, emulate: emulateRobot)
+        nPositions = robotPoses.count
         break
         
     // moves robot arm to specified position ID by communicating with Rosvita server
