@@ -52,16 +52,6 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         while !received {}
     }
     
-    // Get the directories to save photos to
-//    let stereoDirs = posIDs.map {
-//        return dirStruc.stereoPhotos($0)
-//    }
-//    let stereoDirDict = posIDs.reduce([Int : String]()) { (dict: [Int : String], id: Int) in
-//        var dictNew = dict
-//        dictNew[id] = dirStruc.stereoPhotos(id)
-//        return dictNew
-//    }
-//
     // Not currently supported. To implement, either read old tracks file and overwrite, or append to old tracks file.
 //    // Determine whether to delete or append to photos already in directory
 //    var photoID: Int // Determines what ID we should write photos with
@@ -171,7 +161,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
     
     // Loop through each position ID and save the corresponding track
     for pos in posIDs {
-        let outputTrackPath = "\(dirStruc.stereoPhotos(pos))/pos\(pos)-track.json"
+        let outputTrackPath = "\(dirStruc.tracks)/pos\(pos)-track.json"
         print("Saving track to path \(outputTrackPath)")
         var outputTrackPathCString = *outputTrackPath;
         SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file

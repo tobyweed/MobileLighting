@@ -193,7 +193,7 @@ initializeIPhoneCommunications()
 // Load a path from the robot server
 print("\nLoading path \(sceneSettings.robotPathName) from Rosvita server...")
 robotPoses = loadPathFromRobotServer(path: sceneSettings.robotPathName, emulate: emulateRobot)
-print(robotPoses[0].translation)
+nPositions = robotPoses.count
 
 // focus iPhone if focus provided
 if focus != nil {

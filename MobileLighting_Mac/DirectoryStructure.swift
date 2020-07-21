@@ -19,7 +19,7 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, settings, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, imageLists, reprojected, merged2, ambientPhotos, ambientVideos]
+            return [scenes, scene, settings, orig, tracks, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, imageLists, reprojected, merged2, ambientPhotos, ambientVideos]
         }
     }
     
@@ -46,6 +46,12 @@ class DirectoryStructure {
     var orig: String {
         get {
             return self.scene + "/" + "orig"
+        }
+    }
+    
+    var tracks: String {
+        get {
+            return self.scene + "/" + "tracks"
         }
     }
     

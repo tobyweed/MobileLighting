@@ -10,11 +10,14 @@ import Foundation
 import AVFoundation
 import Cocoa
 
+// Struct for coding robot positions to and from JSON strings
 struct RobotPose: Codable {
+    let posNum: Int
     let translation: [Float]
     let rotation: [[Float]]
 
     private enum CodingKeys: String, CodingKey {
+        case posNum = "pos_num"
         case translation = "translation"
         case rotation = "rotation"
     }
@@ -23,7 +26,7 @@ struct RobotPose: Codable {
 /*=====================================================================================
 Robot communication
 ======================================================================================*/
-// Attempt to load the path listed on the robot server.
+// Attempts to load the path listed on the robot server. Also, writes a JSON file containing the poses returned by the server.
 func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
     var poses: [RobotPose] = []
     if( !emulate ) {
@@ -36,8 +39,13 @@ func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
             print("Could not load path \"\(path)\" to robot. Positions not initialized.")
         } else {
             let jsonString = String(cString: jsonBuffer) // convert the C-string to String
+            if(jsonString.isEmpty) {
+                print("No robot poses received. Check Rosvita server.")
+                return []
+            }
             let data: Data? = jsonString.data(using: .utf8) // get a Data object from the String
             do {
+                try data!.write(to: URL(fileURLWithPath:"\(dirStruc.tracks)/robot-poses.json"))
                 poses = try JSONDecoder().decode([RobotPose].self, from: data!) // attempt to decode Data to [Poses]
             } catch {
                 print(error)

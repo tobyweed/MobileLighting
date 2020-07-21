@@ -90,6 +90,7 @@ int loadPath(string pathName, char *output){
         return -1;
     }
 
+    cout << "Sending command to load path " << pathName << " to Rosvita server...\n";
     result = send(client_sock,command,strlen(command),0);
     if (result<0){
         printf("Sending to Rosvita server failed.\n");

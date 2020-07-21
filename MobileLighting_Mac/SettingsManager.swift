@@ -165,58 +165,6 @@ class SceneSettings {
     }
 }
 
-func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {
-    guard var imgs = try? FileManager.default.contentsOfDirectory(atPath: imgsdir) else {
-        print("could not read contents of directory \(imgsdir)")
-        return
-    }
-    
-    imgs = imgs.filter { (_ filepath: String) in
-        guard let file = filepath.split(separator: "/").last else { return false }
-        guard file.hasPrefix("IMG"), file.hasSuffix(".JPG"), Int(file.dropFirst("IMG".count).dropLast(".JPG".count)) != nil else {
-            return false
-        }
-        return true
-    }
-
-    var imgList: [Yaml] = [Yaml]()
-    for path in imgs {
-        imgList.append(Yaml.string("\(imgsdir)/\(path)"))
-    }
-    let ymlList = Yaml.array(imgList)
-    let ymlDict = Yaml.dictionary([Yaml.string("images") : ymlList])
-
-    try! Yaml.save(ymlDict, toFile: outpath)
-}
-
-func generateStereoImageList(left ldir: String, right rdir: String, outpath: String = dirStruc.stereoImageList) {
-    guard var limgs = try? FileManager.default.contentsOfDirectory(atPath: ldir), var rimgs = try? FileManager.default.contentsOfDirectory(atPath: rdir) else {
-        print("could not read contents of directory \(ldir) or \(rdir)")
-        return
-    }
-    
-    let filterIms: (String) -> Bool = { (_ filepath: String) in
-        let file = filepath.split(separator: "/").last!
-        return (file.hasPrefix("IMG") || file.hasPrefix("img")) && (file.hasSuffix(".JPG") || file.hasSuffix(".jpg"))
-    }
-    limgs = limgs.filter(filterIms)
-    rimgs = rimgs.filter(filterIms)
-    let mapNames: (String) -> String = {(_ fullpath: String) in
-        return String(fullpath.split(separator: "/").last!)
-    }
-    let lnames = limgs.map(mapNames)
-    let rnames = rimgs.map(mapNames)
-    let names = Set(lnames).intersection(rnames)
-    var imgList = [Yaml]()
-    for name in names {
-        imgList.append(Yaml(stringLiteral: "\(ldir)/\(name)"))
-        imgList.append(Yaml(stringLiteral: "\(rdir)/\(name)"))
-    }
-    let ymlList = Yaml.array(imgList)
-    let ymlDict = Yaml(dictionaryLiteral: (Yaml(stringLiteral: "images"), ymlList))
-    try! Yaml.save(ymlDict, toFile: outpath)
-}
-
 
 class Board {
     let filepath: String
@@ -431,4 +379,57 @@ class CalibrationSettings {
         let path = dirStruc.calibrationSettingsFile
         try Yaml.save(CalibrationSettings.format, toFile: path)
     }
+}
+
+
+func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {
+    guard var imgs = try? FileManager.default.contentsOfDirectory(atPath: imgsdir) else {
+        print("could not read contents of directory \(imgsdir)")
+        return
+    }
+    
+    imgs = imgs.filter { (_ filepath: String) in
+        guard let file = filepath.split(separator: "/").last else { return false }
+        guard file.hasPrefix("IMG"), file.hasSuffix(".JPG"), Int(file.dropFirst("IMG".count).dropLast(".JPG".count)) != nil else {
+            return false
+        }
+        return true
+    }
+
+    var imgList: [Yaml] = [Yaml]()
+    for path in imgs {
+        imgList.append(Yaml.string("\(imgsdir)/\(path)"))
+    }
+    let ymlList = Yaml.array(imgList)
+    let ymlDict = Yaml.dictionary([Yaml.string("images") : ymlList])
+
+    try! Yaml.save(ymlDict, toFile: outpath)
+}
+
+func generateStereoImageList(left ldir: String, right rdir: String, outpath: String = dirStruc.stereoImageList) {
+    guard var limgs = try? FileManager.default.contentsOfDirectory(atPath: ldir), var rimgs = try? FileManager.default.contentsOfDirectory(atPath: rdir) else {
+        print("could not read contents of directory \(ldir) or \(rdir)")
+        return
+    }
+    
+    let filterIms: (String) -> Bool = { (_ filepath: String) in
+        let file = filepath.split(separator: "/").last!
+        return (file.hasPrefix("IMG") || file.hasPrefix("img")) && (file.hasSuffix(".JPG") || file.hasSuffix(".jpg"))
+    }
+    limgs = limgs.filter(filterIms)
+    rimgs = rimgs.filter(filterIms)
+    let mapNames: (String) -> String = {(_ fullpath: String) in
+        return String(fullpath.split(separator: "/").last!)
+    }
+    let lnames = limgs.map(mapNames)
+    let rnames = rimgs.map(mapNames)
+    let names = Set(lnames).intersection(rnames)
+    var imgList = [Yaml]()
+    for name in names {
+        imgList.append(Yaml(stringLiteral: "\(ldir)/\(name)"))
+        imgList.append(Yaml(stringLiteral: "\(rdir)/\(name)"))
+    }
+    let ymlList = Yaml.array(imgList)
+    let ymlDict = Yaml(dictionaryLiteral: (Yaml(stringLiteral: "images"), ymlList))
+    try! Yaml.save(ymlDict, toFile: outpath)
 }

@@ -435,7 +435,7 @@ func processCommand(_ input: String) -> Bool {
             i += 1
         }
         
-        let outputTrackPath = "\(dirStruc.intrinsicsPhotos)/intrinsics-track.json"
+        let outputTrackPath = "\(dirStruc.tracks)/intrinsics-track.json"
         print("Saving track to path \(outputTrackPath)")
         var outputTrackPathCString = *outputTrackPath
         SaveCalibDataToFile( &outputTrackPathCString, calibDataPtr[0] ); // write the data extracted by TrackMarkers to a file
@@ -1001,11 +1001,11 @@ func processCommand(_ input: String) -> Bool {
 //            print(usage)
 //            break
 //        }
-//        
+//
 //        let path: String = tokens[1] // the first argument should specify a pathname
 //        var pathPointer = *path // get cchar version of the string
 //        let status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
-//        
+//
 //        if status == -1 { // print a message if the LoadPath doesn't return 0
 //            print("Could not load path \"\(path)\"")
 //        } else {
