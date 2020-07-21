@@ -135,7 +135,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         // Take set of calibration photos, one from each position
         for pos in posIDs {
             // Move the robot to the right position
-            if (!debugMode) {
+            if (!emulateRobot) {
                 var posStr = *String(pos)
                 GotoView(&posStr)
             }

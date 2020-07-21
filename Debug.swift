@@ -8,6 +8,9 @@
 import Foundation
 import AVFoundation
 
+// when emulateRobot == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
+var emulateRobot = false
+
 let shouldSaveOriginals = false
 let shouldSendThreshImgs = false
 
@@ -38,11 +41,6 @@ let robotDelay: Float = 5.0
 let minDetectedObjs: Int = 5
 
 // orientation
-/*
-enum CameraOrientation {
-    case Portrait
-    case Landscape
-} */
 //let cameraOrientation: CameraOrientation = .Portrait
 let cameraOrientation: AVCaptureVideoOrientation = .landscapeLeft
 

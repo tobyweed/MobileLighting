@@ -8,9 +8,54 @@
 
 import Foundation
 import AVFoundation
+import Cocoa
+
+struct RobotPose: Codable {
+    let translation: [Float]
+    let rotation: [[Float]]
+
+    private enum CodingKeys: String, CodingKey {
+        case translation = "translation"
+        case rotation = "rotation"
+    }
+}
 
 /*=====================================================================================
- Setup/capture routines and utils
+Robot communication
+======================================================================================*/
+// Attempt to load the path listed on the robot server.
+func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
+    var poses: [RobotPose] = []
+    if( !emulate ) {
+        var pathChars = *path
+        let jsonBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: 1024) // create a buffer for the C++ to write to
+        
+        let status = LoadPath(&pathChars, jsonBuffer)
+        
+        if status < 0 { // print a message if the LoadPath indicates failure
+            print("Could not load path \"\(path)\" to robot. Positions not initialized.")
+        } else {
+            let jsonString = String(cString: jsonBuffer) // convert the C-string to String
+            let data: Data? = jsonString.data(using: .utf8) // get a Data object from the String
+            do {
+                poses = try JSONDecoder().decode([RobotPose].self, from: data!) // attempt to decode Data to [Poses]
+            } catch {
+                print(error)
+                return []
+            }
+            print("Succesfully loaded path \(path).")
+        }
+    } else {
+        print("Emulating robot motion, assigning empty path with 3 positions.")
+        return []
+    }
+    return poses
+}
+
+
+
+/*=====================================================================================
+ Camera setup/capture routines and utils
  ======================================================================================*/
 
 // -Parameters
@@ -39,7 +84,9 @@ func initializeIPhoneCommunications() {
     cameraServiceBrowser = CameraServiceBrowser()
     photoReceiver = PhotoReceiver(scenesDirectory)
     
+    print("Initializing PhotoReceiver broadcast")
     photoReceiver.startBroadcast()
+    print("Initializing CameraServiceBrowser browsing")
     cameraServiceBrowser.startBrowsing()
 }
 

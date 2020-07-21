@@ -590,14 +590,14 @@ func processCommand(_ input: String) -> Bool {
             
             for pos in poses {
                 // Tell the Rosvita server to move the arm to the selected position
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     var posStr = *String(pos) // get cchar version of pose string
                     if(GotoView(&posStr) < 0) {
                         print("ROBOT ERROR: problem moving to start position")
                         break struclightloop
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
                 captureWithStructuredLighting(system: system, projector: projIDs[i], position: pos, resolution: resolution)
             }
@@ -674,14 +674,14 @@ func processCommand(_ input: String) -> Bool {
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
-                if ( !debugMode ) {
+                if ( !emulateRobot ) {
                     var posStr = *String(pos) // get cchar version of pos string
                     if(GotoView(&posStr) < 0) {
                         print("ROBOT ERROR: problem moving to start position")
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
             
                 // take photo bracket
@@ -773,7 +773,7 @@ func processCommand(_ input: String) -> Bool {
                 print("\ntaking video at exposure \(exp)")
                 
                 // go to the start position
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     if (GotoVideoStart() == 0) {
                         print("robot moved to video start position.")
                     } else {
@@ -781,7 +781,7 @@ func processCommand(_ input: String) -> Bool {
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
                 
                 print("starting to record")
@@ -805,7 +805,7 @@ func processCommand(_ input: String) -> Bool {
                 photoReceiver.dataReceivers.insertFirst(imuReceiver)
                 
                 // Tell the Rosvita server to move the robot smoothly through its whole trajectory
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     if( !humanMotion && ExecutePath(0.05, 0.7) == 0 ) { // velocities hard-coded, should be programmatically set prob from sceneSettings file
                         print("path completed. stopping recording.")
                     } else if( ExecuteHumanPath() == 0 ) {
@@ -815,7 +815,7 @@ func processCommand(_ input: String) -> Bool {
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                     print("hit enter when ready to take video.")
                     _ = readLine()
                 }
@@ -1023,7 +1023,7 @@ func processCommand(_ input: String) -> Bool {
                     print("Moving arm to position \(posInt)")
                     DispatchQueue.main.async {
                         // Tell the Rosvita server to move the arm to the selected position
-                        if (!debugMode) {
+                        if (!emulateRobot) {
                             var posStr = *String(posInt)
                             if(GotoView(&posStr) < 0) {
                                 print("ROBOT ERROR: problem moving to start position")
@@ -1825,7 +1825,7 @@ func processCommand(_ input: String) -> Bool {
     
     // toggle debug. Note that this will not affect what path has been loaded on the Rosvita server. 
     case .toggledebug:
-        debugMode = !debugMode
+        emulateRobot = !emulateRobot
         
         
     // scripting

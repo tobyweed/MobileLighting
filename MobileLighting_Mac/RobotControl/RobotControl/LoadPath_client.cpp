@@ -28,7 +28,7 @@ int client()
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("Socket creation error \n");
+        printf("Socket creation error.\n");
         return -1;
     }
     
@@ -38,19 +38,19 @@ int client()
     // Convert IPv4 and IPv6 addresses from text to binary form
     if(inet_pton(AF_INET, "10.0.0.179", &serv_addr.sin_addr)<=0)
     {
-        printf("Invalid address/ Address not supported \n");
+        printf("Invalid address/ Address not supported\n");
         return -1;
     }
     
-    printf("Trying to connect to robot server... \n");
+    printf("Trying to connect to robot server...\n");
     
     // Try to connect to robot server. If the connection fails, check the IP address above.
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-        printf("Connection to robot server failed. \n");
+        printf("Connection to robot server failed.\n");
         return -1;
     } else {
-        printf("Connection to robot server successful. \n");
+        printf("Connection to robot server successful.\n");
     }
     return sock;
 }
@@ -63,7 +63,7 @@ int sendCommand(char *script){
         return -1;
     result = send(client_sock, script, strlen(script),0);
     if (result<0){
-        printf("\nSending Failed\n");
+        printf("Sending to Rosvita server failed.\n");
         return -1;
     }
     read(client_sock, buffer, 1024);
@@ -86,16 +86,13 @@ int loadPath(string pathName, char *output){
     char buffer[1024] = {0};
     
     if(client_sock<1) {
-//        cerr << "Issue establishing conection with server" << endl;
-//        exit (EXIT_FAILURE);
+        printf("Issue establishing connection with Rosvita server.\n");
         return -1;
     }
 
     result = send(client_sock,command,strlen(command),0);
     if (result<0){
-//        cerr << "Issue establishing conection with server" << endl;
-//        exit (EXIT_FAILURE);
-        printf("Sending Failed\n");
+        printf("Sending to Rosvita server failed.\n");
         return -1;
     }
 
@@ -103,26 +100,8 @@ int loadPath(string pathName, char *output){
     close(client_sock);
 
     usleep(1000000);
-
-    cout << "\nbuffer: " << buffer << endl;
-//    return &buffer[0];
-//    *output = buffer;
+    
     strcpy(output, buffer);
-//    int i = 0;
-////    vector<string> out;
-//    while (true) {
-//        char current = buffer[i];
-//        if( current == '\0') {
-//            break;
-//        } else if( current == '[' ){
-//            cout << current << endl;
-//        }
-//        i++;
-////        if (current == '[') {
-////
-////        }
-//    }
-//    int numViews = std::stoi(buffer);
     return 0;
 }
 

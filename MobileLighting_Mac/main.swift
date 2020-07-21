@@ -20,9 +20,6 @@ import Yaml
 //  since the Mac program compiles to a command-line binary
 var app = NSApplication.shared
 
-// when debugMode == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
-var debugMode = false
-
 // communication devices
 var cameraServiceBrowser: CameraServiceBrowser!
 var photoReceiver: PhotoReceiver!
@@ -46,7 +43,8 @@ var dirStruc: DirectoryStructure
 //var projectors: Int?
 //var exposureDurations: [Double]
 //var exposureISOs: [Double]
-var nPositions: Int
+var robotPoses: [RobotPose]
+var nPositions = 0
 let focus: Double?
 
 let mobileLightingUsage = "MobileLighting [path to sceneSettings.yml]\n       MobileLighting init [path to scenes folder [scene name]?]?"
@@ -137,8 +135,10 @@ case "init":
 // If there is a scenesettings path provided, read the settings from it
 case let path where path.lowercased().hasSuffix(".yml"):
     do {
+        print("Reading settings from \(path)...")
         sceneSettingsPath = path
         sceneSettings = try SceneSettings(path)
+        print("Settings read successufully.")
     } catch let error {
         print(error.localizedDescription)
         print("MobileLighting exiting...")
@@ -165,8 +165,10 @@ focus = sceneSettings.focus
 
 // Setup directory structure
 dirStruc = DirectoryStructure(scenesDir: scenesDirectory, currentScene: sceneName)
+print("\nInitializing dataset directory structure at \(dirStruc.scenes)/\(sceneName)...")
 do {
     try dirStruc.createDirs()
+    print("Directory structure already existed or was successfully created.")
 } catch {
     print("Could not create directory structure at \(dirStruc.scenes)")
     exit(0)
@@ -177,38 +179,25 @@ do {
  * Establishes connection with/configures the iPhone, structured lighting displays, and robot
  ==========================================================================================*/
 // Configure the structured lighting displays
+print("\nConfiguring structured lighting displays...")
 if configureDisplays() {
-    print("Successfully configured display.")
+    print("Structured lighting display successfully configured.")
 } else {
-    print("WARNING - failed to configure display.")
+    print("Failed to configure structured lighting display.")
 }
 
 // Establish connection with the iPhone and set the instruction packet
+print("\nInitializing iPhone and Mac connection browsing...")
 initializeIPhoneCommunications()
 
-if( !debugMode ) {
-    // Attempt to load the path listed in the sceneSettings file to the Rosvita server
-    let path: String = sceneSettings.robotPathName
-    var pathPointer = *path
-    var buffer = UnsafeMutablePointer<CChar>.allocate(capacity: 1024)
-    print(buffer.pointee)
-    let status = LoadPath(&pathPointer, buffer) // load the path on Rosvita server
-    print(String(cString: buffer))
-
-    if status < 0 { // print a message if the LoadPath doesn't return 0
-        print("Could not load path \"\(path)\" to robot. nPositions not initialized.")
-    } else {
-        nPositions = Int(status)
-        print("Succesfully loaded path with \(nPositions) positions")
-    }
-} else {
-    print("debugMode == true. skipping robot motion, assigning emulated path with 3 positions.")
-    nPositions = 3
-}
+// Load a path from the robot server
+print("\nLoading path \(sceneSettings.robotPathName) from Rosvita server...")
+robotPoses = loadPathFromRobotServer(path: sceneSettings.robotPathName, emulate: emulateRobot)
+print(robotPoses[0].translation)
 
 // focus iPhone if focus provided
 if focus != nil {
-    print("Queuing request to set lens position...")
+    print("\nQueuing request to set lens position...")
     // set lens position from value provided in scene settings file
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: Float(focus!))
     cameraServiceBrowser.sendPacket(packet)

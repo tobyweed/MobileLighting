@@ -248,7 +248,7 @@ func configureDisplays() -> Bool {
         displayController = DisplayController()
     }
     guard NSScreen.screens.count > 1  else { // We need multiple displays. The primary one counts.
-        print("Only one screen connected.")
+        print("Only one screen connected. Connect additional screen to configure structured lighting display.")
         return false
     }
     for screen in NSScreen.screens {
