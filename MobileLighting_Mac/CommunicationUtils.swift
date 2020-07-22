@@ -27,7 +27,7 @@ struct RobotPose: Codable {
 Robot communication
 ======================================================================================*/
 // Attempts to load the path listed on the robot server. Also, writes a JSON file containing the poses returned by the server.
-func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
+func loadPathFromRobotServer(path: String, emulate: Bool) {
     var poses: [RobotPose] = []
     if( !emulate ) {
         var pathChars = *path
@@ -41,7 +41,8 @@ func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
             let jsonString = String(cString: jsonBuffer) // convert the C-string to String
             if(jsonString.isEmpty) {
                 print("No robot poses received. Check Rosvita server.")
-                return []
+                print("Warning: robotPoses and nPositions uninitialized.")
+                return
             }
             let data: Data? = jsonString.data(using: .utf8) // get a Data object from the String
             do {
@@ -49,16 +50,19 @@ func loadPathFromRobotServer(path: String, emulate: Bool) -> [RobotPose] {
                 poses = try JSONDecoder().decode([RobotPose].self, from: data!) // attempt to decode Data to [Poses]
             } catch {
                 print(error)
-                print("Issue loading path \"\(path)\" to Rosvita server. No poses initialized.")
-                return []
+                print("Issue loading path \"\(path)\" to Rosvita server.")
+                print("Warning: robotPoses and nPositions uninitialized.")
+                return
             }
             print("Succesfully loaded path \"\(path)\".")
         }
     } else {
-        print("Emulating robot motion, assigning empty path with 3 positions.")
-        return []
+        print("Emulating robot motion.")
+        print("robotPoses and nPositions uninitialized.")
+        return
     }
-    return poses
+    robotPoses = poses
+    nPositions = poses.count
 }
 
 

@@ -65,9 +65,7 @@ CalibrationData readCalibDataFromFile(string filePath);
 const void *initializeCalibDataStorage(char *imgDirPath);
 void saveCalibDataToFile(char *filePath, void *calibrationData);
 
-// << overloads and FileNode extraction functions
-FileStorage& operator<<(FileStorage& out, const Mat& matrix);
-FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices);
+
 template <typename T> // templates need to be defined in the header file to be portable
 vector<T> extractVector( const FileNode& array ) {
     vector<T> output;
@@ -82,8 +80,8 @@ vector<vector<int>> extractIds( const FileNode& array );
 Mat extractMatrix( const FileNode& array );
 vector<Mat> extractMatVector( const FileNode& array );
 
-void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size);
-void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F);
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size, double err);
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, double err);
 
 
 #endif /* calib_utils_hpp */

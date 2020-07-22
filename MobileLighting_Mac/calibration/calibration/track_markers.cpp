@@ -27,7 +27,7 @@ MARKER TRACKING FUNCTIONALITY
 //  - called by trackCharucoMarkers
 int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruco::DetectorParameters> params, Board boards[], int numBoards, ImgMarkers *imgMarkers)
 {
-    cout << "\nDetecting ArUco markers";
+    cout << "Detecting ArUco markers" << endl;
     detectMarkers(image, dictionary, imgMarkers->markerCorners, imgMarkers->markerIds, params);
 
     if (imgMarkers->markerIds.size() > 0) {
@@ -48,7 +48,7 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
             vector<int> boardCharucoIds;
             vector<Point2f> boardCharucoCorners;
             // generate the 2D pixel locations of the chessboard corners based on the locations of the detected ArUco markerg
-            cout << "\nInterpolating chessboard corners from board " << i << " based on detected ArUco markers";
+            cout << "Interpolating chessboard corners from board " << i << " based on detected ArUco markers" << endl;
             interpolateCornersCharuco(imgMarkers->markerCorners, markerIdsAdjusted, image, boardNCharuco, boardCharucoCorners, boardCharucoIds);
             
             if (boardCharucoCorners.size() > 0) {
@@ -60,14 +60,14 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
                 imgMarkers->charucoCorners.push_back(boardCharucoCorners);
                 imgMarkers->charucoIds.push_back(boardCharucoIds);
             } else {
-                cout << "\nNo ChArUco corners were interpolated for board " << i;
+                cout << "No ChArUco corners were interpolated for board " << i << endl;
                 // push empty vectors to maintain consistent structure
                 imgMarkers->charucoCorners.push_back({});
                 imgMarkers->charucoIds.push_back({});
             }
         }
     } else {
-        cout << "\nNo ArUco markers were detected!\n";
+        cout << "No ArUco markers were detected!\n" << endl;
         return -1;
     }
     return 0;
@@ -106,11 +106,11 @@ Mat drawMarkerVis( Mat img, ImgMarkers imgMarkers) {
     img.copyTo(outputImg);
     // If we found any ArUco markers, draw outlines around them
     if(imgMarkers.markerCorners.size() > 0) {
-        cout << "\nDrawing detected marker indicators";
+        cout << "Drawing detected marker indicators" << endl;
         aruco::drawDetectedMarkers(outputImg, imgMarkers.markerCorners, imgMarkers.markerIds, Scalar(0, 0, 255));
         // If we found any chessboard corners, draw outlines around them
         if(imgMarkers.charucoCorners.size() > 0) {
-            cout << "\nDrawing chessboard corners";
+            cout << "Drawing chessboard corners" << endl;
             for(int i = 0; i < imgMarkers.charucoIds.size(); i++) {
                 aruco::drawDetectedCornersCharuco(outputImg, imgMarkers.charucoCorners.at(i), imgMarkers.charucoIds.at(i), Scalar(0, 255, 0));
             }
@@ -123,6 +123,11 @@ Mat drawMarkerVis( Mat img, ImgMarkers imgMarkers) {
 
 // Display the input image in a window. Close the window when a key is pressed and return its key code.
 int createDisplay( Mat img ) {
+    if (img.rows <= 0 || img.cols <= 0) {
+        printf("Image must have positive width and height. Something went wrong with loading the image.");
+        return -1;
+    }
+    
     int output;
     // Open a visualization window containing the concatenated images and prompt user input
     printf("\nWith image display window open, press any key to continue, r to retake, or q to quit.\n");
@@ -143,6 +148,10 @@ int createDisplay( Mat img ) {
 int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int numBoards, void **calibrationDataStores)
 {
     int output = -1;
+    if( numImgs <= 0 ) {
+        printf("At least one image is required to track markers. Exiting.");
+        return -1;
+    }
     
     // Intitialize necessary parameters
     Ptr<aruco::Dictionary> dictionary = getPredefinedDictionary(aruco::DICT_5X5_1000); // assume all boards use the same ChArUco dict
@@ -152,26 +161,25 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
     // Load all boards
     Board boards[numBoards];
     for( int i = 0; i < numBoards; i++ ) {
-        cout << "\nReading board " << i << " from file " << boardPaths[i];
+        cout << "Reading board " << i << " from file " << boardPaths[i] << endl;
         boards[i] = readBoardFromFile(boardPaths[i]);
     }
     
     ImgMarkers imgsMarkers[numImgs];
     Mat imgsToAdd[numImgs];
     for( int i = 0; i < numImgs; i++ ) {
+        cout << "\n"; // insert a newline to structure output
         ImgMarkers imgMarkers;
         CalibrationData *data = (CalibrationData *)calibrationDataStores[i]; // convert the given pointer from type void to CalibrationData
-        
         // Generate the path to the file and read the image
         string imgDir(data->imgDir), imgName(imageNames[i]);
         string imagePath = imgDir + "/" + imgName;
-        cout << "\nReading image from file " << imagePath;
+        cout << "Reading image from file " << imagePath << endl;
         Mat image = imread(imagePath);
         if(image.data == NULL) { // make sure we loaded an image successfully
-            cout << "\nImage could not be read from path: " << imagePath << "\n";
+            cout << "Image could not be read from path: " << imagePath << ". Exiting.\n";
             return -1;
         }
-        
         // Find markers and corners in the image and write them to our storage vectors
         findMarkersAndCorners(image,dictionary,params,boards,numBoards,&imgMarkers);
         
@@ -181,7 +189,6 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
         imgsMarkers[i] = imgMarkers;
         imgsToAdd[i] = markerVis;
     }
-    
     // Concatenate images from each position
     Mat finalImg;
     int imageWidth = imgsToAdd[0].cols, imageHeight = imgsToAdd[0].rows; // assume all images are the same size
@@ -193,12 +200,11 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
     
     output = createDisplay(finalImg);
     
-    if( output != 114 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
+    if( output != 114 && output != -1 ){ // save the necessary information to our struct if "r" was not input (we're not retaking the image)
         vector<int> size = { imageWidth, imageHeight };
         
         // Loop through each image and save the obtained markers
         for( int i = 0; i < numImgs; i++ ) {
-            
             char *imageName = imageNames[i];
             void *calibrationData = calibrationDataStores[i];
             CalibrationData *data = (CalibrationData *)calibrationData;

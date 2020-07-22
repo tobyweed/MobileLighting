@@ -62,7 +62,7 @@ void getSharedPoints(CalibrationData &inCal, CalibrationData &inCal2)
     bool paddingPoints = false;
     
     //for each objPoints vector in overall objPoints vector of vectors
-    for (int i  = 0; i < (int)inCal.objPoints.size(); i++)
+    for (int i  = 0; i < (int)inCal.objPoints[0].size(); i++)
     {
         map<string,int> countMap;
         vector<Point3f> sharedObjPoints;
@@ -177,6 +177,7 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     
     cout << "\nFiltering image and object points";
     getSharedPoints(calibData1, calibData2);
+    
     // at least 4 points are required by the function, but use a minimum of 10 for stability
     vector<vector<Point3f>> filteredObjPoints = filterPointsVectorsByMinSize<Point3f>(calibData1.objPoints[0]);
     vector<vector<Point2f>> filteredImgPoints1 = filterPointsVectorsByMinSize<Point2f>(calibData1.imgPoints[0]);
@@ -184,13 +185,20 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     
     Mat R, T, E, F;
     
+//    for( int i = 0; i < calibData1.objPoints[0].size(); i++ ) {
+//        cout<<"\n"<<i<<endl;
+//        cout << "obj points: " << calibData1.objPoints[0][i].size() << endl;
+//        cout << "img points: " << calibData1.imgPoints[0][i].size() << endl;
+//        cout << "img points 2: " << calibData2.imgPoints[0][i].size() << endl;
+//    }
+    
     double err = stereoCalibrate(filteredObjPoints, filteredImgPoints1, filteredImgPoints2, intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);
-    string outputPath = outputDir + "/extrinsics.json";
+    string outputPath = outputDir + "/extrinsics" + to_string(posid1) + to_string(posid2) + ".json";
     
-    saveExtrinsicsToFile(outputPath, R, T, E, F);
+    saveExtrinsicsToFile(outputPath, R, T, E, F, err);
     
     return 0;
 }
@@ -226,7 +234,7 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     string outputDir(outputDirectory);
     string outputPath = outputDir + "/intrinsics.json";
     
-    saveCameraParamsToFile(outputPath, rvecs, tvecs, cameraMatrix, distCoeffs, size);
+    saveCameraParamsToFile(outputPath, rvecs, tvecs, cameraMatrix, distCoeffs, size, err);
     
     return 0;
 }

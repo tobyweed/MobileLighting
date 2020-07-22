@@ -98,17 +98,12 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
 //            return
 //        }
         var photoDirCString = *dirStruc.stereoPhotos(pos)
-        print("Photo dir: \(photoDirCString)")
+
         calibDataPtrs.append( UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirCString)) )
     }
     
     while(keyCode != 113) {
-        if keyCode == 114 {
-            i -= 1
-            print("Retaking last set")
-        } else {
-            print("Taking a photo set")
-        }
+        print("Taking a photo set")
         
         // Load and create boards
         print("Collecting board paths")
@@ -142,7 +137,6 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             let imgName = "IMG\(i).JPG"
             imgNames.append(imgName)
         }
-        
         var imgNamesCChar = *imgNames;
         var imgNamesCpp = **(imgNamesCChar);
         
@@ -155,15 +149,20 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
             return;
         }
         
-        i += 1
-        print("\nFinished \(i + 1) set.")
-    }
-    
-    // Loop through each position ID and save the corresponding track
-    for pos in posIDs {
-        let outputTrackPath = "\(dirStruc.tracks)/pos\(pos)-track.json"
-        print("Saving track to path \(outputTrackPath)")
-        var outputTrackPathCString = *outputTrackPath;
-        SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file
+        if( keyCode != 114 ) {
+            i += 1
+            
+            // Loop through each position ID and save the corresponding track
+            for pos in posIDs {
+                let outputTrackPath = "\(dirStruc.tracks)/pos\(pos)-track.json"
+                print("Saving track to path \(outputTrackPath)")
+                var outputTrackPathCString = *outputTrackPath;
+                SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file
+            }
+            
+            print("\nFinished \(i + 1) sets.")
+        } else {
+            print("\nRetaking set \(i).")
+        }
     }
 }

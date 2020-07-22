@@ -481,7 +481,14 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        let posIDs: [Int] = Array(0..<nPositions)
+        var posIDs: [Int]
+        if( !emulateRobot ) {
+            posIDs = Array(0..<nPositions)
+        } else {
+            print("Emulating robot motion. Proceeding with photo capture as though there were 3 robot positions.")
+            posIDs = Array(0..<3)
+        }
+        print("posIDS: \(posIDs)")
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         print("Photo capture ended. Exiting command.")
         break
@@ -1005,8 +1012,7 @@ func processCommand(_ input: String) -> Bool {
         let path: String = tokens[1] // the first argument should specify a pathname
         // Load a path from the robot server
         print("Attempting to load path \(path) from Rosvita server...")
-        robotPoses = loadPathFromRobotServer(path: path, emulate: emulateRobot)
-        nPositions = robotPoses.count
+        loadPathFromRobotServer(path: path, emulate: emulateRobot)
         break
         
     // moves robot arm to specified position ID by communicating with Rosvita server
@@ -1618,27 +1624,6 @@ func processCommand(_ input: String) -> Bool {
             print(usage)
             break
         }
-        let patternEnum: CalibrationSettings.CalibrationPattern
-        if tokens.count == 1 {
-            patternEnum = CalibrationSettings.CalibrationPattern.ARUCO_SINGLE
-        } else {
-            let pattern = tokens[1].uppercased()
-            guard let patternEnumTemp = CalibrationSettings.CalibrationPattern(rawValue: pattern) else {
-                print("getintrinsics: \(pattern) not recognized pattern.")
-                break
-            }
-            patternEnum = patternEnumTemp
-        }
-        
-//        generateIntrinsicsImageList()
-//        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-//
-//        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-//        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-//        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-//        calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
-//        calib.save()
-        
         
         var path: [CChar]
         do {
@@ -1647,12 +1632,10 @@ func processCommand(_ input: String) -> Bool {
             print(err.localizedDescription)
             break
         }
-        var outputDir = *"\(dirStruc.tracks)"
+        var outputDir = *"\(dirStruc.calibComputed)"
 
-        
         DispatchQueue.main.async {
             ComputeIntrinsics(&path, &outputDir)
-//            CalibrateWithSettings(&path)
         }
         break
         
@@ -1673,8 +1656,8 @@ func processCommand(_ input: String) -> Bool {
         
         let positionPairs: [(Int, Int)]
         var curParam: Int
-        if all {
-            guard [1,2].contains(params.count) else {
+        if all { // Pairs all adjacent viewpoints, e.g. (1,2), (2,3), etc..
+            guard [1,2].contains(params.count) else { // make sure we have one or two parameters
                 print(usage)
                 break
             }
@@ -1689,38 +1672,23 @@ func processCommand(_ input: String) -> Bool {
             positionPairs = [(pos0, pos1)]
             curParam = 3
         }
-        
-        let patternEnum: CalibrationSettings.CalibrationPattern
-        if params.count > curParam {
-            guard let patternEnum_ = CalibrationSettings.CalibrationPattern(rawValue: params[curParam]) else {
-                print("getextrinsics: unrecognized board pattern \(params[curParam]).")
-                break
-            }
-            patternEnum = patternEnum_
-        } else {
-            patternEnum = .ARUCO_SINGLE
-        }
-        
+
         for (leftpos, rightpos) in positionPairs {
-            generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
-            
-            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-            calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-            calib.set(key: .Mode, value: Yaml.string("STEREO"))
-            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
-            calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
-            calib.save()
-            
-            var path: [CChar]
+            var track1: [CChar]
+            var track2: [CChar]
+            var intrinsicsTrack: [CChar]
             do {
-                try path = safePath(dirStruc.calibrationSettingsFile)
+                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+                try intrinsicsTrack = safePath("\(dirStruc.tracks)/intrinsics-track.json")
             } catch let err {
                 print("here")
                 print(err.localizedDescription)
                 break
             }
+            var outputDir = *"\(dirStruc.calibComputed)"
             
-//            CalibrateWithSettings(&path)
+            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsTrack, &outputDir)
         }
         
         

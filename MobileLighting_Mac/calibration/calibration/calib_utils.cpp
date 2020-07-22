@@ -41,52 +41,6 @@ FileStorage openFile( string filePath, bool reading ) {
     return fs;
 }
 
-// Write a file from the camera parameters obtained via intrinsics calibration
-void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size) {
-    string fileStr = filePath;
-    FileStorage fs = openFile(fileStr,false);
-    
-    fs << "R" << R;
-    fs << "T" << T;
-    fs << "A" << A;
-    fs << "dist" << dist;
-    fs << "size" << size;
-
-    fs.release();
-    cout << "Write Done." << endl;
-}
-
-// Write a file containing the matrices obtained via extrinsics calibration
-void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F) {
-    string fileStr = filePath;
-    FileStorage fs = openFile(fileStr,false);
-    
-    fs << "R" << R;
-    fs << "T" << T;
-    fs << "E" << E;
-    fs << "F" << F;
-
-    fs.release();
-    cout << "Write Done." << endl;
-}
-
-// Write a file from the CalibrationData objects generated from calibration images
-void saveCalibDataToFile(char *filePath, void *calibrationData) {
-    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
-    string fileStr = filePath;
-    FileStorage fs = openFile(fileStr,false);
-    
-    fs << "imgdir" << data->imgDir;
-    fs << "fnames" << data->fnames;
-    fs << "size" << data->size;
-    fs << "img_points" << data->imgPoints;
-    fs << "obj_points" << data->objPoints;
-    fs << "ids" << data->ids;
-    
-    fs.release();
-    cout << "Write Done." << endl;
-}
-
 // Reads a CalibrationData object from a track file
 CalibrationData readCalibDataFromFile(string filePath)
 {
@@ -100,7 +54,6 @@ Board readBoardFromFile(string filePath)
 {
     FileStorage fs = openFile(filePath,true);
     Board b(fs["Board"]);
-//    fs["Board"] >> b;
     return b;
 }
 
@@ -233,6 +186,55 @@ vector<Mat> extractMatVector( const FileNode& array ) {
     }
     return output;
 }
+
+// Write a file from the camera parameters obtained via intrinsics calibration
+void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size, double err) {
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "R" << R;
+    fs << "T" << T;
+    fs << "A" << A;
+    fs << "dist" << dist;
+    fs << "size" << size;
+    fs << "err" << err;
+
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Write a file containing the matrices obtained via extrinsics calibration
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, double err) {
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "R" << R;
+    fs << "T" << T;
+    fs << "E" << E;
+    fs << "F" << F;
+    fs << "err" << err;
+
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
+// Write a file from the CalibrationData objects generated from calibration images
+void saveCalibDataToFile(char *filePath, void *calibrationData) {
+    CalibrationData *data = (CalibrationData *)calibrationData; // convert the given pointer from type void to CalibrationData
+    string fileStr = filePath;
+    FileStorage fs = openFile(fileStr,false);
+    
+    fs << "imgdir" << data->imgDir;
+    fs << "fnames" << data->fnames;
+    fs << "size" << data->size;
+    fs << "img_points" << data->imgPoints;
+    fs << "obj_points" << data->objPoints;
+    fs << "ids" << data->ids;
+    
+    fs.release();
+    cout << "Write Done." << endl;
+}
+
 
 /* ========================================================================
 CALIBRATIONDATA IMPLEMENTATION AND MANAGEMENT
