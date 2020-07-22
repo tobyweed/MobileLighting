@@ -183,22 +183,19 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     vector<vector<Point2f>> filteredImgPoints1 = filterPointsVectorsByMinSize<Point2f>(calibData1.imgPoints[0]);
     vector<vector<Point2f>> filteredImgPoints2 = filterPointsVectorsByMinSize<Point2f>(calibData2.imgPoints[0]);
     
+    // Compute the extrinsics parameters
     Mat R, T, E, F;
-    
-//    for( int i = 0; i < calibData1.objPoints[0].size(); i++ ) {
-//        cout<<"\n"<<i<<endl;
-//        cout << "obj points: " << calibData1.objPoints[0][i].size() << endl;
-//        cout << "img points: " << calibData1.imgPoints[0][i].size() << endl;
-//        cout << "img points 2: " << calibData2.imgPoints[0][i].size() << endl;
-//    }
-    
     double err = stereoCalibrate(filteredObjPoints, filteredImgPoints1, filteredImgPoints2, intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
+    
+    // Compute the rectification transforms
+    Mat R1, R2, P1, P2, Q;
+    stereoRectify(intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, R1, R2, P1, P2, Q);
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);
     string outputPath = outputDir + "/extrinsics" + to_string(posid1) + to_string(posid2) + ".json";
     
-    saveExtrinsicsToFile(outputPath, R, T, E, F, err);
+    saveExtrinsicsToFile(outputPath, R, T, E, F, R1, R2, P1, P2, Q, err);
     
     return 0;
 }

@@ -409,18 +409,31 @@ class DirectoryStructure {
         }
     }
     
+    var intrinsicsJSON: String {
+        get {
+            return self.calibComputed + "/" + "intrinsics.json"
+        }
+    }
+    
+    func extrinsicsJSON(left: Int, right: Int) -> String {
+        return self.calibComputed + "/extrinsics\(left)\(right).json"
+    }
+    
+    // old
     var intrinsicsYML: String {
         get {
             return self.calibComputed + "/" + "intrinsics.yml"
         }
     }
     
+    // old
     var extrinsics: String {
         get {
             return self.calibComputed + "/" + "extrinsics"
         }
     }
     
+    // old
     func extrinsicsYML(left: Int, right: Int) -> String {
         return self.extrinsics + "/" + "extrinsics\(left)\(right).yml"
     }

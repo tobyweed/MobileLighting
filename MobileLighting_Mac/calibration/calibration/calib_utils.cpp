@@ -204,7 +204,7 @@ void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A
 }
 
 // Write a file containing the matrices obtained via extrinsics calibration
-void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, double err) {
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, Mat R1, Mat R2, Mat P1, Mat P2, Mat Q, double err) {
     string fileStr = filePath;
     FileStorage fs = openFile(fileStr,false);
     
@@ -212,6 +212,11 @@ void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, double er
     fs << "T" << T;
     fs << "E" << E;
     fs << "F" << F;
+    fs << "R1" << R1;
+    fs << "R2" << R2;
+    fs << "P1" << P1;
+    fs << "P2" << P2;
+    fs << "Q" << Q;
     fs << "err" << err;
 
     fs.release();

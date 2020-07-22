@@ -1627,7 +1627,7 @@ func processCommand(_ input: String) -> Bool {
         
         var path: [CChar]
         do {
-            try path = safePath("\(dirStruc.intrinsicsPhotos)/intrinsics-track.json")
+            try path = safePath("\(dirStruc.tracks)/intrinsics-track.json")
         } catch let err {
             print(err.localizedDescription)
             break

@@ -81,7 +81,7 @@ Mat extractMatrix( const FileNode& array );
 vector<Mat> extractMatVector( const FileNode& array );
 
 void saveCameraParamsToFile(string filePath, vector<Mat> R, vector<Mat> T, Mat A, Mat dist, Size size, double err);
-void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, double err);
+void saveExtrinsicsToFile(string filePath, Mat R, Mat T, Mat E, Mat F, Mat R1, Mat R2, Mat P1, Mat P2, Mat Q, double err);
 
 
 #endif /* calib_utils_hpp */
