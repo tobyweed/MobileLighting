@@ -62,11 +62,11 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/tobyweed/workspace/sandbox_scene/settings/sceneSettings.yml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "init"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

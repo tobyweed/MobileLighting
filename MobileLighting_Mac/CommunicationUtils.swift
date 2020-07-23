@@ -31,7 +31,7 @@ func loadPathFromRobotServer(path: String, emulate: Bool) {
     var poses: [RobotPose] = []
     if( !emulate ) {
         var pathChars = *path
-        let jsonBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: 1024) // create a buffer for the C++ to write to
+        let jsonBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: 3072) // create a buffer for the C++ to write to
         
         let status = LoadPath(&pathChars, jsonBuffer)
         

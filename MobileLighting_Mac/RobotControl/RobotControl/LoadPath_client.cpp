@@ -17,7 +17,7 @@
 
 #include <stdexcept>
 
-#define PORT 65000
+#define PORT 65001
 using namespace std;
 
 int setVelocity(float v);
@@ -97,7 +97,7 @@ int loadPath(string pathName, char *output){
         return -1;
     }
 
-    read(client_sock, buffer, 1024);
+    read(client_sock, buffer, 3072);
     close(client_sock);
 
     usleep(1000000);

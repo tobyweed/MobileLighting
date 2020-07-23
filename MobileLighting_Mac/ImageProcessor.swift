@@ -132,8 +132,8 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
 
 //rectify decoded images
 func rectifyDec(left: Int, right: Int, proj: Int) {
-    var intr = *dirStruc.intrinsicsYML
-    var extr = *dirStruc.extrinsicsYML(left: left, right: right)
+    var intr = *dirStruc.intrinsicsJSON
+    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
     var settings = *dirStruc.calibrationSettingsFile
     //paths for storing output
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
