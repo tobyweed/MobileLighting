@@ -17,7 +17,7 @@
 
 #include <stdexcept>
 
-#define PORT 65001
+#define PORT 60000
 using namespace std;
 
 int setVelocity(float v);
@@ -58,7 +58,7 @@ int client()
 int sendCommand(char *script){
     int client_sock = client();
     ssize_t result;
-    char buffer[1024] = {0};
+    char buffer[3072] = {0};
     if(client_sock<1)
         return -1;
     result = send(client_sock, script, strlen(script),0);
@@ -66,7 +66,7 @@ int sendCommand(char *script){
         printf("Sending to Rosvita server failed.\n");
         return -1;
     }
-    read(client_sock, buffer, 1024);
+    read(client_sock, buffer, 3072);
     cout << buffer << "\n";
     close(client_sock);
     usleep(1000000);
@@ -83,7 +83,7 @@ int loadPath(string pathName, char *output){
     // Send command
     int client_sock = client();
     ssize_t result;
-    char buffer[1024] = {0};
+    char buffer[3072] = {0};
     
     if(client_sock<1) {
         printf("Issue establishing connection with Rosvita server.\n");

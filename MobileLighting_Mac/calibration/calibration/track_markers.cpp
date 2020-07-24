@@ -67,7 +67,8 @@ int findMarkersAndCorners(Mat image, Ptr<aruco::Dictionary> dictionary, Ptr<aruc
             }
         }
     } else {
-        cout << "No ArUco markers were detected!\n" << endl;
+        cout << "No ArUco markers were detected.\n" << endl;
+        cout << "Operation could not be completed.\n" << endl;
         return -1;
     }
     return 0;

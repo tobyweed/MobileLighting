@@ -61,12 +61,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/tobyweed/workspace/sandbox_scene/settings/sceneSettings.yml"
-            isEnabled = "NO">
+            argument = "/Users/tobyweed/workspace/iceskates/settings/sceneSettings.yml"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "init"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

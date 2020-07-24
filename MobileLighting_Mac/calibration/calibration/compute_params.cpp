@@ -173,6 +173,7 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     
     CalibrationData calibData1 = readCalibDataFromFile(trackFile1);
     CalibrationData calibData2 = readCalibDataFromFile(trackFile2);
+    cout << "\n\nin file: " << intrinsicsFile << endl;
     Intrinsics intrinsics = readIntrinsicsFromFile(intrinsicsFile);
     
     cout << "\nFiltering image and object points";
@@ -185,11 +186,20 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     
     // Compute the extrinsics parameters
     Mat R, T, E, F;
+    
+    if( intrinsics.A.empty() || intrinsics.dist.empty() ) {
+        cout << "Empty intrinsics parameter.\n" << endl;
+        cout << "Operation could not be completed.\n" << endl;
+        return -1;
+    }
+        
     double err = stereoCalibrate(filteredObjPoints, filteredImgPoints1, filteredImgPoints2, intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 1000, 1e-10));
     
     // Compute the rectification transforms
     Mat R1, R2, P1, P2, Q;
     stereoRectify(intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, R1, R2, P1, P2, Q);
+    
+    cout << "\nreprojection err: " << err <<"\n";
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);

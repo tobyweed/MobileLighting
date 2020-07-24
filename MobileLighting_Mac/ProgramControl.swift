@@ -1676,11 +1676,11 @@ func processCommand(_ input: String) -> Bool {
         for (leftpos, rightpos) in positionPairs {
             var track1: [CChar]
             var track2: [CChar]
-            var intrinsicsTrack: [CChar]
+            var intrinsicsFile: [CChar]
             do {
                 try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
                 try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
-                try intrinsicsTrack = safePath("\(dirStruc.tracks)/intrinsics-track.json")
+                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
             } catch let err {
                 print("here")
                 print(err.localizedDescription)
@@ -1688,7 +1688,7 @@ func processCommand(_ input: String) -> Bool {
             }
             var outputDir = *"\(dirStruc.calibComputed)"
             
-            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsTrack, &outputDir)
+            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
         }
         
         
