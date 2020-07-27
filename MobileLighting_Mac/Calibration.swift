@@ -160,7 +160,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
                 SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file
             }
             
-            print("\nFinished \(i + 1) sets.")
+            print("\nFinished \(i) sets.")
         } else {
             print("\nRetaking set \(i).")
         }

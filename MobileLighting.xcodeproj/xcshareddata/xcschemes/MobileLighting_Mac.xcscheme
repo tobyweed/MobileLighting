@@ -62,6 +62,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/tobyweed/workspace/iceskates/settings/sceneSettings.yml"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Volumes/My\ Passport/iceskates/settings/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

@@ -131,6 +131,18 @@ FileStorage& operator<<(FileStorage& out, const vector<Mat>& matrices)
     return out << "]";
 }
 
+FileNode& operator>>(FileNode& array, Mat& m) {
+    int rows = (int)array.size();
+    int cols = (int)array[0].size();
+//    Mat m = Mat( rows, cols, CV_32F );
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            array[i][j] >> m.at<float>(i,j);
+        }
+    }
+    return array;
+}
+
 // extraction utilities for reading from FileNodes to various datatypes
 vector<vector<Point2f>> extractImgPoints( const FileNode& array ) {
     vector<vector<Point2f>> output;

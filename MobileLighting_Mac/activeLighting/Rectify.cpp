@@ -27,34 +27,48 @@ Mat mapx0, mapy0;
 Mat mapx1, mapy1;
 int resizing_factor;
 
+
+Mat extractMatrix( const FileNode& array ) {
+    int rows = (int)array.size();
+    int cols = (int)array[0].size();
+    Mat m = Mat( rows, cols, CV_32F );
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            m.at<float>(i,j) = array[i][j].real();
+        }
+    }
+    return m;
+}
+vector<Mat> extractMatVector( const FileNode& array ) {
+    vector<Mat> output;
+    for( int i = 0; i < array.size(); i++ ) {
+        output.push_back(extractMatrix(array[i]));
+    }
+    return output;
+}
+
 void computemaps(int width, int height, char *intrinsics, char *extrinsics, char *settings)
 {
     FileStorage calibSettings(settings, FileStorage::READ);
     calibSettings["Settings"]["Resizing_Factor"] >> resizing_factor;
     cv::Size ims(width, height);
-    std::clog << "computing maps " << ims << std::endl;
+    std::cout << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
     FileStorage fextr(extrinsics, FileStorage::READ);
     Mat k,d,rect0,rect1,proj0,proj1;
-    std::clog << "reading camera matrices..." << std::endl;
-//    fintr["Camera_Matrix"] >> k;
-//    fintr["Distortion_Coefficients"] >> d;
-//    fextr["Rectification_Parameters"]["Rectification_Transformation_1"] >> rect0;
-//    fextr["Rectification_Parameters"]["Projection_Matrix_1"] >> proj0;
-//    fextr["Rectification_Parameters"]["Rectification_Transformation_2"] >> rect1;
-//    fextr["Rectification_Parameters"]["Projection_Matrix_2"] >> proj1;
-    fintr["A"] >> k;
-    fintr["dist"] >> d;
-    fextr["R1"] >> rect0;
-    fextr["P1"] >> proj0;
-    fextr["R2"] >> rect1;
-    fextr["P2"] >> proj1;
-    std::clog << "read camera matrices" << std::endl;
-    std::clog << "undistorting first maps..." << std::endl;
+    std::cout << "reading camera matrices..." << std::endl;
+    k = extractMatrix(fintr["A"]);
+    d = extractMatrix(fintr["dist"]);
+    rect0 = extractMatrix(fextr["R1"]);
+    proj0 = extractMatrix(fextr["P1"]);
+    rect1 = extractMatrix(fextr["R2"]);
+    proj1 = extractMatrix(fextr["P2"]);
+    std::cout << "read camera matrices" << std::endl;
+    std::cout << "undistorting first maps..." << std::endl;
     initUndistortRectifyMap(k, d, rect0, proj0, ims*resizing_factor, CV_32FC1, mapx0, mapy0);
-    std::clog << "undistorting second maps..." << std::endl;
+    std::cout << "undistorting second maps..." << std::endl;
     initUndistortRectifyMap(k, d, rect1, proj1, ims*resizing_factor, CV_32FC1, mapx1, mapy1);
-    std::clog << "done computing maps" << mapx0.size() << std::endl;
+    std::cout << "done computing maps" << mapx0.size() << std::endl;
 }
 
 extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)

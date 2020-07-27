@@ -199,7 +199,7 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     Mat R1, R2, P1, P2, Q;
     stereoRectify(intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, R1, R2, P1, P2, Q);
     
-    cout << "\nreprojection err: " << err <<"\n";
+    cout << "\nReprojection err: " << err <<"\n";
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);
