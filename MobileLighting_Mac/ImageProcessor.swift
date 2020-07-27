@@ -182,8 +182,8 @@ func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, light
     var resultl: [CChar]
     var resultr: [CChar]
     do {
-        try intr = safePath(dirStruc.intrinsicsYML)
-        try extr = safePath(dirStruc.extrinsicsYML(left: left, right: right))
+        try intr = safePath(dirStruc.intrinsicsJSON)
+        try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
         try settings = safePath(dirStruc.calibrationSettingsFile)
         try resultl = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG")
         try resultr = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG")
