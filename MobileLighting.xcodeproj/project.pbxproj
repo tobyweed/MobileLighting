@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA3DF8A924CF51DC00F40ECF /* libprocessing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF82F24CF4D3A00F40ECF /* libprocessing.a */; };
 		AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */; };
 		AA6961E622B94BE900C21D61 /* CommunicationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */; };
 		AA6BE3BE24ACF7E800C8E72E /* libopencv_videoio.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6BE3B324ACF7E700C8E72E /* libopencv_videoio.4.3.0.dylib */; };
@@ -19,7 +20,6 @@
 		AA6BE3C624ACF80300C8E72E /* libopencv_aruco.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA6BE3C524ACF80300C8E72E /* libopencv_aruco.4.3.0.dylib */; };
 		AA7746E124B3AE3A00E5B883 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA7746E024B3AE3A00E5B883 /* opencv2.framework */; };
 		AABB840B24A7EF5C00BB636B /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = AABB840924A7EF5B00BB636B /* Makefile */; };
-		AAF79C7C24A930C200C7C4B3 /* libcalibration.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AAF79C7324A92F6200C7C4B3 /* libcalibration.dylib */; };
 		E10205B120C085C000A003BE /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10205B020C085C000A003BE /* Globals.swift */; };
 		E11F1FB31EE1B521008F9F0F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */; };
 		E11F1FB51EE1B521008F9F0F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11F1FB41EE1B521008F9F0F /* ViewController.swift */; };
@@ -54,7 +54,6 @@
 		E1682DD820F94B7300DF0FD4 /* SettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1269FA51F0D3B3700079CC3 /* SettingsManager.swift */; };
 		E1682DDA20F94B7300DF0FD4 /* MobileLighting_Mac-Bridging-Header.h in Sources */ = {isa = PBXBuildFile; fileRef = E14473FB1F03DE590029B3F0 /* MobileLighting_Mac-Bridging-Header.h */; };
 		E1682DDC20F94B7300DF0FD4 /* DirectoryStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1A2165620C841000016DFC6 /* DirectoryStructure.swift */; };
-		E1682DE020F94BA900DF0FD4 /* libactiveLighting.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E147576620F78F6D00BE5219 /* libactiveLighting.a */; };
 		E1682DE120F94BA900DF0FD4 /* libRobotControl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1A2172A20C9B6590016DFC6 /* libRobotControl.a */; };
 		E1682DF520F94C4400DF0FD4 /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EC1F1D4A8700C23350 /* libImg.i386-g.a */; };
 		E1682DF620F94C4400DF0FD4 /* libImgProcessor.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E1B5A4EE1F1D4A9800C23350 /* libImgProcessor.i386-g.a */; };
@@ -81,26 +80,19 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		AAF79C7224A92F6200C7C4B3 /* PBXContainerItemProxy */ = {
+		AA3DF82E24CF4D3A00F40ECF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */;
+			containerPortal = AA3DF82A24CF4D3A00F40ECF /* processing.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = AAF79C6024A92F3400C7C4B3;
-			remoteInfo = calibration;
+			remoteGlobalIDString = AA935B9B24CF4C82009975AD;
+			remoteInfo = processing;
 		};
-		AAF79C7A24A930B800C7C4B3 /* PBXContainerItemProxy */ = {
+		AAA0DE2D24CF5351003637D8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */;
+			containerPortal = AA3DF82A24CF4D3A00F40ECF /* processing.xcodeproj */;
 			proxyType = 1;
-			remoteGlobalIDString = AAF79C5F24A92F3400C7C4B3;
-			remoteInfo = calibration;
-		};
-		E147576520F78F6D00BE5219 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1860DC020C8199200206D40 /* activeLighting.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = E1052C4F20C81328004A65C0;
-			remoteInfo = activeLighting;
+			remoteGlobalIDString = AA935B9A24CF4C82009975AD;
+			remoteInfo = processing;
 		};
 		E1682DFA20F94C7000DF0FD4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -108,13 +100,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = E1A2171220C9B50F0016DFC6;
 			remoteInfo = RobotControl;
-		};
-		E1682DFC20F94C7000DF0FD4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = E1860DC020C8199200206D40 /* activeLighting.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = E1052C4E20C81328004A65C0;
-			remoteInfo = activeLighting;
 		};
 		E17AC77620FE38860007EF77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -261,6 +246,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA3DF82A24CF4D3A00F40ECF /* processing.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = processing.xcodeproj; path = SerialTools/../processing/processing.xcodeproj; sourceTree = "<group>"; };
 		AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
 		AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommunicationUtils.swift; sourceTree = "<group>"; };
 		AA6BE3B324ACF7E700C8E72E /* libopencv_videoio.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_videoio.4.3.0.dylib; path = ../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_videoio.4.3.0.dylib; sourceTree = "<group>"; };
@@ -275,7 +261,6 @@
 		AAA0AA1E22AEE5CB00002E78 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
 		AABB840924A7EF5B00BB636B /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AABB840A24A7EF5C00BB636B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = calibration.xcodeproj; path = calibration/calibration.xcodeproj; sourceTree = "<group>"; };
 		E10205B020C085C000A003BE /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		E11F1FB01EE1B521008F9F0F /* MobileLighting_iPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobileLighting_iPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E11F1FB21EE1B521008F9F0F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -310,7 +295,6 @@
 		E1765EB51EF9B997003A2BB3 /* minSW.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = minSW.dat; sourceTree = "<group>"; };
 		E17AC73B20FE29300007EF77 /* CocoaAsyncSocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CocoaAsyncSocket.framework; sourceTree = "<group>"; };
 		E17AC76D20FE38860007EF77 /* Yaml.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Yaml.xcodeproj; path = YamlSwift/Yaml.xcodeproj; sourceTree = "<group>"; };
-		E1860DC020C8199200206D40 /* activeLighting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = activeLighting.xcodeproj; path = activeLighting/activeLighting.xcodeproj; sourceTree = "<group>"; };
 		E196121920D18EFA00D85EDB /* Rectify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rectify.h; sourceTree = "<group>"; };
 		E196121F20D19BA000D85EDB /* MobileLighting_iPhone_Bridging_Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MobileLighting_iPhone_Bridging_Header.h; sourceTree = "<group>"; };
 		E1971F4520D18D57005B5DAF /* Rectify.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Rectify.mm; sourceTree = "<group>"; };
@@ -365,8 +349,7 @@
 				E1682DF720F94C5200DF0FD4 /* libcalib.i386.a in Frameworks */,
 				E1682DF520F94C4400DF0FD4 /* libImg.i386-g.a in Frameworks */,
 				E1682DF620F94C4400DF0FD4 /* libImgProcessor.i386-g.a in Frameworks */,
-				AAF79C7C24A930C200C7C4B3 /* libcalibration.dylib in Frameworks */,
-				E1682DE020F94BA900DF0FD4 /* libactiveLighting.a in Frameworks */,
+				AA3DF8A924CF51DC00F40ECF /* libprocessing.a in Frameworks */,
 				E1682DE120F94BA900DF0FD4 /* libRobotControl.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -374,10 +357,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AAF79C6F24A92F6200C7C4B3 /* Products */ = {
+		AA3DF82B24CF4D3A00F40ECF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AAF79C7324A92F6200C7C4B3 /* libcalibration.dylib */,
+				AA3DF82F24CF4D3A00F40ECF /* libprocessing.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -460,11 +443,10 @@
 		E11F1FDA1EE1B5A2008F9F0F /* MobileLighting_Mac */ = {
 			isa = PBXGroup;
 			children = (
-				AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */,
+				AA3DF82A24CF4D3A00F40ECF /* processing.xcodeproj */,
 				E1A57ABC2108D4AE00C208C6 /* SerialTools.xcodeproj */,
 				E19CC8AF20D41B0F009DA6FC /* calib */,
 				E1A2172520C9B6590016DFC6 /* RobotControl.xcodeproj */,
-				E1860DC020C8199200206D40 /* activeLighting.xcodeproj */,
 				E128467E1EE7311E00727C30 /* minStripeWidthCodes.dat */,
 				E1682E0A20F9580700DF0FD4 /* main.swift */,
 				E15F3A281F0427DA00FB11B6 /* ImageProcessor.swift */,
@@ -482,14 +464,6 @@
 				AA6961E522B94BE900C21D61 /* CommunicationUtils.swift */,
 			);
 			path = MobileLighting_Mac;
-			sourceTree = "<group>";
-		};
-		E147576220F78F6D00BE5219 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				E147576620F78F6D00BE5219 /* libactiveLighting.a */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		E15E06E420D2E57500C43D71 /* Rectify */ = {
@@ -587,9 +561,8 @@
 				E1A57AD42108D4D600C208C6 /* PBXTargetDependency */,
 				E1A57AD62108D4D600C208C6 /* PBXTargetDependency */,
 				E17AC78920FE393B0007EF77 /* PBXTargetDependency */,
-				AAF79C7B24A930B800C7C4B3 /* PBXTargetDependency */,
+				AAA0DE2E24CF5351003637D8 /* PBXTargetDependency */,
 				E1682DFB20F94C7000DF0FD4 /* PBXTargetDependency */,
-				E1682DFD20F94C7000DF0FD4 /* PBXTargetDependency */,
 			);
 			name = MobileLighting_Mac;
 			productName = MobileLighting_Mac;
@@ -638,12 +611,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = E147576220F78F6D00BE5219 /* Products */;
-					ProjectRef = E1860DC020C8199200206D40 /* activeLighting.xcodeproj */;
-				},
-				{
-					ProductGroup = AAF79C6F24A92F6200C7C4B3 /* Products */;
-					ProjectRef = AAF79C6E24A92F6200C7C4B3 /* calibration.xcodeproj */;
+					ProductGroup = AA3DF82B24CF4D3A00F40ECF /* Products */;
+					ProjectRef = AA3DF82A24CF4D3A00F40ECF /* processing.xcodeproj */;
 				},
 				{
 					ProductGroup = E1A2172620C9B6590016DFC6 /* Products */;
@@ -667,18 +636,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		AAF79C7324A92F6200C7C4B3 /* libcalibration.dylib */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.dylib";
-			path = libcalibration.dylib;
-			remoteRef = AAF79C7224A92F6200C7C4B3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		E147576620F78F6D00BE5219 /* libactiveLighting.a */ = {
+		AA3DF82F24CF4D3A00F40ECF /* libprocessing.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = libactiveLighting.a;
-			remoteRef = E147576520F78F6D00BE5219 /* PBXContainerItemProxy */;
+			path = libprocessing.a;
+			remoteRef = AA3DF82E24CF4D3A00F40ECF /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E17AC77720FE38860007EF77 /* Yaml.framework */ = {
@@ -856,20 +818,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		AAF79C7B24A930B800C7C4B3 /* PBXTargetDependency */ = {
+		AAA0DE2E24CF5351003637D8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = calibration;
-			targetProxy = AAF79C7A24A930B800C7C4B3 /* PBXContainerItemProxy */;
+			name = processing;
+			targetProxy = AAA0DE2D24CF5351003637D8 /* PBXContainerItemProxy */;
 		};
 		E1682DFB20F94C7000DF0FD4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RobotControl;
 			targetProxy = E1682DFA20F94C7000DF0FD4 /* PBXContainerItemProxy */;
-		};
-		E1682DFD20F94C7000DF0FD4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = activeLighting;
-			targetProxy = E1682DFC20F94C7000DF0FD4 /* PBXContainerItemProxy */;
 		};
 		E17AC78520FE38C40007EF77 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1049,7 +1006,7 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
 					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
@@ -1084,7 +1041,7 @@
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/MobileLighting_iPhone",
 					"$(PROJECT_DIR)",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
@@ -1126,7 +1083,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)/MobileLighting_Mac",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_UNUSED_VALUE = YES;
@@ -1138,12 +1095,11 @@
 					"/usr/local/Cellar/opencv/4.3.0_5/lib/**",
 					/usr/local/Cellar/libpng/1.6.34/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 					"$(PROJECT_DIR)/MobileLighting_Mac/calib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
-					"$(PROJECT_DIR)/MobileLighting_Mac/calibration",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing",
 					/usr/local/Cellar/opencv/4.3.0_5/lib,
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/imageLib",
 				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1175,7 +1131,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/Carthage/Build/Mac",
 					"$(PROJECT_DIR)/MobileLighting_Mac",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_WARN_UNUSED_VALUE = YES;
@@ -1187,12 +1143,11 @@
 					"/usr/local/Cellar/opencv/4.3.0_5/lib/**",
 					/usr/local/Cellar/libpng/1.6.34/lib,
 					/usr/local/Cellar/libpng/1.6.37/lib,
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting/imageLib",
-					"$(PROJECT_DIR)/MobileLighting_Mac/activeLighting",
 					"$(PROJECT_DIR)/MobileLighting_Mac/calib",
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl",
-					"$(PROJECT_DIR)/MobileLighting_Mac/calibration",
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing",
 					/usr/local/Cellar/opencv/4.3.0_5/lib,
+					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/imageLib",
 				);
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";

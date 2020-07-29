@@ -14,7 +14,7 @@
 #include <stdbool.h>
 
 
-#include "activeLighting/activeLighting.h"
+#include "processing/processing/processing_wrapper.hpp"
 // old
 int calibrateWithSettings(char *settingspath);
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
@@ -25,6 +25,6 @@ void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, ch
 int CalibrateWithSettings(const char *inputSettingsFile);
 int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
 
-#include "calibration/calibration/wrapper.hpp"
+//#include "calibration/calibration/wrapper.hpp"
 
 #endif

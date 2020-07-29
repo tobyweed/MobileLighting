@@ -51,7 +51,7 @@ func showShadows(projs: [Int32], pos: Int32) {
 }
 
 //MARK: disparity matching functions
-// uses bridged C++ code from ActiveLighting image processing pipeline
+// uses bridged C++ code from image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from
 //    the main command-line user input loop
 
