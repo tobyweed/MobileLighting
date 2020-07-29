@@ -11,8 +11,8 @@ CALLIB = libcalib.$(ARCH).a
 DBG= -g
 CC = g++
 WARN= -W -Wall 
-CPPFLAGS = -O2 $(WARN) $(DBG) -I/usr/local/Cellar/opencv/4.3.0_5/include/opencv4 --std=c++17
-LDLIBS = -I/usr/local/Cellar/opencv/4.3.0_5/include/opencv4 I/usr/local/Cellar/opencv/4.3.0_5/include/opencv4/lib -L/usr/local/Cellar/opencv/4.3.0_5/lib -lopencv_dnn -lopencv_ml -lopencv_objdetect -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_imgproc -lopencv_flann -lopencv_core
+CPPFLAGS = -O2 $(WARN) $(DBG) -I/usr/local/Cellar/opencv/4.4.0/include/opencv4 --std=c++17
+LDLIBS = -I/usr/local/Cellar/opencv/4.4.0/include/opencv4 I/usr/local/Cellar/opencv/4.4.0/include/opencv4/lib -L/usr/local/Cellar/opencv/4.4.0/lib -lopencv_dnn -lopencv_ml -lopencv_objdetect -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_videostab -lopencv_calib3d -lopencv_features2d -lopencv_highgui -lopencv_videoio -lopencv_imgcodecs -lopencv_video -lopencv_photo -lopencv_imgproc -lopencv_flann -lopencv_core
 
 # LDLIBS = -lopencv_core -lopencv_highgui -lopencv_imgproc -lopencv_calib3d \
 #	-lopencv_features2d -lopencv_imgcodecs -lopencv_videoio -lopencv_aruco

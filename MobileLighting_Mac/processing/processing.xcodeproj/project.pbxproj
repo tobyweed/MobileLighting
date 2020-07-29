@@ -7,15 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A124CF51A200F40ECF /* libopencv_core.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89924CF51A100F40ECF /* libopencv_core.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A224CF51A200F40ECF /* libopencv_imgproc.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89A24CF51A100F40ECF /* libopencv_imgproc.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A324CF51A200F40ECF /* libopencv_videoio.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89B24CF51A100F40ECF /* libopencv_videoio.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A424CF51A200F40ECF /* libopencv_calib3d.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89C24CF51A100F40ECF /* libopencv_calib3d.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A524CF51A200F40ECF /* libopencv_imgcodecs.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89D24CF51A200F40ECF /* libopencv_imgcodecs.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A624CF51A200F40ECF /* libopencv_aruco.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89E24CF51A200F40ECF /* libopencv_aruco.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A724CF51A200F40ECF /* libopencv_features2d.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89F24CF51A200F40ECF /* libopencv_features2d.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
-		AA3DF8A824CF51A200F40ECF /* libopencv_highgui.4.3.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF8A024CF51A200F40ECF /* libopencv_highgui.4.3.0.dylib */; platformFilter = maccatalyst; settings = {ATTRIBUTES = (Required, ); }; };
+		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; platformFilter = maccatalyst; };
+		AA3EBDB624D1F4E3005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
+		AA3EBDB724D1F4E3005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */; };
+		AA3EBDB824D1F4E3005A2F7F /* libopencv_aruco.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB224D1F4E2005A2F7F /* libopencv_aruco.4.4.0.dylib */; };
+		AA3EBDB924D1F4E3005A2F7F /* libopencv_calib3d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB324D1F4E2005A2F7F /* libopencv_calib3d.4.4.0.dylib */; };
+		AA3EBDBA24D1F4E3005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB424D1F4E2005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */; };
+		AA3EBDBB24D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB524D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib */; };
+		AA3EBDC624D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */; };
 		AA89F64C24CF723100A62A26 /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */; settings = {ATTRIBUTES = (Required, ); }; };
 		AA937A0F24CF6BB00072BCFF /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		AA937A1124CF6BF50072BCFF /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA937A1024CF6BF50072BCFF /* libz.1.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -49,6 +48,23 @@
 		AAE8CA0724CF6EF400E9ECB1 /* imageLib.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE5524CF5C26003637D8 /* imageLib.h */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		AA3EBDC124D1F4EE005A2F7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E11F1FB01EE1B521008F9F0F;
+			remoteInfo = MobileLighting_iPhone;
+		};
+		AA3EBDC324D1F4EE005A2F7F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E1682DB020F947C700DF0FD4;
+			remoteInfo = MobileLighting_Mac;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		AA3DF89524CF511C00F40ECF /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = processing/pfmLib/libpfm.a; sourceTree = "<group>"; };
 		AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "processing/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
@@ -60,6 +76,14 @@
 		AA3DF89E24CF51A200F40ECF /* libopencv_aruco.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_aruco.4.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_aruco.4.3.0.dylib; sourceTree = "<group>"; };
 		AA3DF89F24CF51A200F40ECF /* libopencv_features2d.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.4.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_features2d.4.3.0.dylib; sourceTree = "<group>"; };
 		AA3DF8A024CF51A200F40ECF /* libopencv_highgui.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.4.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_highgui.4.3.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_imgproc.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_core.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB224D1F4E2005A2F7F /* libopencv_aruco.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_aruco.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_aruco.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB324D1F4E2005A2F7F /* libopencv_calib3d.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_calib3d.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB424D1F4E2005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgcodecs.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_imgcodecs.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDB524D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_features2d.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MobileLighting.xcodeproj; path = ../../MobileLighting.xcodeproj; sourceTree = "<group>"; };
+		AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_highgui.4.4.0.dylib; sourceTree = "<group>"; };
 		AA935B9B24CF4C82009975AD /* libprocessing.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libprocessing.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
 		AA937A1024CF6BF50072BCFF /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
@@ -142,18 +166,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA3EBDC624D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib in Frameworks */,
+				AA3EBDB624D1F4E3005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */,
+				AA3EBDB724D1F4E3005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */,
+				AA3EBDB824D1F4E3005A2F7F /* libopencv_aruco.4.4.0.dylib in Frameworks */,
+				AA3EBDB924D1F4E3005A2F7F /* libopencv_calib3d.4.4.0.dylib in Frameworks */,
+				AA3EBDBA24D1F4E3005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */,
+				AA3EBDBB24D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */,
 				AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */,
 				AA89F64C24CF723100A62A26 /* libImg.i386-g.a in Frameworks */,
 				AA937A1124CF6BF50072BCFF /* libz.1.dylib in Frameworks */,
 				AA937A0F24CF6BB00072BCFF /* libpng16.16.dylib in Frameworks */,
-				AA3DF8A124CF51A200F40ECF /* libopencv_core.4.3.0.dylib in Frameworks */,
-				AA3DF8A224CF51A200F40ECF /* libopencv_imgproc.4.3.0.dylib in Frameworks */,
-				AA3DF8A324CF51A200F40ECF /* libopencv_videoio.4.3.0.dylib in Frameworks */,
-				AA3DF8A424CF51A200F40ECF /* libopencv_calib3d.4.3.0.dylib in Frameworks */,
-				AA3DF8A524CF51A200F40ECF /* libopencv_imgcodecs.4.3.0.dylib in Frameworks */,
-				AA3DF8A624CF51A200F40ECF /* libopencv_aruco.4.3.0.dylib in Frameworks */,
-				AA3DF8A724CF51A200F40ECF /* libopencv_features2d.4.3.0.dylib in Frameworks */,
-				AA3DF8A824CF51A200F40ECF /* libopencv_highgui.4.3.0.dylib in Frameworks */,
 				AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -164,6 +187,14 @@
 		AA3DF89424CF511C00F40ECF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */,
+				AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */,
+				AA3EBDB224D1F4E2005A2F7F /* libopencv_aruco.4.4.0.dylib */,
+				AA3EBDB324D1F4E2005A2F7F /* libopencv_calib3d.4.4.0.dylib */,
+				AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */,
+				AA3EBDB524D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib */,
+				AA3EBDB424D1F4E2005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */,
+				AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */,
 				AA937A1024CF6BF50072BCFF /* libz.1.dylib */,
 				AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */,
 				AA3DF89E24CF51A200F40ECF /* libopencv_aruco.4.3.0.dylib */,
@@ -178,6 +209,15 @@
 				AA3DF89524CF511C00F40ECF /* libpfm.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AA3EBDBD24D1F4EE005A2F7F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AA3EBDC224D1F4EE005A2F7F /* MobileLighting_iPhone.app */,
+				AA3EBDC424D1F4EE005A2F7F /* MobileLighting_Mac */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		AA935B9224CF4C82009975AD = {
@@ -370,12 +410,35 @@
 			mainGroup = AA935B9224CF4C82009975AD;
 			productRefGroup = AA935B9C24CF4C82009975AD /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = AA3EBDBD24D1F4EE005A2F7F /* Products */;
+					ProjectRef = AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				AA935B9A24CF4C82009975AD /* processing */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		AA3EBDC224D1F4EE005A2F7F /* MobileLighting_iPhone.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = MobileLighting_iPhone.app;
+			remoteRef = AA3EBDC124D1F4EE005A2F7F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AA3EBDC424D1F4EE005A2F7F /* MobileLighting_Mac */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = MobileLighting_Mac;
+			remoteRef = AA3EBDC324D1F4EE005A2F7F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AA935B9724CF4C82009975AD /* Sources */ = {
@@ -522,11 +585,11 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = NKAB92297U;
-				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.3.0_5/lib;
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.3.0_5/include/opencv4;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.3.0_5/lib,
+					/usr/local/Cellar/opencv/4.4.0/lib,
 					"$(PROJECT_DIR)/processing/pfmLib",
 					"$(PROJECT_DIR)/processing/imageLib",
 					"$(PROJECT_DIR)/processing",
@@ -545,11 +608,11 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = NKAB92297U;
-				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.3.0_5/lib;
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.3.0_5/include/opencv4;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.3.0_5/lib,
+					/usr/local/Cellar/opencv/4.4.0/lib,
 					"$(PROJECT_DIR)/processing/pfmLib",
 					"$(PROJECT_DIR)/processing/imageLib",
 					"$(PROJECT_DIR)/processing",

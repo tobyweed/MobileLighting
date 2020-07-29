@@ -18,9 +18,9 @@ DBG = -g
 CC = g++
 WARN = -W -Wall
 OPT ?= -O3
-CPPFLAGS = $(OPT) $(WARN) $(DBG) -I$(IMGLIB) -I/usr/local/Cellar/opencv/4.3.0_5/include/opencv4 -std=c++11
+CPPFLAGS = $(OPT) $(WARN) $(DBG) -I$(IMGLIB) -I/usr/local/Cellar/opencv/4.4.0/include/opencv4 -std=c++11
 LDLIBS = -L$(IMGLIB) -lImg.$(ARCH)$(DBG) -lpng -lz
-# LDLIBS += -I/usr/local/Cellar/opencv/4.3.0_5/include/opencv4 -L/usr/local/Cellar/opencv/4.3.0_5/lib -lopencv_core -lopencv_videoio  -lopencv_highgui -lopencv_imgproc -lopencv_calib3d -lopencv_features2d
+# LDLIBS += -I/usr/local/Cellar/opencv/4.4.0/include/opencv4 -L/usr/local/Cellar/opencv/4.4.0/lib -lopencv_core -lopencv_videoio  -lopencv_highgui -lopencv_imgproc -lopencv_calib3d -lopencv_features2d
 
 
 OBJ = $(SRC:.cpp=.o)
