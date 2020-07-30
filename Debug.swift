@@ -8,8 +8,8 @@
 import Foundation
 import AVFoundation
 
-// when emulateRobot == true, the program will skip communication with the robot server. used to debug the program without having to connect to the robot. note that this will assume 2 positions, potentially excluding some images from processing if there is data for multiple positions in the scene being processed.
-var emulateRobot = true
+var processingMode = false // skip communication with the iPhone, with the robot server, and with the external displays
+var emulateRobot = true // skip communication with the robot server.
 
 let shouldSaveOriginals = false
 let shouldSendThreshImgs = false

@@ -150,7 +150,7 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
 {
     int output = -1;
     if( numImgs <= 0 ) {
-        printf("At least one image is required to track markers. Exiting.");
+        printf("ERROR: At least one image is required to track markers.");
         return -1;
     }
     
@@ -178,7 +178,7 @@ int trackCharucoMarkers(char **imageNames, int numImgs, char **boardPaths, int n
         cout << "Reading image from file " << imagePath << endl;
         Mat image = imread(imagePath);
         if(image.data == NULL) { // make sure we loaded an image successfully
-            cout << "Image could not be read from path: " << imagePath << ". Exiting.\n";
+            cout << "Error: Image could not be read from path: " << imagePath << ".\n";
             return -1;
         }
         // Find markers and corners in the image and write them to our storage vectors

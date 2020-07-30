@@ -33,7 +33,6 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // camera control
     case readfocus, rf, keepfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
-    case lockwhitebalance
     case focuspoint
     
     // projector control
@@ -101,7 +100,6 @@ func getUsage(_ command: Command) -> String {
     case .lockfocus: return "lockfocus"
     case .setfocus: return "setfocus [lensPosition s.t. 0≤ l.p. ≤1]"
     case .focuspoint: return "focuspoint [x_coord] [y_coord]"
-    case .lockwhitebalance: return "lockwhitebalance"
     case .readexposure: return "readexposure"
     case .autoexposure: return "autoexposure"
     case .lockexposure: return "lockexposure"
@@ -139,9 +137,6 @@ func getUsage(_ command: Command) -> String {
     }
 }
 
-
-var processingCommand: Bool = false
-
 // nextCommand: prompts for next command at command line, then handles command
 // -Return value -> true if program should continue, false if should exit
 func nextCommand() -> Bool {
@@ -166,8 +161,6 @@ func processCommand(_ input: String) -> Bool {
         command = .unrecognized
     }
     let usage = "usage: \t\(getUsage(command))"
-    
-    processingCommand = true
     
     nextToken += 1
     cmdSwitch: switch command {
@@ -248,6 +241,10 @@ func processCommand(_ input: String) -> Bool {
     
     // connect: use to connect external devices
     case .connect:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count >= 2 else {
             print(usage)
             break
@@ -289,6 +286,10 @@ func processCommand(_ input: String) -> Bool {
         
     // disconnect: use to disconnect vxm or switcher (generally not necessary)
     case .disconnect:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2 else {
             print(usage)
             break
@@ -308,11 +309,19 @@ func processCommand(_ input: String) -> Bool {
         
     // disconnects both switcher and vxm box
     case .disconnectall:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         vxmController.stop()
         displayController.switcher?.endConnection()
         
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .takeintrinsics, .ti:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 1 || tokens.count == 2 else {
             print(usage)
             break
@@ -365,7 +374,7 @@ func processCommand(_ input: String) -> Bool {
         print("Collecting board paths")
         let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
         guard boards.count > 0 else {
-            print("No boards were successfully initialized. Exiting command \(tokens[0]).")
+            print("ERROR: No boards were successfully initialized.")
             break
         }
         // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
@@ -427,7 +436,7 @@ func processCommand(_ input: String) -> Bool {
             })
             
             if( keyCode == -1 ) {
-                print("Something went wrong with call to TrackMarkers. Exiting command \(tokens[0]).")
+                print("ERROR: Something went wrong with call to TrackMarkers.")
                 break;
             }
             
@@ -444,6 +453,10 @@ func processCommand(_ input: String) -> Bool {
         break
         
     case .takeextrinsics, .te:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let (params, flags) = partitionTokens([String](tokens[1...]))
         // Make sure we have the right number of tokens
         guard params.count <= 1, flags.count <= 1 else {
@@ -495,6 +508,10 @@ func processCommand(_ input: String) -> Bool {
         
     // captures scene using structured lighting from specified projector
     case .struclight, .sl:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let system: BinaryCodeSystem
         
         guard tokens.count >= 4 else {
@@ -618,6 +635,10 @@ func processCommand(_ input: String) -> Bool {
               -d: delete ALL contents of the ambient/photos directory
         if neither -a nor -d is given, photos will be written to IMG0.JPG, overwriting any previous file with the same name */
     case .takeamb, .ta:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         guard params.count >= 1 else {
@@ -818,12 +839,12 @@ func processCommand(_ input: String) -> Bool {
                     } else if( ExecuteHumanPath() == 0 ) {
                         print("path completed. stopping recording.")
                     } else {
-                        print("ROBOT ERROR: problem executing path. exiting command.")
+                        print("ERROR: Problem executing path.")
                         break
                     }
                 } else {
-                    print("program is in emulateRobot mode. skipping robot motion")
-                    print("hit enter when ready to take video.")
+                    print("Program is in emulateRobot mode. Skipping robot motion")
+                    print("Hit enter when ready to take video.")
                     _ = readLine()
                 }
                 
@@ -844,18 +865,25 @@ func processCommand(_ input: String) -> Bool {
         
     // requests current lens position from iPhone camera, prints it
     case .readfocus, .rf:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
         
         photoReceiver.dataReceivers.insertFirst(
             LensPositionReceiver { (pos: Float) in
                 print("Lens position: \(pos)")
-                processingCommand = false
             }
         )
         
     // locks the focus and writes it to the sceneSettings file so it gets set whenever the app is booted up
     case .keepfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         // lock the focus
         let pos = lockLensPosition()
         print("Locked lens position to \(pos)")
@@ -872,16 +900,27 @@ func processCommand(_ input: String) -> Bool {
         
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         _ = setLensPosition(-1.0)
-        processingCommand = false
         
     // tells the iPhone to lock the focus at the current position
     case .lockfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let pos = lockLensPosition()
         print("Locked lens position to \(pos)")
         
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard nextToken < tokens.count else {
             print(usage)
             break
@@ -891,11 +930,14 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         _ = setLensPosition(pos)
-        processingCommand = false
         
         // autofocus on point, given in normalized x and y coordinates
     // NOTE: top left corner of image frame when iPhone is held in landscape with home button on the right corresponds to (0.0, 0.0).
     case .focuspoint:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
         guard tokens.count >= 3 else {
             //            print("usage: focuspoint [x_coord] [y_coord]")
@@ -912,20 +954,12 @@ func processCommand(_ input: String) -> Bool {
         _ = photoReceiver.receiveLensPositionSync()
         break
         
-    // currently useless, but leaving in here just in case it ever comes in handy
-    case .lockwhitebalance:
-        let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
-        cameraServiceBrowser.sendPacket(packet)
-        var receivedUpdate = false
-        photoReceiver.dataReceivers.insertFirst(
-            StatusUpdateReceiver { (update: CameraStatusUpdate) in
-                receivedUpdate = true
-            }
-        )
-        while !receivedUpdate {}
-        
     // tells iphone to send current exposure duration & ISO
     case .readexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .ReadExposure)
         cameraServiceBrowser.sendPacket(packet)
         let completionHandler = { (exposure: (Double, Float)) -> Void in
@@ -935,15 +969,27 @@ func processCommand(_ input: String) -> Bool {
         
     // tells iPhone to use auto exposure mode (automatically adjusts exposure)
     case .autoexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .AutoExposure)
         cameraServiceBrowser.sendPacket(packet)
         
         // tells iPhone to use locked exposure mode (does not change exposure settings, even when lighting changes)
     case .lockexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
         cameraServiceBrowser.sendPacket(packet)
         
     case .setexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -958,6 +1004,10 @@ func processCommand(_ input: String) -> Bool {
         // displays checkerboard pattern
     // optional parameter: side length of squares, in pixels
     case .cb:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         //        let usage = "usage: cb [squareSize]?"
         let size: Int
         guard tokens.count >= 1 && tokens.count <= 2 else {
@@ -974,17 +1024,29 @@ func processCommand(_ input: String) -> Bool {
         
     // paints entire window black
     case .black:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         displayController.currentWindow?.displayBlack()
         break
         
     // paints entire window white
     case .white:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         displayController.currentWindow?.displayWhite()
         break
         
         // displays diagonal stripes (at 45°) of specified width (measured horizontally)
     // (tool for testing pico projector and its diagonal pixel grid)
     case .diagonal:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -995,6 +1057,10 @@ func processCommand(_ input: String) -> Bool {
         // displays vertical bars of specified width
     // (tool originaly made for testing pico projector)
     case .verticalbars:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -1004,6 +1070,10 @@ func processCommand(_ input: String) -> Bool {
         
     // Select the appropriate robot arm path for the Rosvita server to load
     case .loadpath:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2 else {
             print(usage)
             break
@@ -1017,6 +1087,10 @@ func processCommand(_ input: String) -> Bool {
         
     // moves robot arm to specified position ID by communicating with Rosvita server
     case .movearm:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         switch tokens.count {
         case 2:
             if let posInt = Int(tokens[1]) {
@@ -1047,6 +1121,10 @@ func processCommand(_ input: String) -> Bool {
         
     // Set robot arm velocity. Expects a float from 0 to 1. Note that higher velocities correspond to less repetition (eg precision) in positions.
     case .setvelocity:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         switch tokens.count {
         case 2:
             if let vFloat = Float(tokens[1]) {
@@ -1073,6 +1151,10 @@ func processCommand(_ input: String) -> Bool {
     //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj, .p:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -1682,7 +1764,6 @@ func processCommand(_ input: String) -> Bool {
                 try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
                 try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
             } catch let err {
-                print("here")
                 print(err.localizedDescription)
                 break
             }

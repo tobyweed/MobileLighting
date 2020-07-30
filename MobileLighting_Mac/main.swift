@@ -178,32 +178,36 @@ do {
 /* =========================================================================================
  * Establishes connection with/configures the iPhone, structured lighting displays, and robot
  ==========================================================================================*/
-// Configure the structured lighting displays
-print("\nConfiguring structured lighting displays...")
-if configureDisplays() {
-    print("Structured lighting display successfully configured.")
+if(!processingMode) {
+    // Configure the structured lighting displays
+    print("\nConfiguring structured lighting displays...")
+    if configureDisplays() {
+        print("Structured lighting display successfully configured.")
+    } else {
+        print("Failed to configure structured lighting display.")
+    }
+
+    // Establish connection with the iPhone and set the instruction packet
+    print("\nInitializing iPhone and Mac connection browsing...")
+    initializeIPhoneCommunications()
+
+    // Load a path from the robot server
+    print("\nLoading path \(sceneSettings.robotPathName) from Rosvita server...")
+    loadPathFromRobotServer(path: sceneSettings.robotPathName, emulate: emulateRobot)
+
+    // focus iPhone if focus provided
+    if focus != nil {
+        print("\nQueuing request to set lens position...")
+        // set lens position from value provided in scene settings file
+        let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: Float(focus!))
+        cameraServiceBrowser.sendPacket(packet)
+        let receiver = LensPositionReceiver { _ in return }
+        photoReceiver.dataReceivers.insertFirst(receiver)
+    } else {
+        print("No lens position provided. Focus not set")
+    }
 } else {
-    print("Failed to configure structured lighting display.")
-}
-
-// Establish connection with the iPhone and set the instruction packet
-print("\nInitializing iPhone and Mac connection browsing...")
-initializeIPhoneCommunications()
-
-// Load a path from the robot server
-print("\nLoading path \(sceneSettings.robotPathName) from Rosvita server...")
-loadPathFromRobotServer(path: sceneSettings.robotPathName, emulate: emulateRobot)
-
-// focus iPhone if focus provided
-if focus != nil {
-    print("\nQueuing request to set lens position...")
-    // set lens position from value provided in scene settings file
-    let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: Float(focus!))
-    cameraServiceBrowser.sendPacket(packet)
-    let receiver = LensPositionReceiver { _ in return }
-    photoReceiver.dataReceivers.insertFirst(receiver)
-} else {
-    print("No lens position provided. Focus not set")
+    print("\nProgram running in processing mode. Skipping communication initialization.")
 }
 
 /* =========================================================================================

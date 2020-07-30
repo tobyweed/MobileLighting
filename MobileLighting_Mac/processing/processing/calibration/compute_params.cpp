@@ -218,7 +218,7 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     
     if (calibData.objPoints.size() <= 0) { // check how many arrays of object points we have
         cout << "\nThe number of detected images is " << calibData.objPoints.size() << "\n";
-        cout << "\nUnable to calibrate due to invalid number of object points. Exiting.";
+        cout << "\nERROR: Unable to calibrate due to invalid number of object points.";
         return -1;
     }
     

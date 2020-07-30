@@ -109,7 +109,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         print("Collecting board paths")
         let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
         guard boards.count > 0 else {
-            print("No boards were successfully initialized. Exiting.")
+            print("ERROR: No boards were successfully initialized.")
             break
         }
         // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
@@ -145,7 +145,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         })
         
         if( keyCode == -1 ) {
-            print("Something went wrong with call to TrackMarkers. Exiting command.")
+            print("ERROR: Something went wrong with call to TrackMarkers.")
             return;
         }
         

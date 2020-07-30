@@ -10,6 +10,9 @@ import Foundation
 import AVFoundation
 import Cocoa
 
+/*=====================================================================================
+Robot communication
+======================================================================================*/
 // Struct for coding robot positions to and from JSON strings
 struct RobotPose: Codable {
     let posNum: Int
@@ -23,9 +26,6 @@ struct RobotPose: Codable {
     }
 }
 
-/*=====================================================================================
-Robot communication
-======================================================================================*/
 // Attempts to load the path listed on the robot server. Also, writes a JSON file containing the poses returned by the server.
 func loadPathFromRobotServer(path: String, emulate: Bool) {
     var poses: [RobotPose] = []
