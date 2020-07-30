@@ -84,6 +84,7 @@
 		AA3EBDB524D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_features2d.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_features2d.4.4.0.dylib; sourceTree = "<group>"; };
 		AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = MobileLighting.xcodeproj; path = ../../MobileLighting.xcodeproj; sourceTree = "<group>"; };
 		AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.4.4.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_highgui.4.4.0.dylib; sourceTree = "<group>"; };
+		AA3EBE0624D211DF005A2F7F /* libopencv_flann.4.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_flann.4.4.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.4.0/lib/libopencv_flann.4.4.dylib; sourceTree = "<group>"; };
 		AA935B9B24CF4C82009975AD /* libprocessing.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libprocessing.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
 		AA937A1024CF6BF50072BCFF /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
@@ -187,6 +188,7 @@
 		AA3DF89424CF511C00F40ECF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AA3EBE0624D211DF005A2F7F /* libopencv_flann.4.4.dylib */,
 				AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */,
 				AA3EBDBC24D1F4EE005A2F7F /* MobileLighting.xcodeproj */,
 				AA3EBDB224D1F4E2005A2F7F /* libopencv_aruco.4.4.0.dylib */,
@@ -587,6 +589,7 @@
 				DEVELOPMENT_TEAM = NKAB92297U;
 				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
 				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
+				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/Cellar/opencv/4.4.0/lib,
@@ -610,6 +613,7 @@
 				DEVELOPMENT_TEAM = NKAB92297U;
 				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
 				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
+				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/usr/local/Cellar/opencv/4.4.0/lib,
