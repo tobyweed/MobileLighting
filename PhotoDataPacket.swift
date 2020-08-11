@@ -49,7 +49,7 @@ class PhotoDataPacket: NSObject, NSCoding {
         // decode data using key "photoData"
         self.statusUpdate = CameraStatusUpdate(rawValue: decoder.decodeInteger(forKey: "statusUpdate"))
         self.photoType = PhotoDataType(rawValue: decoder.decodeInteger(forKey: "photoType"))
-        self.encounteredError = decoder.decodeObject(forKey: "encounteredError") as! Bool
+        self.encounteredError = (decoder.decodeObject(forKey: "encounteredError") as! Bool)
         self.photoData = decoder.decodeObject(forKey: "photoData") as? Data
         self.bracketedPhotoID = decoder.decodeObject(forKey: "bracketedPhotoID") as! Int?
         self.lensPosition = decoder.decodeObject(forKey: "lensPosition") as! Float?

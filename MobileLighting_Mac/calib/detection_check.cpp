@@ -213,10 +213,10 @@ vector<int> detectionCheck( char* settingsFile, char* filename0, char* filename1
     
     Mat img0;
     Mat img1;
-    img0 = imread( filename0, CV_LOAD_IMAGE_COLOR );
+    img0 = imread( filename0, IMREAD_COLOR );
     
     if (filename1)
-        img1 = imread( filename1, CV_LOAD_IMAGE_COLOR );
+        img1 = imread( filename1, IMREAD_COLOR );
     
     Settings s;
     FileStorage fs(inputSettingsFile, FileStorage::READ);   // Read the settings

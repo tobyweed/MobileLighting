@@ -8,6 +8,9 @@
 import Foundation
 import AVFoundation
 
+var processingMode = false // skip communication with the iPhone, with the robot server, and with the external displays
+var emulateRobot = true // skip communication with the robot server.
+
 let shouldSaveOriginals = false
 let shouldSendThreshImgs = false
 
@@ -38,11 +41,6 @@ let robotDelay: Float = 5.0
 let minDetectedObjs: Int = 5
 
 // orientation
-/*
-enum CameraOrientation {
-    case Portrait
-    case Landscape
-} */
 //let cameraOrientation: CameraOrientation = .Portrait
 let cameraOrientation: AVCaptureVideoOrientation = .landscapeLeft
 

@@ -9,22 +9,22 @@
 #ifndef MobileLighting_Mac_Bridging_Header_h
 #define MobileLighting_Mac_Bridging_Header_h
 
-#include "Parameters.h"
+#define MERGE2_MAXDIFF (float) 1.0 // Not sure this is necessary
+
 #include <stdbool.h>
 
-//MARK: Image Processor
-#include "activeLighting/activeLighting.h"
 
-// calibration functions
+#include "processing/processing/processing_wrapper.hpp"
+// old
 int calibrateWithSettings(char *settingspath);
-
 void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
 
-//MARK: Robot Control
 #include "RobotControl/RobotControl/RobotControl.h"
 
-//MARK: Calibration
+// old
 int CalibrateWithSettings(const char *inputSettingsFile);
 int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
+
+//#include "calibration/calibration/wrapper.hpp"
 
 #endif
