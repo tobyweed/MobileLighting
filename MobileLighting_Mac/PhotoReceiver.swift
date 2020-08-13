@@ -55,15 +55,13 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     // -will be called when iPhone's photo sender service browser connects
     // instruction is sent by the CameraServiceBrowser
     func socket(_ sock: GCDAsyncSocket, didAcceptNewSocket newSocket: GCDAsyncSocket) {
-        print(" -- PhotoReceiver: Accepted new socket.")
+        if (verboseConnection) { print(" -- PhotoReceiver: Accepted new socket.") }
         self.socket = newSocket
         self.socket.delegate = self
         self.readyToReceive = true
         
         readPacket()
     }
-    
-    
     
     func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
         // what the heck? this function is called when the socket is CONNECTED, too?
@@ -93,7 +91,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func socket(_ sock: GCDAsyncSocket, didRead data: Data, withTag tag: Int) {
         // tag = 1: header
         // tag = 2: photo data
-        print(" -- PhotoReceiver: Read data with tag \(tag)")
+        if (verboseConnection) { print(" -- PhotoReceiver: Read data with tag \(tag)") }
         switch tag {
         case 1:
             // is header
@@ -108,7 +106,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 packetDataLength += UInt(data_tmp.last!)
                 data_tmp.removeLast()
             }
-            print(" -- PhotoReceiver: packetDataLength: \(packetDataLength)")
+            if (verboseConnection) { print(" -- PhotoReceiver: packetDataLength: \(packetDataLength)") }
             
             // now read packet body (contains the CameraInstruction)
             socket.readData(toLength: UInt(packetDataLength), withTimeout: -1, tag: 2) // tag = 2 to indicate packet body
@@ -132,7 +130,7 @@ class PhotoReceiver: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
     func handlePacket(_ packet: PhotoDataPacket) {
         guard let dataReceiver = self.dataReceivers.popLast() else {
             // not expecting a packet
-            print(" -- PhotoReceiver: could not handle packet -- no data receivers in queue.")
+            if (verboseConnection) { print(" -- PhotoReceiver: could not handle packet -- no data receivers in queue.") }
             return
         }
         dataReceiver.handle(packet: packet)

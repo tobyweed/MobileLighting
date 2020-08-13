@@ -10,6 +10,7 @@ import AVFoundation
 
 var processingMode = false // skip communication with the iPhone, with the robot server, and with the external displays
 var emulateRobot = true // skip communication with the robot server.
+var verboseConnection = false // print detailed messages regarding iPhone/Mac connection.
 
 let shouldSaveOriginals = false
 let shouldSendThreshImgs = false
