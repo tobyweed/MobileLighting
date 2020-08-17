@@ -56,7 +56,7 @@ ML consists of 2 different applications:
 * **MobileLighting iOS:** this is the iOS app that runs on the iPhone / iPod Touch. Its main task is taking photos (and videos, IMU data) upon request from the macOS control program. It manages the camera and also processes structured light images up through the decoding step.
 
 It also has a number of associated, but standalone, applications:
-* **[ML Robot Control:](https://github.com/pgh245340802/vision-website)** server which controls a UR5 robot arm via [Rosvita](https://xamla.com/en/) and communicates with ML Mac to coordinate robot motion during dataset capture.
+* **[ML Robot Control:](https://github.com/guanghanp/RobotControl)** server which controls a UR5 robot arm via [Rosvita](https://xamla.com/en/) and communicates with ML Mac to coordinate robot motion during dataset capture.
 * **[ML SteamVR Tracking:](https://github.com/tianshengs/SteamVR_Tracking)** software which uses an HTC VIVE tracker and SteamVR software to record realistic human-held camera trajectories for simulation by ML Robot Control during dataset capture.
 * **[ML Vision Website:](https://github.com/pgh245340802/vision-website)** python scripts used to generate HTML files for the display of ML datasets. 
 * **[Camera Calibration:](https://github.com/tianshengs/Camera_Calibration_MobileLighting2019)** not really standalone software (everything is incorporated into ML Mac). However, the README there is useful.
@@ -72,7 +72,7 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 
 ### Installation
 1. Install Xcode (available through the Mac App Store).
-1. Install openCV 3.4.6. (Note: ML Mac only uses the openCV C++ API, so only these headers need to be linked properly.) The source for this version can be obtained [here](https://github.com/opencv/opencv/releases/tag/3.4.6). Also download additional openCV modules [here](https://github.com/opencv/opencv_contrib/tree/3.4). Then run `cmake -DBUILD_EXAMPLES=OFF -DOPENCV_EXTRA_MODULES_PATH=<path to opencv_contrib>/modules <path to opencv>` followed by `make`, optionally with a flag like `-j3` to run multiple parallel threads. Finally, install by running `sudo make install` after you've successfully built from source.
+1. Install openCV 4 with `brew install opencv@4`.
 1. Install the Mac USB-to-Serial driver.
     1. Go to the website <https://www.mac-usb-serial.com/dashboard/>
     1. Download the package called **PL-2303 Driver (V3.1.5)**
