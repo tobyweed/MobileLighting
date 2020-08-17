@@ -26,3 +26,4 @@ int ComputeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
 #pragma GCC visibility pop
 
 #endif /* processing_wrapper_hpp */
+ // end

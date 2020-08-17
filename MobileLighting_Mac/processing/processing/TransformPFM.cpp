@@ -79,3 +79,4 @@ void rotate90CW( Mat &inIm, Mat &outIm ) {
     
     outIm = rotatedIm;
 }
+ // end

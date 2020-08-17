@@ -29,6 +29,8 @@
 #include "ImageIO.h"
 #include <vector>
 
+#include <iostream>
+
 // Comment out next line if you don't have the PNG library
 #define HAVE_PNG_LIB
 
@@ -706,7 +708,9 @@ void WriteImage(CImage& img, const char* filename)
 {
     if (filename == NULL)
 	throw CError("WriteImage: empty filename");
-
+    
+    std::cout << "here1" << std::endl;
+    
     if (strcmp(filename, "-") == 0) { // write to stdout
         if (img.PixType() == typeid(uchar)) {
             WriteFilePGM(*(CByteImage *) &img, filename);
@@ -738,9 +742,11 @@ void WriteImage(CImage& img, const char* filename)
     }
     else if (strcmp(dot, ".pfm") == 0)
     {
-        if (img.PixType() == typeid(float))
+        std::cout << "here2" << std::endl;
+        if (img.PixType() == typeid(float)) {
+            std::cout << "here3" << std::endl;
             WriteFilePFM(*(CFloatImage *) &img, filename);
-        else
+        } else
            throw CError("WriteImage(%s): can only write CFloatImage in PFM format", filename);
     }
 #ifdef HAVE_PNG_LIB

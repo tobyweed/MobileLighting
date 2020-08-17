@@ -792,3 +792,4 @@ void fval2byte(CFloatImage fval, CByteImage result, int mode)
 
 ------------------ 
 */
+ // end

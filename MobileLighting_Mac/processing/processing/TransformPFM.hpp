@@ -14,3 +14,4 @@
 int transformpfm( char *pfmPath, char *transformation );
 
 #endif /* TransformPFM_hpp */
+ // end

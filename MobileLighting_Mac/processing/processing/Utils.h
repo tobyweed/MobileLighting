@@ -87,3 +87,4 @@ void WriteFlowFileVerb(CFloatImage img, const char* filename, int verbose);
 
 CFloatImage mergeToNBandImage(vector<CFloatImage*> imgs);
 vector<CFloatImage> splitNBandImage(CFloatImage &merged);
+ // end

@@ -13,3 +13,4 @@
 CFloatImage reproject(CFloatImage dispflo, CFloatImage codeflo, char* errFile, char* matfile, char* logfile);
 
 #endif /* Reproject_h */
+ // end

@@ -233,8 +233,6 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     cout << "\nFinding calibration matrices";
     double err = calibrateCamera( filteredObjPoints, filteredImgPoints, size, cameraMatrix, distCoeffs, rvecs, tvecs );
     
-    cout << "\ncameraMatrix: " << cameraMatrix <<"\n";
-    cout << "\ndistCoeffs: " << distCoeffs <<"\n";
     cout << "\nreprojection err: " << err <<"\n";
     
     // convert to string to concatenate the correct output path

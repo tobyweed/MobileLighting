@@ -145,7 +145,6 @@ extern "C" {
         ReadImageVerb(x0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, in_suffix);
         ReadImageVerb(x1, buffer, 1);
-        
         if (xonly) {
             // create blank images for ydisps
             CShape sh = x0.Shape();
@@ -159,31 +158,26 @@ extern "C" {
             sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, in_suffix);
             ReadImageVerb(y1, buffer, 1);
         }
-        
         CFloatImage d0 = mergeToFloImage(x0, y0);
         CFloatImage d1 = mergeToFloImage(x1, y1);
         pair<CFloatImage,CFloatImage> outputs = runCrossCheck(d0, d1, thresh, xonly, halfocc);
         pair<CFloatImage,CFloatImage> crosscheck0, crosscheck1;
         crosscheck0 = splitFloImage(outputs.first);
         crosscheck1 = splitFloImage(outputs.second);
-        
         CFloatImage ccx0, ccy0, ccx1, ccy1;
         ccx0 = crosscheck0.first;
         ccx1 = crosscheck1.first;
         ccy0 = crosscheck0.second;
         ccy1 = crosscheck1.second;
-        
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, out_suffix);
         WriteImageVerb(ccx0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, out_suffix);
         WriteImageVerb(ccx1, buffer, 1);
-        
-    //    if (!xonly) {
-            sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
-            WriteImageVerb(ccy0, buffer, 1);
-            sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
-            WriteImageVerb(ccy1, buffer, 1);
-    //    }
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy0, buffer, 1);
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy1, buffer, 1);
+        cout <<"madeit"<<endl;
     }
 
     void filterDisparities(char *dispx, char *dispy, char *outx, char *outy, int pos0, int pos1, float ythresh, int kx, int ky, int mincompsize, int maxholesize) {
@@ -250,3 +244,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+ // end

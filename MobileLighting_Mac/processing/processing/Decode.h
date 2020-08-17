@@ -12,3 +12,4 @@
 CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, char *posID);
 
 #endif /* Decode_h */
+ // end

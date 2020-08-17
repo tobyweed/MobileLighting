@@ -14,3 +14,4 @@
 int writeshadowimgs(char *decodedDir, char *outDir, int projs[], int nProjs, int pos);
 
 #endif /* ShowShadows_hpp */
+ // end
