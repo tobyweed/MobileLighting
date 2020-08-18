@@ -17,12 +17,25 @@
 #include "calibration/calib_utils.hpp"
 #include "calibration/compute_params.hpp"
 
-#include <stdio.h>
-#include <iostream>
 #include <assert.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/aruco/charuco.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cctype>
+#include <stdio.h>
+#include <string>
+#include <time.h>
+
+using namespace std;
+using namespace cv;
+using namespace aruco;
+
 
 #define BUFFERSIZE 1000
 

@@ -13,18 +13,7 @@
 
 #include <stdbool.h>
 
-
 #include "processing/processing/processing_wrapper.hpp"
-// old
-int calibrateWithSettings(char *settingspath);
-void createSettingsIntrinsitcsChessboard(char *outputpath, char *imglistpath, char *templatepath);
-
 #include "RobotControl/RobotControl/RobotControl.h"
-
-// old
-int CalibrateWithSettings(const char *inputSettingsFile);
-int DetectionCheck(char *inputSettingsFile, char *imleft, char *imright);
-
-//#include "calibration/calibration/wrapper.hpp"
 
 #endif

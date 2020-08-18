@@ -15,6 +15,7 @@
 		A2C5884924EC17AA00752F22 /* ImageIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */; };
 		A2C5884A24EC17AA00752F22 /* RefCntMem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5B24CF5C26003637D8 /* RefCntMem.cpp */; };
 		A2C5884C24EC245700752F22 /* png.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C5884B24EC245700752F22 /* png.h */; };
+		A2C5888724EC381100752F22 /* processing_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A2C5888624EC381100752F22 /* processing_wrapper.cpp */; };
 		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; platformFilter = maccatalyst; };
 		AA3EBDB624D1F4E3005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
 		AA3EBDB724D1F4E3005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */; };
@@ -44,7 +45,6 @@
 		AAA0DEB524CF5C2F003637D8 /* TransformPFM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7224CF5C27003637D8 /* TransformPFM.cpp */; };
 		AAA0DEB624CF5C2F003637D8 /* Disparities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7324CF5C27003637D8 /* Disparities.cpp */; };
 		AAA0DEB724CF5C2F003637D8 /* Rectify.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE7424CF5C27003637D8 /* Rectify.hpp */; };
-		AAA0DEB824CF5C2F003637D8 /* processing_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7524CF5C27003637D8 /* processing_wrapper.cpp */; };
 		AAA0DEB924CF5C2F003637D8 /* TransformPFM.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE7624CF5C27003637D8 /* TransformPFM.hpp */; };
 		AAA0DEBA24CF5C30003637D8 /* flowIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7724CF5C27003637D8 /* flowIO.cpp */; };
 		AAA0DEBB24CF5C30003637D8 /* Decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7824CF5C27003637D8 /* Decode.cpp */; };
@@ -75,6 +75,7 @@
 
 /* Begin PBXFileReference section */
 		A2C5884B24EC245700752F22 /* png.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = png.h; path = ../../../../../../usr/local/Cellar/libpng/1.6.37/include/libpng16/png.h; sourceTree = "<group>"; };
+		A2C5888624EC381100752F22 /* processing_wrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = processing_wrapper.cpp; sourceTree = "<group>"; };
 		AA3DF89524CF511C00F40ECF /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = processing/pfmLib/libpfm.a; sourceTree = "<group>"; };
 		AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "processing/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		AA3DF89924CF51A100F40ECF /* libopencv_core.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.4.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_core.4.3.0.dylib; sourceTree = "<group>"; };
@@ -137,7 +138,6 @@
 		AAA0DE7224CF5C27003637D8 /* TransformPFM.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TransformPFM.cpp; sourceTree = "<group>"; };
 		AAA0DE7324CF5C27003637D8 /* Disparities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Disparities.cpp; sourceTree = "<group>"; };
 		AAA0DE7424CF5C27003637D8 /* Rectify.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Rectify.hpp; sourceTree = "<group>"; };
-		AAA0DE7524CF5C27003637D8 /* processing_wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = processing_wrapper.cpp; sourceTree = "<group>"; };
 		AAA0DE7624CF5C27003637D8 /* TransformPFM.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TransformPFM.hpp; sourceTree = "<group>"; };
 		AAA0DE7724CF5C27003637D8 /* flowIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = flowIO.cpp; sourceTree = "<group>"; };
 		AAA0DE7824CF5C27003637D8 /* Decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decode.cpp; sourceTree = "<group>"; };
@@ -238,6 +238,7 @@
 				AAA0DE7A24CF5C27003637D8 /* pfmLib */,
 				AAA0DE4424CF5C26003637D8 /* imageLib */,
 				AAA0DE3C24CF5C26003637D8 /* libImgProcessor.i386-g.a */,
+				A2C5888624EC381100752F22 /* processing_wrapper.cpp */,
 				AAA0DE3E24CF5C26003637D8 /* Utils.h */,
 				AAA0DE3F24CF5C26003637D8 /* Utils.cpp */,
 				AAA0DE4024CF5C26003637D8 /* Debug.h */,
@@ -250,7 +251,6 @@
 				AAA0DE7224CF5C27003637D8 /* TransformPFM.cpp */,
 				AAA0DE7324CF5C27003637D8 /* Disparities.cpp */,
 				AAA0DE7424CF5C27003637D8 /* Rectify.hpp */,
-				AAA0DE7524CF5C27003637D8 /* processing_wrapper.cpp */,
 				AAA0DE7624CF5C27003637D8 /* TransformPFM.hpp */,
 				AAA0DE7724CF5C27003637D8 /* flowIO.cpp */,
 				AAA0DE7824CF5C27003637D8 /* Decode.cpp */,
@@ -291,15 +291,15 @@
 		AAA0DE5E24CF5C26003637D8 /* calibration */ = {
 			isa = PBXGroup;
 			children = (
-				AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */,
+				AAA0DE6A24CF5C27003637D8 /* calib_utils.hpp */,
 				AAA0DE6024CF5C26003637D8 /* calib_utils.cpp */,
 				AAA0DE6224CF5C26003637D8 /* wrapper.cpp */,
+				AAA0DE6B24CF5C27003637D8 /* wrapper.hpp */,
 				AAA0DE6424CF5C27003637D8 /* Makefile */,
 				AAA0DE6524CF5C27003637D8 /* compute_params.hpp */,
 				AAA0DE6724CF5C27003637D8 /* compute_params.cpp */,
 				AAA0DE6924CF5C27003637D8 /* track_markers.hpp */,
-				AAA0DE6A24CF5C27003637D8 /* calib_utils.hpp */,
-				AAA0DE6B24CF5C27003637D8 /* wrapper.hpp */,
+				AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */,
 			);
 			path = calibration;
 			sourceTree = "<group>";
@@ -432,13 +432,13 @@
 				AAA0DEB624CF5C2F003637D8 /* Disparities.cpp in Sources */,
 				AAA0DEB524CF5C2F003637D8 /* TransformPFM.cpp in Sources */,
 				AAA0DEC524CF5C31003637D8 /* Decode_OLD.cpp in Sources */,
-				AAA0DEB824CF5C2F003637D8 /* processing_wrapper.cpp in Sources */,
 				AAA0DEBB24CF5C30003637D8 /* Decode.cpp in Sources */,
 				AAA0DEA624CF5C2D003637D8 /* calib_utils.cpp in Sources */,
 				AAA0DE8A24CF5C28003637D8 /* Utils.cpp in Sources */,
 				AAA0DEA824CF5C2D003637D8 /* wrapper.cpp in Sources */,
 				AAA0DEBC24CF5C30003637D8 /* Reproject.cpp in Sources */,
 				AAA0DEC224CF5C30003637D8 /* ShowShadows.cpp in Sources */,
+				A2C5888724EC381100752F22 /* processing_wrapper.cpp in Sources */,
 				AAA0DEA524CF5C2D003637D8 /* track_markers.cpp in Sources */,
 				AAA0DEBA24CF5C30003637D8 /* flowIO.cpp in Sources */,
 				AAA0DEAC24CF5C2D003637D8 /* compute_params.cpp in Sources */,

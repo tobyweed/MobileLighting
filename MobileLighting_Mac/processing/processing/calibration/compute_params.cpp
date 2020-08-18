@@ -169,16 +169,13 @@ vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
 }
 
 int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
-    cout << "\nComputing extrinsics\n";
-    
-    cout<< "IM HERE"<<endl;
+    cout << "Computing extrinsics"<< endl;
     
     CalibrationData calibData1 = readCalibDataFromFile(trackFile1);
     CalibrationData calibData2 = readCalibDataFromFile(trackFile2);
-    cout << "\n\nin file: " << intrinsicsFile << endl;
     Intrinsics intrinsics = readIntrinsicsFromFile(intrinsicsFile);
     
-    cout << "\nFiltering image and object points";
+    cout << "Filtering image and object points"<< endl;
     getSharedPoints(calibData1, calibData2);
     
     // at least 4 points are required by the function, but use a minimum of 10 for stability
@@ -190,7 +187,7 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     Mat R, T, E, F;
     
     if( intrinsics.A.empty() || intrinsics.dist.empty() ) {
-        cout << "Empty intrinsics parameter.\n" << endl;
+        cout << "Empty intrinsics parameter." << endl;
         cout << "Operation could not be completed.\n" << endl;
         return -1;
     }
@@ -201,7 +198,7 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
     Mat R1, R2, P1, P2, Q;
     stereoRectify(intrinsics.A, intrinsics.dist, intrinsics.A, intrinsics.dist, intrinsics.size, R, T, R1, R2, P1, P2, Q);
     
-    cout << "\nReprojection err: " << err <<"\n";
+    cout << "Reprojection err: " << err << endl;
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);
@@ -214,13 +211,13 @@ int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
 
 // Intrinsics
 int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
-    cout << "\nComputing intrinsics\n";
+    cout << "Computing intrinsics" << endl;
     
     CalibrationData calibData = readCalibDataFromFile(trackFile);
     
     if (calibData.objPoints.size() <= 0) { // check how many arrays of object points we have
-        cout << "\nThe number of detected images is " << calibData.objPoints.size() << "\n";
-        cout << "\nERROR: Unable to calibrate due to invalid number of object points.";
+        cout << "The number of detected images is " << calibData.objPoints.size() << endl;
+        cout << "ERROR: Unable to calibrate due to invalid number of object points."<< endl;
         return -1;
     }
     
@@ -228,14 +225,14 @@ int computeIntrinsics ( char *trackFile, char *outputDirectory ) {
     vector<Mat> rvecs, tvecs;
     Size size(calibData.size[0],calibData.size[1]);
     
-    cout << "\nFiltering image and object points";
+    cout << "Filtering image and object points" << endl;
     vector<vector<Point2f>> filteredImgPoints = filterPointsVectorsByMinSize<Point2f>(calibData.imgPoints[0]);
     vector<vector<Point3f>> filteredObjPoints = filterPointsVectorsByMinSize<Point3f>(calibData.objPoints[0]);;
     
-    cout << "\nFinding calibration matrices";
+    cout << "Finding calibration matrices" << endl;
     double err = calibrateCamera( filteredObjPoints, filteredImgPoints, size, cameraMatrix, distCoeffs, rvecs, tvecs );
     
-    cout << "\nreprojection err: " << err <<"\n";
+    cout << "reprojection err: " << err << endl;
     
     // convert to string to concatenate the correct output path
     string outputDir(outputDirectory);

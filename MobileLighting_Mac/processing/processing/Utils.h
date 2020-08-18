@@ -14,7 +14,7 @@
 
 #include <vector>
 #include <math.h>
-#include "imageLib.h"
+#include "imageLib/imageLib.h"
 
 #define UNK INFINITY	// label for unknown pixel in Float image (used both for code values and disparities)
 
