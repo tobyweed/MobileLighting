@@ -76,7 +76,7 @@ extern "C" {
         refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
     }
 
-    void computeMaps(char *impath, char *intr, char *extr, char *settings) {
+    void computeMaps(char *impath, char *intr, char *extr) {
         //get the file extension
         char* extension = strrchr(impath, '.');
         
@@ -86,13 +86,13 @@ extern "C" {
             ReadImage(im, impath);
             CShape s = im.Shape();
             printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
-            computemaps(s.width, s.height, intr, extr, settings);
+            computemaps(s.width, s.height, intr, extr);
         } else {
             cv::Mat im;
             im = cv::imread(impath);
             cv::Size s = im.size();
             printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
-            computemaps(s.width, s.height, intr, extr, settings);
+            computemaps(s.width, s.height, intr, extr);
         }
     }
 

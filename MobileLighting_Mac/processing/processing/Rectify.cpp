@@ -29,10 +29,8 @@ Mat mapx0, mapy0;
 Mat mapx1, mapy1;
 int resizing_factor;
 
-void computemaps(int width, int height, char *intrinsics, char *extrinsics, char *settings)
+void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
-    FileStorage calibSettings(settings, FileStorage::READ);
-//    calibSettings["Settings"]["Resizing_Factor"] >> resizing_factor;
     resizing_factor = 1;
     cv::Size ims(width, height);
     std::cout << "computing maps " << ims << std::endl;

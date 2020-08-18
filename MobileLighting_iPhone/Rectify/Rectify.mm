@@ -32,6 +32,7 @@ Mat mapx1, mapy1;
 // only needs to be computed once per stereo pair
 extern "C" void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
+    resizing_factor = 1;
     cv::Size ims(width, height);
     std::clog << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);

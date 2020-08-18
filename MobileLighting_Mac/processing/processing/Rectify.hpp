@@ -9,7 +9,7 @@
 
 #ifndef Header_h
 #define Header_h
-void computemaps(int, int, char *, char *, char *);
+void computemaps(int, int, char *, char *);
 void rectifyDecoded(int, char *, char *);
 #endif /* Header_h */
  // end
