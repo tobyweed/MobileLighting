@@ -1,3 +1,6 @@
+# This Makefile is used for debugging purposes only. MobileLighting_Mac compiles the calibration code on its own
+#	whenever run through XCode.
+
 # Makefile for Active lighting code
 # DS Sep 2013
 # DS fixed 6/2017 to compile in MBH 632
