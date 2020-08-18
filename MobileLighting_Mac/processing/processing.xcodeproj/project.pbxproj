@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A2C5884424EC17AA00752F22 /* ImageIOpfm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE8024CF5C27003637D8 /* ImageIOpfm.cpp */; };
+		A2C5884524EC17AA00752F22 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE4824CF5C26003637D8 /* Image.cpp */; };
+		A2C5884624EC17AA00752F22 /* Convolve.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE4B24CF5C26003637D8 /* Convolve.cpp */; };
+		A2C5884724EC17AA00752F22 /* Convert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE4C24CF5C26003637D8 /* Convert.cpp */; };
+		A2C5884824EC17AA00752F22 /* ImageIOpng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */; };
+		A2C5884924EC17AA00752F22 /* ImageIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */; };
+		A2C5884A24EC17AA00752F22 /* RefCntMem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5B24CF5C26003637D8 /* RefCntMem.cpp */; };
+		A2C5884C24EC245700752F22 /* png.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C5884B24EC245700752F22 /* png.h */; };
 		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; platformFilter = maccatalyst; };
 		AA3EBDB624D1F4E3005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
 		AA3EBDB724D1F4E3005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */; };
@@ -66,6 +74,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A2C5884B24EC245700752F22 /* png.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = png.h; path = ../../../../../../usr/local/Cellar/libpng/1.6.37/include/libpng16/png.h; sourceTree = "<group>"; };
 		AA3DF89524CF511C00F40ECF /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = processing/pfmLib/libpfm.a; sourceTree = "<group>"; };
 		AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "processing/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
 		AA3DF89924CF51A100F40ECF /* libopencv_core.4.3.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.4.3.0.dylib; path = ../../../../../../../usr/local/Cellar/opencv/4.3.0_5/lib/libopencv_core.4.3.0.dylib; sourceTree = "<group>"; };
@@ -89,37 +98,28 @@
 		AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpng16.16.dylib; path = ../../../../../../../usr/local/Cellar/libpng/1.6.37/lib/libpng16.16.dylib; sourceTree = "<group>"; };
 		AA937A1024CF6BF50072BCFF /* libz.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.dylib; path = ../../../../../../../usr/lib/libz.1.dylib; sourceTree = "<group>"; };
 		AAA0DE3C24CF5C26003637D8 /* libImgProcessor.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libImgProcessor.i386-g.a"; sourceTree = "<group>"; };
-		AAA0DE3D24CF5C26003637D8 /* Utils.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Utils.o; sourceTree = "<group>"; };
 		AAA0DE3E24CF5C26003637D8 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		AAA0DE3F24CF5C26003637D8 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
 		AAA0DE4024CF5C26003637D8 /* Debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Debug.h; sourceTree = "<group>"; };
-		AAA0DE4124CF5C26003637D8 /* flowIO.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = flowIO.o; sourceTree = "<group>"; };
 		AAA0DE4224CF5C26003637D8 /* flowIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = flowIO.h; sourceTree = "<group>"; };
 		AAA0DE4324CF5C26003637D8 /* ShowShadows.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ShowShadows.hpp; sourceTree = "<group>"; };
 		AAA0DE4524CF5C26003637D8 /* Error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Error.h; sourceTree = "<group>"; };
-		AAA0DE4624CF5C26003637D8 /* ImageIO.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = ImageIO.o; sourceTree = "<group>"; };
 		AAA0DE4724CF5C26003637D8 /* ImageIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIO.h; sourceTree = "<group>"; };
 		AAA0DE4824CF5C26003637D8 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
-		AAA0DE4924CF5C26003637D8 /* RefCntMem.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = RefCntMem.o; sourceTree = "<group>"; };
 		AAA0DE4A24CF5C26003637D8 /* RefCntMem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RefCntMem.h; sourceTree = "<group>"; };
 		AAA0DE4B24CF5C26003637D8 /* Convolve.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Convolve.cpp; sourceTree = "<group>"; };
 		AAA0DE4C24CF5C26003637D8 /* Convert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Convert.cpp; sourceTree = "<group>"; };
 		AAA0DE4D24CF5C26003637D8 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		AAA0DE4E24CF5C26003637D8 /* #.gitignore# */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "#.gitignore#"; sourceTree = "<group>"; };
 		AAA0DE4F24CF5C26003637D8 /* Convolve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Convolve.h; sourceTree = "<group>"; };
-		AAA0DE5024CF5C26003637D8 /* Convolve.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Convolve.o; sourceTree = "<group>"; };
 		AAA0DE5124CF5C26003637D8 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libImg.i386-g.a"; sourceTree = "<group>"; };
 		AAA0DE5224CF5C26003637D8 /* Copyright.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Copyright.h; sourceTree = "<group>"; };
 		AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOpng.cpp; sourceTree = "<group>"; };
 		AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIO.cpp; sourceTree = "<group>"; };
 		AAA0DE5524CF5C26003637D8 /* imageLib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imageLib.h; sourceTree = "<group>"; };
 		AAA0DE5624CF5C26003637D8 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		AAA0DE5724CF5C26003637D8 /* ImageIOpng.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = ImageIOpng.o; sourceTree = "<group>"; };
 		AAA0DE5824CF5C26003637D8 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
-		AAA0DE5924CF5C26003637D8 /* Convert.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Convert.o; sourceTree = "<group>"; };
 		AAA0DE5A24CF5C26003637D8 /* Convert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Convert.h; sourceTree = "<group>"; };
 		AAA0DE5B24CF5C26003637D8 /* RefCntMem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RefCntMem.cpp; sourceTree = "<group>"; };
-		AAA0DE5C24CF5C26003637D8 /* Image.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Image.o; sourceTree = "<group>"; };
 		AAA0DE5D24CF5C26003637D8 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = track_markers.cpp; sourceTree = "<group>"; };
 		AAA0DE6024CF5C26003637D8 /* calib_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = calib_utils.cpp; sourceTree = "<group>"; };
@@ -143,16 +143,13 @@
 		AAA0DE7824CF5C27003637D8 /* Decode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decode.cpp; sourceTree = "<group>"; };
 		AAA0DE7924CF5C27003637D8 /* Reproject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reproject.cpp; sourceTree = "<group>"; };
 		AAA0DE7B24CF5C27003637D8 /* ImageIOpfm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageIOpfm.h; sourceTree = "<group>"; };
-		AAA0DE7C24CF5C27003637D8 /* ImageIOpfm.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = ImageIOpfm.o; sourceTree = "<group>"; };
 		AAA0DE7D24CF5C27003637D8 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AAA0DE7E24CF5C27003637D8 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		AAA0DE7F24CF5C27003637D8 /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libpfm.a; sourceTree = "<group>"; };
 		AAA0DE8024CF5C27003637D8 /* ImageIOpfm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOpfm.cpp; sourceTree = "<group>"; };
 		AAA0DE8124CF5C27003637D8 /* ShowShadows.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShowShadows.cpp; sourceTree = "<group>"; };
 		AAA0DE8224CF5C27003637D8 /* Disparities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Disparities.h; sourceTree = "<group>"; };
-		AAA0DE8324CF5C27003637D8 /* Disparities.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Disparities.o; sourceTree = "<group>"; };
 		AAA0DE8424CF5C27003637D8 /* Decode_OLD.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Decode_OLD.cpp; sourceTree = "<group>"; };
-		AAA0DE8524CF5C27003637D8 /* Decode.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = Decode.o; sourceTree = "<group>"; };
 		AAA0DE8624CF5C27003637D8 /* Decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Decode.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -219,6 +216,7 @@
 		AA935B9224CF4C82009975AD = {
 			isa = PBXGroup;
 			children = (
+				A2C5884B24EC245700752F22 /* png.h */,
 				AAA0DE3B24CF5C26003637D8 /* processing */,
 				AA935B9C24CF4C82009975AD /* Products */,
 				AA3DF89424CF511C00F40ECF /* Frameworks */,
@@ -240,11 +238,9 @@
 				AAA0DE7A24CF5C27003637D8 /* pfmLib */,
 				AAA0DE4424CF5C26003637D8 /* imageLib */,
 				AAA0DE3C24CF5C26003637D8 /* libImgProcessor.i386-g.a */,
-				AAA0DE3D24CF5C26003637D8 /* Utils.o */,
 				AAA0DE3E24CF5C26003637D8 /* Utils.h */,
 				AAA0DE3F24CF5C26003637D8 /* Utils.cpp */,
 				AAA0DE4024CF5C26003637D8 /* Debug.h */,
-				AAA0DE4124CF5C26003637D8 /* flowIO.o */,
 				AAA0DE4224CF5C26003637D8 /* flowIO.h */,
 				AAA0DE4324CF5C26003637D8 /* ShowShadows.hpp */,
 				AAA0DE6E24CF5C27003637D8 /* Reproject.h */,
@@ -261,9 +257,7 @@
 				AAA0DE7924CF5C27003637D8 /* Reproject.cpp */,
 				AAA0DE8124CF5C27003637D8 /* ShowShadows.cpp */,
 				AAA0DE8224CF5C27003637D8 /* Disparities.h */,
-				AAA0DE8324CF5C27003637D8 /* Disparities.o */,
 				AAA0DE8424CF5C27003637D8 /* Decode_OLD.cpp */,
-				AAA0DE8524CF5C27003637D8 /* Decode.o */,
 				AAA0DE8624CF5C27003637D8 /* Decode.h */,
 			);
 			path = processing;
@@ -273,29 +267,22 @@
 			isa = PBXGroup;
 			children = (
 				AAA0DE4524CF5C26003637D8 /* Error.h */,
-				AAA0DE4624CF5C26003637D8 /* ImageIO.o */,
 				AAA0DE4724CF5C26003637D8 /* ImageIO.h */,
 				AAA0DE4824CF5C26003637D8 /* Image.cpp */,
-				AAA0DE4924CF5C26003637D8 /* RefCntMem.o */,
 				AAA0DE4A24CF5C26003637D8 /* RefCntMem.h */,
 				AAA0DE4B24CF5C26003637D8 /* Convolve.cpp */,
 				AAA0DE4C24CF5C26003637D8 /* Convert.cpp */,
 				AAA0DE4D24CF5C26003637D8 /* Makefile */,
-				AAA0DE4E24CF5C26003637D8 /* #.gitignore# */,
 				AAA0DE4F24CF5C26003637D8 /* Convolve.h */,
-				AAA0DE5024CF5C26003637D8 /* Convolve.o */,
 				AAA0DE5124CF5C26003637D8 /* libImg.i386-g.a */,
 				AAA0DE5224CF5C26003637D8 /* Copyright.h */,
 				AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */,
 				AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */,
 				AAA0DE5524CF5C26003637D8 /* imageLib.h */,
 				AAA0DE5624CF5C26003637D8 /* .gitignore */,
-				AAA0DE5724CF5C26003637D8 /* ImageIOpng.o */,
 				AAA0DE5824CF5C26003637D8 /* README.txt */,
-				AAA0DE5924CF5C26003637D8 /* Convert.o */,
 				AAA0DE5A24CF5C26003637D8 /* Convert.h */,
 				AAA0DE5B24CF5C26003637D8 /* RefCntMem.cpp */,
-				AAA0DE5C24CF5C26003637D8 /* Image.o */,
 				AAA0DE5D24CF5C26003637D8 /* Image.h */,
 			);
 			path = imageLib;
@@ -321,7 +308,6 @@
 			isa = PBXGroup;
 			children = (
 				AAA0DE7B24CF5C27003637D8 /* ImageIOpfm.h */,
-				AAA0DE7C24CF5C27003637D8 /* ImageIOpfm.o */,
 				AAA0DE7D24CF5C27003637D8 /* Makefile */,
 				AAA0DE7E24CF5C27003637D8 /* README.md */,
 				AAA0DE7F24CF5C27003637D8 /* libpfm.a */,
@@ -337,6 +323,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2C5884C24EC245700752F22 /* png.h in Headers */,
 				AAE8CA0724CF6EF400E9ECB1 /* imageLib.h in Headers */,
 				AAA0DEAE24CF5C2E003637D8 /* calib_utils.hpp in Headers */,
 				AAA0DEB924CF5C2F003637D8 /* TransformPFM.hpp in Headers */,
@@ -435,6 +422,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2C5884424EC17AA00752F22 /* ImageIOpfm.cpp in Sources */,
+				A2C5884524EC17AA00752F22 /* Image.cpp in Sources */,
+				A2C5884624EC17AA00752F22 /* Convolve.cpp in Sources */,
+				A2C5884724EC17AA00752F22 /* Convert.cpp in Sources */,
+				A2C5884824EC17AA00752F22 /* ImageIOpng.cpp in Sources */,
+				A2C5884924EC17AA00752F22 /* ImageIO.cpp in Sources */,
+				A2C5884A24EC17AA00752F22 /* RefCntMem.cpp in Sources */,
 				AAA0DEB624CF5C2F003637D8 /* Disparities.cpp in Sources */,
 				AAA0DEB524CF5C2F003637D8 /* TransformPFM.cpp in Sources */,
 				AAA0DEC524CF5C31003637D8 /* Decode_OLD.cpp in Sources */,

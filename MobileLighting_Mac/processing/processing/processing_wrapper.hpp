@@ -3,6 +3,7 @@
 
 #pragma GCC visibility push(default)
 
+// Processing
 void transformPfm(char *pfmPath, char *transformation);
 void writeShadowImgs(char *decodedDir, char *outDir, int projs[], int nProjs, int pos);
 void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID);
