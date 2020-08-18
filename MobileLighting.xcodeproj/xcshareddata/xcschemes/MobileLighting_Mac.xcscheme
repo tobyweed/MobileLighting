@@ -62,7 +62,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/vision/workspace/scenes/skiboots/settings/sceneSettings.yml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "init"
@@ -70,7 +70,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/vision/workspace/scenes/sandbox/settings/sceneSettings.yml"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

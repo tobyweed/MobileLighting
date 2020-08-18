@@ -998,13 +998,13 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
+				HEADER_SEARCH_PATHS = "/usr/local/Cellar/opencv/**";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.4.0/lib,
+					"/usr/local/Cellar/opencv/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1033,13 +1033,13 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing",
 				);
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/opencv2.framework/Headers";
+				HEADER_SEARCH_PATHS = "/usr/local/Cellar/opencv/**";
 				INFOPLIST_FILE = MobileLighting_iPhone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.4.0/lib,
+					"/usr/local/Cellar/opencv/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.MobileLighting-iPhone";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1081,14 +1081,12 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(PROJECT_DIR)/MobileLighting_Mac";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/usr/local/Cellar/opencv/4.4.0/lib/**",
-					"/usr/local/Cellar/libpng/1.6.37/lib/**",
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/imageLib/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/pfmLib/**",
-					/usr/local/Cellar/opencv/4.4.0/lib,
-					/usr/local/Cellar/libpng/1.6.37/lib,
 					"$(PROJECT_DIR)/bin",
 				);
 				OTHER_LDFLAGS = "";
@@ -1129,14 +1127,12 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(PROJECT_DIR)/MobileLighting_Mac";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/usr/local/Cellar/opencv/4.4.0/lib/**",
-					"/usr/local/Cellar/libpng/1.6.37/lib/**",
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/RobotControl/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/imageLib/**",
 					"$(PROJECT_DIR)/MobileLighting_Mac/processing/processing/pfmLib/**",
-					/usr/local/Cellar/opencv/4.4.0/lib,
-					/usr/local/Cellar/libpng/1.6.37/lib,
 					"$(PROJECT_DIR)/bin",
 				);
 				OTHER_LDFLAGS = "";

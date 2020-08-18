@@ -27,11 +27,10 @@ using namespace cv;
 
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
-int resizing_factor;
+int resizing_factor = 1;
 
 void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
-    resizing_factor = 1;
     cv::Size ims(width, height);
     std::cout << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
