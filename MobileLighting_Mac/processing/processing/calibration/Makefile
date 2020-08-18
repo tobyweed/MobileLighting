@@ -1,3 +1,6 @@
+# This Makefile is used for debugging purposes only. MobileLighting_Mac compiles the calibration code on its own
+#	whenever run through XCode.
+
 # USAGE:
 # 	'make all' to create an executable called 'main'
 # 	'make clean' to remove all .o object files and .a libraries

@@ -7,15 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A27F4F8724E6CB670047EA3D /* libopencv_videoio.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A27F4F8624E6CB660047EA3D /* libopencv_videoio.4.4.0.dylib */; };
+		A2C5883A24EC14B500752F22 /* libopencv_aruco.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCB24D1F53F005A2F7F /* libopencv_aruco.4.4.0.dylib */; };
+		A2C5883B24EC14B500752F22 /* libopencv_calib3d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDAE24D1F059005A2F7F /* libopencv_calib3d.4.4.0.dylib */; };
+		A2C5883C24EC14B500752F22 /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC824D1F53F005A2F7F /* libopencv_core.4.4.0.dylib */; };
+		A2C5883D24EC14B500752F22 /* libopencv_features2d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCA24D1F53F005A2F7F /* libopencv_features2d.4.4.0.dylib */; };
+		A2C5883E24EC14B500752F22 /* libopencv_highgui.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC924D1F53F005A2F7F /* libopencv_highgui.4.4.0.dylib */; };
+		A2C5883F24EC14B500752F22 /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCD24D1F53F005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */; };
+		A2C5884024EC14B500752F22 /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCC24D1F53F005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
+		A2C5884124EC14B500752F22 /* libopencv_videoio.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A27F4F8624E6CB660047EA3D /* libopencv_videoio.4.4.0.dylib */; };
 		AA3DF8A924CF51DC00F40ECF /* libprocessing.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF82F24CF4D3A00F40ECF /* libprocessing.a */; };
-		AA3EBDC724D1F53F005A2F7F /* libopencv_calib3d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDAE24D1F059005A2F7F /* libopencv_calib3d.4.4.0.dylib */; };
-		AA3EBDCE24D1F53F005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC824D1F53F005A2F7F /* libopencv_core.4.4.0.dylib */; };
-		AA3EBDCF24D1F53F005A2F7F /* libopencv_highgui.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC924D1F53F005A2F7F /* libopencv_highgui.4.4.0.dylib */; };
-		AA3EBDD024D1F53F005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCA24D1F53F005A2F7F /* libopencv_features2d.4.4.0.dylib */; };
-		AA3EBDD124D1F540005A2F7F /* libopencv_aruco.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCB24D1F53F005A2F7F /* libopencv_aruco.4.4.0.dylib */; };
-		AA3EBDD224D1F540005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCC24D1F53F005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
-		AA3EBDD324D1F540005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDCD24D1F53F005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */; };
 		AA3EBDDB24D1FD9D005A2F7F /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDDA24D1FD9D005A2F7F /* libImg.i386-g.a */; };
 		AA3EBDDE24D1FF42005A2F7F /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDD424D1F934005A2F7F /* libpfm.a */; };
 		AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3FB61B227CB8B8001DB4D6 /* libpng16.16.dylib */; };
@@ -356,14 +356,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A27F4F8724E6CB670047EA3D /* libopencv_videoio.4.4.0.dylib in Frameworks */,
-				AA3EBDD124D1F540005A2F7F /* libopencv_aruco.4.4.0.dylib in Frameworks */,
-				AA3EBDC724D1F53F005A2F7F /* libopencv_calib3d.4.4.0.dylib in Frameworks */,
-				AA3EBDCE24D1F53F005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */,
-				AA3EBDD024D1F53F005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */,
-				AA3EBDCF24D1F53F005A2F7F /* libopencv_highgui.4.4.0.dylib in Frameworks */,
-				AA3EBDD324D1F540005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */,
-				AA3EBDD224D1F540005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */,
+				A2C5883A24EC14B500752F22 /* libopencv_aruco.4.4.0.dylib in Frameworks */,
+				A2C5883B24EC14B500752F22 /* libopencv_calib3d.4.4.0.dylib in Frameworks */,
+				A2C5883C24EC14B500752F22 /* libopencv_core.4.4.0.dylib in Frameworks */,
+				A2C5883D24EC14B500752F22 /* libopencv_features2d.4.4.0.dylib in Frameworks */,
+				A2C5883E24EC14B500752F22 /* libopencv_highgui.4.4.0.dylib in Frameworks */,
+				A2C5883F24EC14B500752F22 /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */,
+				A2C5884024EC14B500752F22 /* libopencv_imgproc.4.4.0.dylib in Frameworks */,
+				A2C5884124EC14B500752F22 /* libopencv_videoio.4.4.0.dylib in Frameworks */,
 				AA3FB61C227CB8B8001DB4D6 /* libpng16.16.dylib in Frameworks */,
 				E1A57AD72108D4E300C208C6 /* SerialUtils.framework in Frameworks */,
 				E1A57AD82108D4E300C208C6 /* SwiftSerial.framework in Frameworks */,

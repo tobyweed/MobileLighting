@@ -123,19 +123,13 @@
 		AAA0DE5D24CF5C26003637D8 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
 		AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = track_markers.cpp; sourceTree = "<group>"; };
 		AAA0DE6024CF5C26003637D8 /* calib_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = calib_utils.cpp; sourceTree = "<group>"; };
-		AAA0DE6124CF5C26003637D8 /* track_markers.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = track_markers.o; sourceTree = "<group>"; };
 		AAA0DE6224CF5C26003637D8 /* wrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrapper.cpp; sourceTree = "<group>"; };
-		AAA0DE6324CF5C27003637D8 /* intrinsics-calibration.log */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "intrinsics-calibration.log"; sourceTree = "<group>"; };
 		AAA0DE6424CF5C27003637D8 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AAA0DE6524CF5C27003637D8 /* compute_params.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = compute_params.hpp; sourceTree = "<group>"; };
-		AAA0DE6624CF5C27003637D8 /* calib_utils.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = calib_utils.o; sourceTree = "<group>"; };
 		AAA0DE6724CF5C27003637D8 /* compute_params.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = compute_params.cpp; sourceTree = "<group>"; };
-		AAA0DE6824CF5C27003637D8 /* compute */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = compute; sourceTree = "<group>"; };
 		AAA0DE6924CF5C27003637D8 /* track_markers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = track_markers.hpp; sourceTree = "<group>"; };
 		AAA0DE6A24CF5C27003637D8 /* calib_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = calib_utils.hpp; sourceTree = "<group>"; };
 		AAA0DE6B24CF5C27003637D8 /* wrapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = wrapper.hpp; sourceTree = "<group>"; };
-		AAA0DE6C24CF5C27003637D8 /* main */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = main; sourceTree = "<group>"; };
-		AAA0DE6D24CF5C27003637D8 /* compute_params.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = compute_params.o; sourceTree = "<group>"; };
 		AAA0DE6E24CF5C27003637D8 /* Reproject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reproject.h; sourceTree = "<group>"; };
 		AAA0DE6F24CF5C27003637D8 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AAA0DE7024CF5C27003637D8 /* Rectify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectify.cpp; sourceTree = "<group>"; };
@@ -312,19 +306,13 @@
 			children = (
 				AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */,
 				AAA0DE6024CF5C26003637D8 /* calib_utils.cpp */,
-				AAA0DE6124CF5C26003637D8 /* track_markers.o */,
 				AAA0DE6224CF5C26003637D8 /* wrapper.cpp */,
-				AAA0DE6324CF5C27003637D8 /* intrinsics-calibration.log */,
 				AAA0DE6424CF5C27003637D8 /* Makefile */,
 				AAA0DE6524CF5C27003637D8 /* compute_params.hpp */,
-				AAA0DE6624CF5C27003637D8 /* calib_utils.o */,
 				AAA0DE6724CF5C27003637D8 /* compute_params.cpp */,
-				AAA0DE6824CF5C27003637D8 /* compute */,
 				AAA0DE6924CF5C27003637D8 /* track_markers.hpp */,
 				AAA0DE6A24CF5C27003637D8 /* calib_utils.hpp */,
 				AAA0DE6B24CF5C27003637D8 /* wrapper.hpp */,
-				AAA0DE6C24CF5C27003637D8 /* main */,
-				AAA0DE6D24CF5C27003637D8 /* compute_params.o */,
 			);
 			path = calibration;
 			sourceTree = "<group>";

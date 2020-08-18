@@ -171,6 +171,8 @@ vector<vector<T>> filterPointsVectorsByMinSize( vector<vector<T>> points ) {
 int computeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile2, char *intrinsicsFile, char *outputDirectory ) {
     cout << "\nComputing extrinsics\n";
     
+    cout<< "IM HERE"<<endl;
+    
     CalibrationData calibData1 = readCalibDataFromFile(trackFile1);
     CalibrationData calibData2 = readCalibDataFromFile(trackFile2);
     cout << "\n\nin file: " << intrinsicsFile << endl;
