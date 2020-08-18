@@ -176,20 +176,20 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, lighting: Int) {
     var intr: [CChar]
     var extr: [CChar]
-    var settings: [CChar]
+//    var settings: [CChar]
     var resultl: [CChar]
     var resultr: [CChar]
     do {
         try intr = safePath(dirStruc.intrinsicsJSON)
         try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
-        try settings = safePath(dirStruc.calibrationSettingsFile)
+//        try settings = safePath(dirStruc.calibrationSettingsFile)
         try resultl = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG")
         try resultr = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG")
     } catch let err {
         print(err.localizedDescription)
         return
     }
-    
+    var settings = *dirStruc.calibrationSettingsFile
     if(exp == 0) { //maps only need to be computed once per stereo pair
         computeMaps(&resultl, &intr, &extr, &settings)
     }

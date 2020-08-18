@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,9 +14,8 @@
 		A2C5884824EC17AA00752F22 /* ImageIOpng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */; };
 		A2C5884924EC17AA00752F22 /* ImageIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */; };
 		A2C5884A24EC17AA00752F22 /* RefCntMem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5B24CF5C26003637D8 /* RefCntMem.cpp */; };
-		A2C5884C24EC245700752F22 /* png.h in Headers */ = {isa = PBXBuildFile; fileRef = A2C5884B24EC245700752F22 /* png.h */; };
 		A2C5888724EC381100752F22 /* processing_wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A2C5888624EC381100752F22 /* processing_wrapper.cpp */; };
-		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; platformFilter = maccatalyst; };
+		AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89524CF511C00F40ECF /* libpfm.a */; settings = {ATTRIBUTES = (Weak, ); }; };
 		AA3EBDB624D1F4E3005A2F7F /* libopencv_imgproc.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB024D1F4E2005A2F7F /* libopencv_imgproc.4.4.0.dylib */; };
 		AA3EBDB724D1F4E3005A2F7F /* libopencv_core.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB124D1F4E2005A2F7F /* libopencv_core.4.4.0.dylib */; };
 		AA3EBDB824D1F4E3005A2F7F /* libopencv_aruco.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB224D1F4E2005A2F7F /* libopencv_aruco.4.4.0.dylib */; };
@@ -24,36 +23,22 @@
 		AA3EBDBA24D1F4E3005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB424D1F4E2005A2F7F /* libopencv_imgcodecs.4.4.0.dylib */; };
 		AA3EBDBB24D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDB524D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib */; };
 		AA3EBDC624D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3EBDC524D1F50A005A2F7F /* libopencv_highgui.4.4.0.dylib */; };
-		AA89F64C24CF723100A62A26 /* libImg.i386-g.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */; settings = {ATTRIBUTES = (Required, ); }; };
 		AA937A0F24CF6BB00072BCFF /* libpng16.16.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA937A0E24CF6BB00072BCFF /* libpng16.16.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		AA937A1124CF6BF50072BCFF /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AA937A1024CF6BF50072BCFF /* libz.1.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
-		AAA0DE8924CF5C28003637D8 /* Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE3E24CF5C26003637D8 /* Utils.h */; };
 		AAA0DE8A24CF5C28003637D8 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE3F24CF5C26003637D8 /* Utils.cpp */; };
-		AAA0DE8B24CF5C28003637D8 /* Debug.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE4024CF5C26003637D8 /* Debug.h */; };
-		AAA0DE8D24CF5C29003637D8 /* flowIO.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE4224CF5C26003637D8 /* flowIO.h */; };
-		AAA0DE8E24CF5C29003637D8 /* ShowShadows.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE4324CF5C26003637D8 /* ShowShadows.hpp */; };
 		AAA0DEA524CF5C2D003637D8 /* track_markers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE5F24CF5C26003637D8 /* track_markers.cpp */; };
 		AAA0DEA624CF5C2D003637D8 /* calib_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE6024CF5C26003637D8 /* calib_utils.cpp */; };
 		AAA0DEA824CF5C2D003637D8 /* wrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE6224CF5C26003637D8 /* wrapper.cpp */; };
-		AAA0DEAA24CF5C2D003637D8 /* compute_params.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE6524CF5C27003637D8 /* compute_params.hpp */; };
 		AAA0DEAC24CF5C2D003637D8 /* compute_params.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE6724CF5C27003637D8 /* compute_params.cpp */; };
-		AAA0DEAE24CF5C2E003637D8 /* calib_utils.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE6A24CF5C27003637D8 /* calib_utils.hpp */; };
-		AAA0DEAF24CF5C2E003637D8 /* wrapper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE6B24CF5C27003637D8 /* wrapper.hpp */; };
-		AAA0DEB124CF5C2E003637D8 /* Reproject.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE6E24CF5C27003637D8 /* Reproject.h */; };
 		AAA0DEB324CF5C2F003637D8 /* Rectify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7024CF5C27003637D8 /* Rectify.cpp */; };
 		AAA0DEB424CF5C2F003637D8 /* processing_wrapper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE7124CF5C27003637D8 /* processing_wrapper.hpp */; };
 		AAA0DEB524CF5C2F003637D8 /* TransformPFM.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7224CF5C27003637D8 /* TransformPFM.cpp */; };
 		AAA0DEB624CF5C2F003637D8 /* Disparities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7324CF5C27003637D8 /* Disparities.cpp */; };
-		AAA0DEB724CF5C2F003637D8 /* Rectify.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE7424CF5C27003637D8 /* Rectify.hpp */; };
-		AAA0DEB924CF5C2F003637D8 /* TransformPFM.hpp in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE7624CF5C27003637D8 /* TransformPFM.hpp */; };
 		AAA0DEBA24CF5C30003637D8 /* flowIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7724CF5C27003637D8 /* flowIO.cpp */; };
 		AAA0DEBB24CF5C30003637D8 /* Decode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7824CF5C27003637D8 /* Decode.cpp */; };
 		AAA0DEBC24CF5C30003637D8 /* Reproject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE7924CF5C27003637D8 /* Reproject.cpp */; };
 		AAA0DEC224CF5C30003637D8 /* ShowShadows.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE8124CF5C27003637D8 /* ShowShadows.cpp */; };
-		AAA0DEC324CF5C31003637D8 /* Disparities.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE8224CF5C27003637D8 /* Disparities.h */; };
 		AAA0DEC524CF5C31003637D8 /* Decode_OLD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0DE8424CF5C27003637D8 /* Decode_OLD.cpp */; };
-		AAA0DEC724CF5C31003637D8 /* Decode.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE8624CF5C27003637D8 /* Decode.h */; };
-		AAE8CA0724CF6EF400E9ECB1 /* imageLib.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0DE5524CF5C26003637D8 /* imageLib.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,7 +59,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A2C5884B24EC245700752F22 /* png.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = png.h; path = ../../../../../../usr/local/Cellar/libpng/1.6.37/include/libpng16/png.h; sourceTree = "<group>"; };
 		A2C5888624EC381100752F22 /* processing_wrapper.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = processing_wrapper.cpp; sourceTree = "<group>"; };
 		AA3DF89524CF511C00F40ECF /* libpfm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpfm.a; path = processing/pfmLib/libpfm.a; sourceTree = "<group>"; };
 		AA3DF89624CF511C00F40ECF /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libImg.i386-g.a"; path = "processing/imageLib/libImg.i386-g.a"; sourceTree = "<group>"; };
@@ -165,11 +149,8 @@
 				AA3EBDB924D1F4E3005A2F7F /* libopencv_calib3d.4.4.0.dylib in Frameworks */,
 				AA3EBDBA24D1F4E3005A2F7F /* libopencv_imgcodecs.4.4.0.dylib in Frameworks */,
 				AA3EBDBB24D1F4E3005A2F7F /* libopencv_features2d.4.4.0.dylib in Frameworks */,
-				AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */,
-				AA89F64C24CF723100A62A26 /* libImg.i386-g.a in Frameworks */,
 				AA937A1124CF6BF50072BCFF /* libz.1.dylib in Frameworks */,
 				AA937A0F24CF6BB00072BCFF /* libpng16.16.dylib in Frameworks */,
-				AA3DF89724CF511C00F40ECF /* libpfm.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,7 +197,6 @@
 		AA935B9224CF4C82009975AD = {
 			isa = PBXGroup;
 			children = (
-				A2C5884B24EC245700752F22 /* png.h */,
 				AAA0DE3B24CF5C26003637D8 /* processing */,
 				AA935B9C24CF4C82009975AD /* Products */,
 				AA3DF89424CF511C00F40ECF /* Frameworks */,
@@ -323,21 +303,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A2C5884C24EC245700752F22 /* png.h in Headers */,
-				AAE8CA0724CF6EF400E9ECB1 /* imageLib.h in Headers */,
-				AAA0DEAE24CF5C2E003637D8 /* calib_utils.hpp in Headers */,
-				AAA0DEB924CF5C2F003637D8 /* TransformPFM.hpp in Headers */,
-				AAA0DEAF24CF5C2E003637D8 /* wrapper.hpp in Headers */,
-				AAA0DEC324CF5C31003637D8 /* Disparities.h in Headers */,
 				AAA0DEB424CF5C2F003637D8 /* processing_wrapper.hpp in Headers */,
-				AAA0DEB124CF5C2E003637D8 /* Reproject.h in Headers */,
-				AAA0DE8D24CF5C29003637D8 /* flowIO.h in Headers */,
-				AAA0DE8B24CF5C28003637D8 /* Debug.h in Headers */,
-				AAA0DE8924CF5C28003637D8 /* Utils.h in Headers */,
-				AAA0DE8E24CF5C29003637D8 /* ShowShadows.hpp in Headers */,
-				AAA0DEC724CF5C31003637D8 /* Decode.h in Headers */,
-				AAA0DEB724CF5C2F003637D8 /* Rectify.hpp in Headers */,
-				AAA0DEAA24CF5C2D003637D8 /* compute_params.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -569,15 +535,19 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = NKAB92297U;
-				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
+				FRAMEWORK_SEARCH_PATHS = "/usr/local/Cellar/**";
+				HEADER_SEARCH_PATHS = (
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
+				);
 				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.4.0/lib,
-					"$(PROJECT_DIR)/processing/pfmLib",
-					"$(PROJECT_DIR)/processing/imageLib",
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
 					"$(PROJECT_DIR)/processing",
+					"$(PROJECT_DIR)/processing/imageLib",
+					"$(PROJECT_DIR)/processing/pfmLib",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -593,15 +563,19 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = NKAB92297U;
-				FRAMEWORK_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/lib;
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/4.4.0/include/opencv4;
+				FRAMEWORK_SEARCH_PATHS = "/usr/local/Cellar/**";
+				HEADER_SEARCH_PATHS = (
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
+				);
 				LD_RUNPATH_SEARCH_PATHS = "";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/usr/local/Cellar/opencv/4.4.0/lib,
-					"$(PROJECT_DIR)/processing/pfmLib",
-					"$(PROJECT_DIR)/processing/imageLib",
+					"/usr/local/Cellar/opencv/**",
+					"/usr/local/Cellar/libpng/**",
 					"$(PROJECT_DIR)/processing",
+					"$(PROJECT_DIR)/processing/imageLib",
+					"$(PROJECT_DIR)/processing/pfmLib",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -767,7 +767,7 @@ void ReadImageVerb(CImage& img, const char* filename, int verbose) {
 
 // write out an image and perhaps tell the user you're doing so
 void WriteImageVerb(CImage& img, const char* filename, int verbose) {
-	if (verbose)
+    if (verbose)
 		fprintf(stderr, "Writing image %s\n", filename);
 	WriteImage(img, filename);
 }
