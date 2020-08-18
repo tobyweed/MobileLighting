@@ -501,7 +501,6 @@ func processCommand(_ input: String) -> Bool {
             print("Emulating robot motion. Proceeding with photo capture as though there were 3 robot positions.")
             posIDs = Array(0..<3)
         }
-        print("posIDS: \(posIDs)")
         captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
         print("Photo capture ended. Exiting command.")
         break
@@ -891,7 +890,9 @@ func processCommand(_ input: String) -> Bool {
         //save the focus to the sceneSettings files
         do {
             sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
-            sceneSettings.set( key: "focus", value: Yaml.double(Double(pos)) )
+            print("float: \(Float(pos))")
+            print("double: \(Double(Float(pos)))")
+            sceneSettings.set( key: "focus", value: Yaml.double(Double(Float(pos))) )
             sceneSettings.save()
             print("Saved lens position \(pos) to scene settings")
         } catch let error {
@@ -929,6 +930,7 @@ func processCommand(_ input: String) -> Bool {
             print("ERROR: Could not parse float value for lens position.")
             break
         }
+        print("pos: \(pos)")
         _ = setLensPosition(pos)
         
         // autofocus on point, given in normalized x and y coordinates
@@ -1472,6 +1474,7 @@ func processCommand(_ input: String) -> Bool {
                 posIDpairs = [singlePosPair!]
             }
             for (left, right) in posIDpairs {
+                print("left: \(left), right: \(right), proj: \(proj)")
                 rectifyDec(left: left, right: right, proj: proj)
             }
         }
@@ -1640,7 +1643,7 @@ func processCommand(_ input: String) -> Bool {
             }
             positions = [Int](posset).sorted()
         }
-        
+
         for (left, right) in zip(positions, positions[1...]) {
             reproject(left: left, right: right)
         }

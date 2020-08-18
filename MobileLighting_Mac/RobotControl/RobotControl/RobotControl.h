@@ -12,7 +12,7 @@
 
 #pragma GCC visibility push(default)
 
-int Clinet();
+int Client();
 int SendCommand(char *);
 int GotoView(char *);
 int LoadPath(char *, char *);

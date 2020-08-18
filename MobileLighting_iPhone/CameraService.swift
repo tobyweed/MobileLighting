@@ -195,8 +195,11 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                     return
                 }
                 
+                print("lensPosition: \(packet.lensPosition!)")
+                
                 // completion handler function -> sends packet PhotoDataPacket confirming completion
                 func didSetLensPosition(time: CMTime) {
+                    print("-2")
                     photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 }
                 do {
@@ -206,22 +209,33 @@ class CameraService: NSObject, NetServiceDelegate, GCDAsyncSocketDelegate {
                 }
                 print("set lens position \(lensPosition)")
                 
+                print("controller lensPos: \(cameraController.captureDevice.lensPosition)")
                 let finishedFocusing: (CMTime) -> Void = { _ in
+                    print("-1")
                     while cameraController.captureDevice.isAdjustingFocus {}
+                    print("0")
+                    print("controller lensPos 1: \(cameraController.captureDevice.lensPosition)")
                     photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 }
                 
+                print("controller lensPos: \(cameraController.captureDevice.lensPosition)")
                 if lensPosition < 0.0 || lensPosition > 1.0 {
+                    print("1")
                     cameraController.captureDevice.focusMode = .autoFocus
                     photoSender.sendPacket(PhotoDataPacket(photoData: Data(), lensPosition: cameraController.captureDevice.lensPosition))
                 } else {
+                    print("2")
+                    print("finallenspos: \(lensPosition)")
                     cameraController.captureDevice.setFocusModeLocked(lensPosition: lensPosition, completionHandler: finishedFocusing)
                 }
+                print("controller lensPos 2: \(cameraController.captureDevice.lensPosition)")
                 
+                while cameraController.captureDevice.isAdjustingFocus {}
                 cameraController.captureDevice.unlockForConfiguration()
+                print("controller lensPos 3: \(cameraController.captureDevice.lensPosition)")
                 
 //                let queueFinishFocus = DispatchQueue(label: "queueFinishFocus")
-//                queueFinishFocus.async {
+//                queueFinishFocus.async { 0.745098
                 
                 break
             

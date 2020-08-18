@@ -90,11 +90,9 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
                              l, r, rectified ? 1 : 0,
                              xmin, xmax, ymin, ymax)
     
-    
     var in_suffix = "0initial".cString(using: .ascii)!
     var out_suffix = "1crosscheck1".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 0, 0, &in_suffix, &out_suffix)
-    
     // if images are not rectified, do not perform filter disparities
     if !rectified {
         return
@@ -337,7 +335,8 @@ func reproject(left leftpos: Int, right rightpos: Int) {
                 try codey = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)v-4refined2.pfm")
             } catch let err {
                 print(err.localizedDescription)
-                return
+                print("Skipping projector \(proj), paths \(leftpos), \(rightpos).")
+                break
             }
                 
             outx = (dirStruc.reprojected(proj: proj, pos: pos) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
@@ -428,6 +427,10 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
 func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right rightpos: Int) -> [String] {
     return reprojDirs.filter {
         let logFile = $0 + "/log\(leftpos)\(rightpos).txt"
+        if(!FileManager.default.fileExists(atPath: logFile)){
+            print("File \(logFile) doesn't exist")
+            return false
+        }
         let logLines: [String] = (try! String(contentsOfFile: logFile)).split(separator: "\n").map { return String($0) }
         let logTokens: [[String]] = logLines.map {
             return $0.split(separator: " ").map { return String($0) }

@@ -76,6 +76,7 @@ func loadPathFromRobotServer(path: String, emulate: Bool) {
 // -Return value: Float -> camera's lens position directly after done adjusting focus
 // Note that the focus apparently cannot be set perfectly -- there are only some values which the camera focus can be set to, so the camera will default to the closest possible
 func setLensPosition(_ lensPosition: Float) -> Float {
+    print("lensPosition: \(lensPosition)")
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
     let lensPos = photoReceiver.receiveLensPositionSync()

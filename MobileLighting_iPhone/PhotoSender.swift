@@ -128,12 +128,12 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
             return
         }
         let packet = packetsToSend.first!
-        print("PhotoSender -- Sending packet #\(packet.hashValue)")
+        print(" -- PhotoSender:  Sending packet #\(packet.hashValue)")
         
         let packetData = NSKeyedArchiver.archivedData(withRootObject: packet)   // archive packet for sending
         
         var packetDataLength = UInt32(packetData.count)
-        print("PhotoSender -- packetDataLength: \(packetDataLength)")
+        print(" -- PhotoSender:  packetDataLength: \(packetDataLength)")
         var dataToSend = Data()
         for _ in 0..<4 {
             dataToSend.append(UInt8(packetDataLength % UInt32(256)))

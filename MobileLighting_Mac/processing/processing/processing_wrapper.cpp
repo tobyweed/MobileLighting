@@ -24,6 +24,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
+#define BUFFERSIZE 1000
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -89,7 +91,7 @@ extern "C" {
         CFloatImage x, y;
         CFloatImage merged0, merged1;
         CFloatImage fdisp0, fdisp1;
-        char filename[1000]; //, in0[1000], in1[1000];
+        char filename[BUFFERSIZE]; //, in0[1000], in1[1000];
         
         char leftID[50], rightID[50];
         if (rectified) {
@@ -140,7 +142,7 @@ extern "C" {
 
     void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, int pos1, float thresh, int xonly, int halfocc, char *in_suffix, char *out_suffix) {
         CFloatImage x0,x1,y0,y1;
-        char buffer[100];
+        char buffer[BUFFERSIZE];
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, in_suffix);
         ReadImageVerb(x0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, in_suffix);
@@ -177,7 +179,6 @@ extern "C" {
         WriteImageVerb(ccy0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
         WriteImageVerb(ccy1, buffer, 1);
-        cout <<"madeit"<<endl;
     }
 
     void filterDisparities(char *dispx, char *dispy, char *outx, char *outy, int pos0, int pos1, float ythresh, int kx, int ky, int mincompsize, int maxholesize) {
