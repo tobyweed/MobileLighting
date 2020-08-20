@@ -66,7 +66,6 @@
 		AAA0DE4C24CF5C26003637D8 /* Convert.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Convert.cpp; sourceTree = "<group>"; };
 		AAA0DE4D24CF5C26003637D8 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		AAA0DE4F24CF5C26003637D8 /* Convolve.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Convolve.h; sourceTree = "<group>"; };
-		AAA0DE5124CF5C26003637D8 /* libImg.i386-g.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "libImg.i386-g.a"; sourceTree = "<group>"; };
 		AAA0DE5224CF5C26003637D8 /* Copyright.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Copyright.h; sourceTree = "<group>"; };
 		AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIOpng.cpp; sourceTree = "<group>"; };
 		AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageIO.cpp; sourceTree = "<group>"; };
@@ -202,7 +201,6 @@
 				AAA0DE4C24CF5C26003637D8 /* Convert.cpp */,
 				AAA0DE4D24CF5C26003637D8 /* Makefile */,
 				AAA0DE4F24CF5C26003637D8 /* Convolve.h */,
-				AAA0DE5124CF5C26003637D8 /* libImg.i386-g.a */,
 				AAA0DE5224CF5C26003637D8 /* Copyright.h */,
 				AAA0DE5324CF5C26003637D8 /* ImageIOpng.cpp */,
 				AAA0DE5424CF5C26003637D8 /* ImageIO.cpp */,

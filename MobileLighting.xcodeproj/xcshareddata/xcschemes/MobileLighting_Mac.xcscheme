@@ -61,8 +61,8 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/vision/workspace/scenes/skiboots/settings/sceneSettings.yml"
-            isEnabled = "NO">
+            argument = "/Users/vision/workspace/scenes/curuleseats/settings/sceneSettings.yml"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "init"
@@ -70,7 +70,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/vision/workspace/scenes/sandbox/settings/sceneSettings.yml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
       <EnvironmentVariables>

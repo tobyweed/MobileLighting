@@ -53,8 +53,10 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // camera calibration
     case getintrinsics, gi
     case getextrinsics, ge
+    case trackexistingstereo
     
     // image processing
+    case processpairs
     case refine, ref
     case rectify, rect
     case rectifyamb, ra
@@ -116,6 +118,7 @@ func getUsage(_ command: Command) -> String {
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .setvelocity: return "setvelocity [velocity]\n"
     // image processing
+    case .processpairs: return "processpairs [proj] [(pos1,pos2)]\n processpairs -a [(pos1,pos2)]"
     case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify, .rect: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
@@ -126,6 +129,7 @@ func getUsage(_ command: Command) -> String {
     // camera calibration
     case .getintrinsics, .gi: return "getintrinsics"
     case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .trackexistingstereo: return "trackexistingstereo"
     // debugging
     case .showshadows, .ss: return "showshadows"
     case .transform: return "transform"
@@ -501,9 +505,28 @@ func processCommand(_ input: String) -> Bool {
             print("Emulating robot motion. Proceeding with photo capture as though there were 3 robot positions.")
             posIDs = Array(0..<3)
         }
-        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
+        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode, live: true)
         print("Photo capture ended. Exiting command.")
         break
+        
+    case .trackexistingstereo:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        // Make sure we have the right number of tokens
+        guard params.count <= 1, flags.count <= 1 else {
+            print(usage)
+            break
+        }
+        var posIDs: [Int]
+        if( !emulateRobot ) {
+            posIDs = Array(0..<nPositions)
+        } else {
+            posIDs = Array(0..<3)
+        }
+        captureNPosCalibration(posIDs: posIDs, resolution: defaultResolution, mode: "default", live: false)
         
     // captures scene using structured lighting from specified projector
     case .struclight, .sl:
@@ -1182,6 +1205,11 @@ func processCommand(_ input: String) -> Bool {
         } else {
             print("Not a valid projector number: \(tokens[1])")
         }
+        break
+        
+    // MARK: Processing
+    // Runs all processing steps on given pairs
+    case .processpairs:
         break
         
         // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)

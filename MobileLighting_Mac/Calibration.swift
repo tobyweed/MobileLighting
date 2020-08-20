@@ -36,7 +36,7 @@ func loadBoardsFromDirectory(boardsDir: String) -> ([String], [Board]) {
 }
 
 // captureNPosCalibration: takes stereo calibration photos for all N positions
-func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String) {
+func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String, live: Bool) {
     // Instruction packet to take a photo
     let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
     
@@ -51,7 +51,7 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         photoReceiver.dataReceivers.insertFirst(dataReceiver)
         while !received {}
     }
-    
+
     // Not currently supported. To implement, either read old tracks file and overwrite, or append to old tracks file.
 //    // Determine whether to delete or append to photos already in directory
 //    var photoID: Int // Determines what ID we should write photos with
@@ -90,15 +90,9 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
     var i: Int = 0; // iteration count
     
     // Initialize objects to store the data (charuco corners, object points, etc..) gained during calibration photo capture
-//    var calibDataPtrs = [UnsafeMutableRawPointer?](repeating: nil, count: posIDs.count)
     var calibDataPtrs: [UnsafeMutableRawPointer?] = []
     for pos in posIDs {
-//        guard let photoDir = \(dirStruc.stereoPhotos(pos)) else { // check stereo directories' safety
-//            print("Could not find directory for position \(pos). Exiting command.")
-//            return
-//        }
         var photoDirCString = *dirStruc.stereoPhotos(pos)
-
         calibDataPtrs.append( UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirCString)) )
     }
     
@@ -119,20 +113,26 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         var imgNames: [String] = []
         // Take set of calibration photos, one from each position
         for pos in posIDs {
-            // Move the robot to the right position
-            if (!emulateRobot) {
-                var posStr = *String(pos)
-                GotoView(&posStr)
-            }
+            if (live) {
+                // Move the robot to the right position
+                if (!emulateRobot) {
+                    var posStr = *String(pos)
+                    GotoView(&posStr)
+                }
 
-            print("\nTaking image from position \(pos)...")
-            receiveCalibrationImageSync(dir: dirStruc.stereoPhotos(pos), id: i)
-            print("\nChecking path \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
+                print("\nTaking image from position \(pos)...")
+                receiveCalibrationImageSync(dir: dirStruc.stereoPhotos(pos), id: i)
+                print("\nChecking path \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
+            } else {
+                print("Running on preexisting images. Skipping robot motion and photo capture.")
+            }
+            
             do {
                 try _ = safePath("\(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
             } catch let err {
+                print("Could not find image \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
                 print(err.localizedDescription)
-                break
+                return
             }
             let imgName = "IMG\(i).JPG"
             imgNames.append(imgName)

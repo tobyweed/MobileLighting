@@ -12,7 +12,7 @@ var processingMode = true // skip communication with the iPhone, with the robot 
 var emulateRobot = true // skip communication with the robot server.
 var verboseConnection = false // print detailed messages regarding iPhone/Mac connection.
 
-let shouldSaveOriginals = false
+let shouldSaveOriginals = true
 let shouldSendThreshImgs = false
 
 // thresholding parameters
