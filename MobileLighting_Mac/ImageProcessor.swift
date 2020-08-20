@@ -10,47 +10,268 @@ import Foundation
 import Darwin
 import Yaml
 
-func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
-    /*
-    let direction: Int = horizontal ? 1 : 0
-    
-    
-    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
-    let completionHandler: () -> Void = {
-        let filepath = dirStruc.metadataFile(direction)
-        do {
-            let metadataStr = try String(contentsOfFile: filepath)
-            let metadata: Yaml = try Yaml.load(metadataStr)
-            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
-                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
-            } else {
-                print("refine error: could not load angle (double) from YML file.")
-            }
-        } catch {
-            print("refine error: could not load metadata file.")
+
+// MARK: control flow
+
+// Takes an array of tokens, returns a tuple of arrays representing the projectors (1st array) and positions (2nd array)
+//  that the flags indicate using
+func getProjs(tokens: [String], usage: String, inputDir: String) -> [Int] {
+    let (params, flags) = partitionTokens(tokens)
+
+    for flag in flags {
+        if(flag != "-a") {
+            print("Unrecognized flag \(flag)")
+            return []
         }
     }
-    photoReceiver.dataReceivers.insertFirst(
-        SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
-    )
- */
+
+    // determine whether/how many -a flags were used
+    var allproj = false
+    if (flags.count == 1 || flags.count == 2) {
+        allproj = true
+    } else if (flags.count != 0) {
+        print("Unrecognized number of flags \(flags.count)")
+        print(usage)
+        return []
+    }
+
+    var projs = [Int]()
+    if (allproj) {
+        let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+        projs = getIDs(projDirs, prefix: "proj", suffix: "")
+    } else {
+        // make sure we have an array of projectors or a single projector as the second token
+        guard(params.count >= 2) else {
+            print("Not enough arguments")
+            print(usage)
+            return []
+        }
+        if params[1].hasPrefix("[") {
+            projs = stringToIntArray(params[1])
+        } else if Int(params[1]) != nil {
+            projs.append(Int(params[1])!)
+        } else {
+            print("Missing projector position(s)")
+            print(usage)
+            return []
+        }
+    }
+    return projs
 }
 
-// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
-// used to help determine projector placement
-func showShadows(projs: [Int32], pos: Int32) {
-    var decodedDir = *dirStruc.decoded(false)
-    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
-    
-    // convert projs Int32 array to a pointer so that it can be passed to the C
-    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
-    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
-    projsPointer.initialize(from: &projs_, count: projs_.count)
-    
-    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+
+// Takes an array of tokens, returns a tuple of arrays representing the projectors (1st array) and positions (2nd array)
+//  that the flags indicate using
+func getPosPairs(tokens: [String], usage: String, inputDir: String, useproj: Bool) -> ([Int],[Int]) {
+    let (params, flags) = partitionTokens(tokens)
+
+    for flag in flags {
+        if(flag != "-a") {
+            print("Unrecognized flag \(flag)")
+            return ([],[])
+        }
+    }
+
+    // determine whether/how many -a flags were used
+    var allpos = false
+    if (flags.count == 1 && !useproj || flags.count == 2) {
+        allpos = true
+    } else if (flags.count > 2) {
+        print("Unrecognized number of flags \(flags.count)")
+        print(usage)
+        return ([],[])
+    }
+
+    var pos1 = [Int]()
+    var pos2 = [Int]()
+    if (allpos) {
+        let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+        let allpos = getIDs(posDirs, prefix: "pos", suffix: "").sorted()
+        pos1 = Array(allpos[0..<(allpos.count-1)])
+        pos2 = Array(allpos[1..<(allpos.count)])
+        print("pos1: \(pos1)")
+        print("pos2: \(pos2)")
+    } else {
+        // make sure we have an array of projectors or a single projector as the second token
+        guard (params.count >= 3) else {
+            print("Not enough arguments")
+            print(usage)
+            return ([],[])
+        }
+        if (params[1].hasPrefix("[") && params[2].hasPrefix("[")) {
+            pos1 = stringToIntArray(params[1])
+            pos2 = stringToIntArray(params[2])
+        } else if (Int(params[1]) != nil && Int(params[2]) != nil) {
+            pos1.append(Int(params[1])!)
+            pos2.append(Int(params[2])!)
+        } else {
+            print("Missing projector position(s)")
+            print(usage)
+            return ([],[])
+        }
+    }
+    guard pos1.count == pos2.count else {
+        print("Each position array must have the same length.")
+        return ([],[])
+    }
+    return (pos1,pos2)
 }
 
-//MARK: disparity matching functions
+//func getProjPos(tokens: [String], useproj: Bool, usage: String) -> Bool {
+//    let (params, flags) = partitionTokens(tokens)
+//
+//    for flag in flags {
+//        if(flag != "-a") {
+//            print("Unrecognized flag \(flag)")
+//            return false
+//        }
+//    }
+//
+//    // determine whether/how many -a flags were used
+//    var (allproj, allpos) = (false, false)
+//    if(flags.count == 2 && useproj) {
+//        (allproj, allpos) = (true,true)
+//    } else if(flags.count == 1) {
+//        if(useproj) {
+//            (allproj, allpos) = (true,false)
+//        } else {
+//            (allproj, allpos) = (false,true)
+//        }
+//    } else if(flags.count == 0) {
+//        (allproj, allpos) = (false,false)
+//    } else {
+//        print("Unrecognized number of flags \(flags.count)")
+//        print(usage)
+//        return false
+//    }
+//
+//    // get the projector positions from the directory that will be used as input
+//    func getprojs(inputDir: String) -> [Int] {
+//        var projs = [Int]()
+//        if(useproj) {
+//            if(allproj) {
+//                let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+//                projs = getIDs(projDirs, prefix: "proj", suffix: "")
+//            } else {
+//                // make sure we have an array of projectors or a single projector as the second token
+//                guard(params.count >= 2) else {
+//                    print("Not enough arguments")
+//                    print(usage)
+//                    return []
+//                }
+//                if params[1].hasPrefix("[") {
+//                    projs = stringToIntArray(params[1])
+//                } else if Int(params[1]) != nil {
+//                    projs.append(Int(params[1])!)
+//                } else {
+//                    print("Missing projector position(s)")
+//                    print(usage)
+//                    return []
+//                }
+//            }
+//        }
+//        return projs
+//    }
+//
+//    let projs = getprojs(inputDir: dirStruc.decoded(true))
+//    if useproj && projs.count <= 0 {
+//        print("No projectors to be processed")
+//        return false
+//    }
+//
+//    func getpos(inputDir: String) -> [Int] {
+//        var pos = [Int]()
+//        if(allpos) {
+//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+//            pos = getIDs(projDirs, prefix: "pos", suffix: "")
+//        } else {
+//            // make sure we have an array of positions or a single position as the second token
+//            print(params[0])
+//            if params[0].hasPrefix("[") {
+//                projs = stringToIntArray(params[0])
+//            } else if Int(params[0]) != nil {
+//                projs.append(Int(params[0])!)
+//            } else {
+//                print("Missing projector position(s)")
+//                print(usage)
+//                return []
+//            }
+//        }
+//    }
+    
+    
+//    switch tokens[0] {
+//    case "processpairs":
+//        break
+//    default:
+//        break
+//    }
+//
+
+func runAllProcessing() {
+    if !getintrinsics() { return }
+    
+    
+}
+
+// compute extrinsics (left, right)
+
+// rectify decoded (left, right)
+// -a: all adjacent pairs
+
+// rectify amb (left, right)
+// -a: all adjacent
+
+// refine (projectors, position pairs)
+// -a: all projectors
+// -a: all position pairs for which there are rectified decoded images
+
+// disparity (projs, pos pairs)
+// -a: all projectors
+// -a: all position pairs for which there are refined decoded images
+
+// merge (pos pairs)
+// -a: all position pairs for which there are disparities
+
+// reproject (proj, pos pairs)
+// -a: all projectors
+// -a: all position pairs for which there are merged images
+
+// merge2 (pos pairs)
+// -a: all position pairs for which there are reprojected images
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//MARK: disparity matching
 // uses bridged C++ code from image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from
 //    the main command-line user input loop
@@ -127,7 +348,7 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
 }
 
 
-
+//MARK: rectification
 //rectify decoded images
 func rectifyDec(left: Int, right: Int, proj: Int) {
     var intr = *dirStruc.intrinsicsJSON
@@ -208,6 +429,8 @@ func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, light
     rectifyAmbient(1, &resultr, &coutpaths[1])
 }
 
+
+//MARK: merge
 // merge disparity maps for one stereo pair across all projectors
 func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     var leftx, lefty: [[CChar]]
@@ -260,8 +483,6 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     var imgsy = [UnsafeMutablePointer<Int8>?]()
     var outx = [CChar]()
     var outy = [CChar]()
-    
-    
     
     for i in 0..<leftx.count {
         imgsx.append(getptr(&leftx[i]))
@@ -318,6 +539,7 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     }
 }
 
+//MARK: reproject
 // reprojects merged 
 func reproject(left leftpos: Int, right rightpos: Int) {
     let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(true))
@@ -363,6 +585,7 @@ func reproject(left leftpos: Int, right rightpos: Int) {
     }
 }
 
+//MARK: merge reprojected
 func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     for pos in [leftpos, rightpos] {
         _ = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm") // premerged. Currently unused?
@@ -450,4 +673,46 @@ func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right 
         print((reliable ? "reliable: " : "not reliable: ") + logFile )
         return reliable
     }
+}
+
+//MARK: misc
+// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
+// used to help determine projector placement
+func showShadows(projs: [Int32], pos: Int32) {
+    var decodedDir = *dirStruc.decoded(false)
+    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
+    
+    // convert projs Int32 array to a pointer so that it can be passed to the C
+    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
+    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
+    projsPointer.initialize(from: &projs_, count: projs_.count)
+    
+    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+}
+
+// Not sure what this is about -- Toby Weed, 8/20/20
+func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
+    /*
+    let direction: Int = horizontal ? 1 : 0
+    
+    
+    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
+    let completionHandler: () -> Void = {
+        let filepath = dirStruc.metadataFile(direction)
+        do {
+            let metadataStr = try String(contentsOfFile: filepath)
+            let metadata: Yaml = try Yaml.load(metadataStr)
+            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
+            } else {
+                print("refine error: could not load angle (double) from YML file.")
+            }
+        } catch {
+            print("refine error: could not load metadata file.")
+        }
+    }
+    photoReceiver.dataReceivers.insertFirst(
+        SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
+    )
+ */
 }

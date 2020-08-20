@@ -13,9 +13,6 @@ import SwitcherCtrl
 import Yaml
 import AVFoundation
 
-
-//MARK: COMMAND-LINE INPUT
-
 // Enum for all commands
 enum Command: String, EnumCollection, CaseIterable {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
@@ -77,6 +74,9 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case sleep
 }
 
+/*=====================================================================================
+MARK: usage messages
+======================================================================================*/
 // Return usage message for appropriate command
 func getUsage(_ command: Command) -> String {
     switch command {
@@ -127,7 +127,7 @@ func getUsage(_ command: Command) -> String {
     case .reproject, .rp: return "reproject [left] [right]\n       reproject -a"
     case .merge2, .m2: return "merge2 [left] [right]\n       merge2 -a"
     // camera calibration
-    case .getintrinsics, .gi: return "getintrinsics"
+    case .getintrinsics, .gi: return "getintrinsics\ngi"
     case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
     case .trackexistingstereo: return "trackexistingstereo"
     // debugging
@@ -154,6 +154,10 @@ func nextCommand() -> Bool {
     return processCommand(command)
 }
 
+
+/*=====================================================================================
+MARK: process command
+======================================================================================*/
 func processCommand(_ input: String) -> Bool {
     var nextToken = 0
     let tokens: [String] = input.split(separator: " ").map{ return String($0) }
@@ -319,7 +323,10 @@ func processCommand(_ input: String) -> Bool {
         }
         vxmController.stop()
         displayController.switcher?.endConnection()
-        
+      
+    /*=====================================================================================
+    MARK: photo capture
+    ======================================================================================*/
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .takeintrinsics, .ti:
         if( processingMode ) {
@@ -884,7 +891,9 @@ func processCommand(_ input: String) -> Bool {
         break
         
         
-        
+    /*=====================================================================================
+    MARK: control
+    ======================================================================================*/
     // requests current lens position from iPhone camera, prints it
     case .readfocus, .rf:
         if( processingMode ) {
@@ -1207,9 +1216,13 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
-    // MARK: Processing
+        
+    /*=====================================================================================
+    MARK: processing
+    ======================================================================================*/
     // Runs all processing steps on given pairs
     case .processpairs:
+//        runProcessingCommand(tokens: tokens, useproj: true, usage: usage)
         break
         
         // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
@@ -1218,143 +1231,38 @@ func processCommand(_ input: String) -> Bool {
         // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine, .ref:
-        guard tokens.count > 1 else {
-            print(usage)
-            break cmdSwitch
-        }
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        var curParam = 0
-        
-        var rectified = false, allproj = false, allpos = false
-        for flag in flags {
-            switch flag {
-            case "-r":
-                rectified = true
-            case "-a":
-                if !allproj {
-                    allproj = true
-                } else {
-                    allpos = true
-                }
-            default:
-                print("refine: invalid flag \(flag)")
-                break cmdSwitch
-            }
-        }
-        
-        // verify proper # of tokens passed
-        if allproj, allpos {
-            guard params.count == 0 else {
-                print(usage)
-                break
-            }
-        } else if allproj {
-            guard params.count == (rectified ? 2 : 1) else {
-                print(usage)
-                break
-            }
-        } else {
-            guard params.count == (rectified ? 3 : 2) else {
-                print(usage)
-                break
-            }
-        }
-        
-        
-        var projs = [Int]()
-        if allproj {
-            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
-            projs = getIDs(projDirs, prefix: "proj", suffix: "")
-        } else {
-            guard let proj = Int(params[0]) else {
-                print("refine: invalid projector \(params[0])")
-                break
-            }
-            projs = [proj]
-            curParam += 1
-        }
-
-        let singlePositions: [Int]?
-        if !allpos {
-            if !rectified {
-                guard let pos = Int(params[curParam]) else {
-                    print(usage)
-                    break
-                }
-                singlePositions = [pos]
-            } else {
-                guard let left = Int(params[curParam]), let right = Int(params[curParam+1]) else {
-                    print(usage)
-                    break
-                }
-                singlePositions = [left, right]
-            }
-        } else {
-            singlePositions = nil
-        }
-        
+        let projs = getProjs(tokens: tokens, usage: usage, inputDir: dirStruc.decoded(true))
+        print("projs: \(projs)")
         for proj in projs {
-            let positions: [Int]
-            if !allpos {
-                positions = singlePositions!
-            } else {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
-                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
-            }
+//            let positions: [Int]
+//                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: true))
+//                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
             
-            if !rectified {
-                for pos in positions {
-                    for direction: Int32 in [0, 1] {
-                        var imgpath: [CChar]
-                        var outdir: [CChar]
+            let (positions1, positions2) = getPosPairs(tokens: tokens, usage: usage, inputDir: dirStruc.decoded(proj: proj, rectified: true), useproj: true)
+            let positionPairs = zip(positions1.sorted(), positions2.sorted())
+            for (leftpos, rightpos) in positionPairs {
+                for direction: Int in [0, 1] {
+                    for pos in [leftpos, rightpos] {
+                        var cimg: [CChar]
+                        var coutdir: [CChar]
                         do {
-                            try imgpath = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm")
-                            try outdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: false))
+                            try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
+                            try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
                         } catch let err {
                             print(err.localizedDescription)
                             break
                         }
-                        
+
                         let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
                         do {
                             let metadataStr = try String(contentsOfFile: metadatapath)
                             let metadata: Yaml = try Yaml.load(metadataStr)
                             if let angle: Double = metadata.dictionary?["angle"]?.double {
-                                var posID = *"\(pos)"
-                                refineDecodedIm(&outdir, direction, &imgpath, angle, &posID)
+                                var posID = *"\(leftpos)\(rightpos)"
+                                refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
                             }
                         } catch {
                             print("refine error: could not load metadata file \(metadatapath).")
-                        }
-                    }
-                }
-            } else {
-                let positionPairs = zip(positions, positions[1...])
-                for (leftpos, rightpos) in positionPairs {
-                    for direction: Int in [0, 1] {
-                        for pos in [leftpos, rightpos] {
-                            var cimg: [CChar]
-                            var coutdir: [CChar]
-                            do {
-                                try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
-                                try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
-                            } catch let err {
-                                print(err.localizedDescription)
-                                break
-                            }
-                            
-                            let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
-                            do {
-                                let metadataStr = try String(contentsOfFile: metadatapath)
-                                let metadata: Yaml = try Yaml.load(metadataStr)
-                                if let angle: Double = metadata.dictionary?["angle"]?.double {
-                                    var posID = *"\(leftpos)\(rightpos)"
-                                    refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
-                                }
-                            } catch {
-                                print("refine error: could not load metadata file \(metadatapath).")
-                            }
-                            
                         }
                     }
                 }
@@ -1728,28 +1636,13 @@ func processCommand(_ input: String) -> Bool {
             mergeReprojected(left: left, right: right)
         }
         
-        // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
-        // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
-    // ABSOLUTE PATHS NOT REQUIRED
-    // Not currently implemented!
+    // do intrinsics calibration
     case .getintrinsics, .gi:
-        guard tokens.count <= 2 else {
+        guard tokens.count == 1 else {
             print(usage)
             break
         }
-        
-        var path: [CChar]
-        do {
-            try path = safePath("\(dirStruc.tracks)/intrinsics-track.json")
-        } catch let err {
-            print(err.localizedDescription)
-            break
-        }
-        var outputDir = *"\(dirStruc.calibComputed)"
-
-        DispatchQueue.main.async {
-            ComputeIntrinsics(&path, &outputDir)
-        }
+        _ = getintrinsics()
         break
         
     // do stereo calibration
@@ -1764,6 +1657,7 @@ func processCommand(_ input: String) -> Bool {
                 print("getextrinsics: computing extrinsics for all positions.")
             default:
                 print("getextrinsics: unrecognized flag \(flag).")
+                break
             }
         }
         
@@ -1805,7 +1699,7 @@ func processCommand(_ input: String) -> Bool {
         
         
     /*=====================================================================================
-     Debugging
+     MARK: debugging
      ======================================================================================*/
 
     // creates png files meshing images from different projectors to help determine projector placement

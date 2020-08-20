@@ -35,6 +35,23 @@ func loadBoardsFromDirectory(boardsDir: String) -> ([String], [Board]) {
     return (boardPaths,boards)
 }
 
+// compute intrinsics
+func getintrinsics() -> Bool {
+    var path: [CChar]
+    do {
+        try path = safePath("\(dirStruc.tracks)/intrinsics-track.json")
+    } catch let err {
+        print(err.localizedDescription)
+        return false
+    }
+    var outputDir = *"\(dirStruc.calibComputed)"
+
+    DispatchQueue.main.async {
+        ComputeIntrinsics(&path, &outputDir)
+    }
+    return true
+}
+
 // captureNPosCalibration: takes stereo calibration photos for all N positions
 func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String, live: Bool) {
     // Instruction packet to take a photo
