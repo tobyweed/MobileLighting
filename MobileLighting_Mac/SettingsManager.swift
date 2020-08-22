@@ -228,15 +228,15 @@ class Board {
     static var format: Yaml {
         get {
             var maindict = [Yaml : Yaml]()
-            maindict[Yaml.string("description")] = Yaml.string("(value uninitialized)")
-            maindict[Yaml.string("squares_x")] = Yaml.int(12)
-            maindict[Yaml.string("squares_y")] = Yaml.int(9)
-            maindict[Yaml.string("square_size_mm")] = Yaml.double(60)
-            maindict[Yaml.string("marker_size_mm")] = Yaml.double(45)
+            maindict[Yaml.string("description")] = Yaml.string("large fine calib.io board")
+            maindict[Yaml.string("squares_x")] = Yaml.int(25)
+            maindict[Yaml.string("squares_y")] = Yaml.int(18)
+            maindict[Yaml.string("square_size_mm")] = Yaml.double(30)
+            maindict[Yaml.string("marker_size_mm")] = Yaml.double(22.5)
             maindict[Yaml.string("board_width_mm")] = Yaml.double(800)
             maindict[Yaml.string("board_height_mm")] = Yaml.double(600)
             maindict[Yaml.string("dict")] = Yaml.string("DICT_5x5")
-            maindict[Yaml.string("start_code")] = Yaml.int(300)
+            maindict[Yaml.string("start_code")] = Yaml.int(0)
             return Yaml.dictionary([Yaml.string("Board") : Yaml.dictionary(maindict)])
         }
     }
@@ -271,165 +271,4 @@ class Board {
             print(error.localizedDescription)
         }
     }
-}
-
-// OLD
-class CalibrationSettings {
-    let filepath: String
-    var yml: Yaml
-
-    enum CalibrationMode: String {
-        case INTRINSIC, STEREO, PREVIEW
-    }
-    enum CalibrationPattern: String {
-        case CHESSBOARD, ARUCO_SINGLE
-    }
-
-    enum Key: String {
-        case Mode, Calibration_Pattern, ChessboardSize_Width
-        case ChessboardSize_Height
-        case Num_MarkersX, Num_MarkersY
-        case First_Marker
-        case Num_of_Boards
-        case ImageList_Filename
-        case IntrinsicInput_Filename, IntrinsicOutput_Filename, ExtrinsicOutput_Filename
-        case UndistortedImages_Path, RectifiedImages_Path
-        case DetectedImages_Path, Calibrate_FixDistCoeffs
-        case Calibrate_FixAspectRatio, Calibrate_AssumeZeroTangentialDistortion
-        case Calibrate_FixPrincipalPointAtTheCenter
-        case Show_UndistortedImages, ShowRectifiedImages
-        case Wait_NextDetecedImage
-    }
-
-    init(_ path: String) {
-        self.filepath = path
-        do {
-            let ymlStr = try String(contentsOfFile: self.filepath)
-            let tmp = try Yaml.load(ymlStr)
-            guard let dict = tmp.dictionary else {
-                throw YamlError.InvalidFormat
-            }
-            guard dict[Yaml.string("Settings")] != nil else {
-                throw YamlError.MissingRequiredKey
-            }
-            self.yml = dict[Yaml.string("Settings")]!
-        } catch let error {
-            print(error.localizedDescription)
-            fatalError()
-        }
-    }
-
-    // return all property names as an array of Strings
-    func properties()-> [(String,Any)] {
-        let mirror = Mirror(reflecting: self)
-        return mirror.children.compactMap{ ($0.label!, $0.value) }
-    }
-
-    func set(key: Key, value: Yaml) {
-        guard var dict = self.yml.dictionary else { return }
-        dict[Yaml.string(key.rawValue)] = value
-        self.yml = Yaml.dictionary(dict)
-    }
-
-    func get(key: Key) -> Yaml? {
-        guard let dict = self.yml.dictionary else { return nil }
-        return dict[Yaml.string(key.rawValue)]
-    }
-
-    func save() {
-        try! Yaml.save(Yaml.dictionary([Yaml.string("Settings") : self.yml]), toFile: filepath)
-    }
-
-    static var format: Yaml {
-        get {
-            var settingsDict = [Yaml : Yaml]()
-            settingsDict["Num_MarkersX"] = Yaml.array([8,7].map{return Yaml.int($0)})
-            settingsDict["Num_MarkersY"] = Yaml.array([7,6].map{return Yaml.int($0)})
-            settingsDict["Num_of_Boards"] = Yaml.int(2)
-            settingsDict["ChessboardSize_Width"] = Yaml.int(17)
-            settingsDict["ChessboardSize_Height"] = Yaml.int(12)
-            settingsDict["Calibration_Pattern"] = Yaml.string("ARUCO_SINGLE")
-            settingsDict["Calibrate_AssumeZeroTangentialDistortion"] = Yaml.int(1)
-            settingsDict["ImageList_Filename"] = Yaml.string("(value uninitialized)")
-            settingsDict["ExtrinsicOutput_Filename"] = Yaml.string("(value uninitialized)")
-            settingsDict["Show_UndistortedImages"] = Yaml.int(0)
-            settingsDict["Wait_NextDetectedImage"] = Yaml.int(0)
-            settingsDict["IntrinsicInput_Filename"] = Yaml.string("(value uninitialized)")
-            settingsDict["Calibrate_FixPrincipalPointAtTheCenter"] = Yaml.int(0)
-            settingsDict["UndistortedImages_Path"] = Yaml.string("0")
-            settingsDict["DetectedImages_Path"] = Yaml.string("0")
-            settingsDict["Show_RectifiedImages"] = Yaml.int(1)
-            settingsDict["Square size"] = Yaml.double(25.4)
-            settingsDict["IntrinsicOutput_Filename"] = Yaml.string("(value uninitialized)")
-            settingsDict["Dictionary"] = Yaml.int(11)
-            settingsDict["Calibrate_FixAspectRatio"] = Yaml.int(0)
-            settingsDict["RectifiedImages_Path"] = Yaml.string("0")
-            settingsDict["Marker_Length"] = Yaml.array([108,144].map{return Yaml.double($0)})
-            settingsDict["Calibrate_FixDistCoeffs"] = Yaml.string("00111")
-            settingsDict["First_Marker"] = Yaml.array([516,614].map{return Yaml.int($0)})
-            settingsDict["Mode"] = Yaml.string(CalibrationMode.STEREO.rawValue)
-            settingsDict["Alpha_Parameter"] = Yaml.int(-1)
-            settingsDict["Resizing_Factor"] = Yaml.int(1)
-            let mainDict = Yaml.dictionary(settingsDict)
-            return Yaml.dictionary([Yaml.string("Settings") : mainDict])
-        }
-    }
-
-    static func create(_ dirStruc: DirectoryStructure) throws {
-        let path = dirStruc.calibrationSettingsFile
-        try Yaml.save(CalibrationSettings.format, toFile: path)
-    }
-}
-
-
-func generateIntrinsicsImageList(imgsdir: String = dirStruc.intrinsicsPhotos, outpath: String = dirStruc.intrinsicsImageList) {
-    guard var imgs = try? FileManager.default.contentsOfDirectory(atPath: imgsdir) else {
-        print("could not read contents of directory \(imgsdir)")
-        return
-    }
-    
-    imgs = imgs.filter { (_ filepath: String) in
-        guard let file = filepath.split(separator: "/").last else { return false }
-        guard file.hasPrefix("IMG"), file.hasSuffix(".JPG"), Int(file.dropFirst("IMG".count).dropLast(".JPG".count)) != nil else {
-            return false
-        }
-        return true
-    }
-
-    var imgList: [Yaml] = [Yaml]()
-    for path in imgs {
-        imgList.append(Yaml.string("\(imgsdir)/\(path)"))
-    }
-    let ymlList = Yaml.array(imgList)
-    let ymlDict = Yaml.dictionary([Yaml.string("images") : ymlList])
-
-    try! Yaml.save(ymlDict, toFile: outpath)
-}
-
-func generateStereoImageList(left ldir: String, right rdir: String, outpath: String = dirStruc.stereoImageList) {
-    guard var limgs = try? FileManager.default.contentsOfDirectory(atPath: ldir), var rimgs = try? FileManager.default.contentsOfDirectory(atPath: rdir) else {
-        print("could not read contents of directory \(ldir) or \(rdir)")
-        return
-    }
-    
-    let filterIms: (String) -> Bool = { (_ filepath: String) in
-        let file = filepath.split(separator: "/").last!
-        return (file.hasPrefix("IMG") || file.hasPrefix("img")) && (file.hasSuffix(".JPG") || file.hasSuffix(".jpg"))
-    }
-    limgs = limgs.filter(filterIms)
-    rimgs = rimgs.filter(filterIms)
-    let mapNames: (String) -> String = {(_ fullpath: String) in
-        return String(fullpath.split(separator: "/").last!)
-    }
-    let lnames = limgs.map(mapNames)
-    let rnames = rimgs.map(mapNames)
-    let names = Set(lnames).intersection(rnames)
-    var imgList = [Yaml]()
-    for name in names {
-        imgList.append(Yaml(stringLiteral: "\(ldir)/\(name)"))
-        imgList.append(Yaml(stringLiteral: "\(rdir)/\(name)"))
-    }
-    let ymlList = Yaml.array(imgList)
-    let ymlDict = Yaml(dictionaryLiteral: (Yaml(stringLiteral: "images"), ymlList))
-    try! Yaml.save(ymlDict, toFile: outpath)
 }

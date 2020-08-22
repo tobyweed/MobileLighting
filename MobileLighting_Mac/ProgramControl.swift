@@ -84,7 +84,7 @@ func getUsage(_ command: Command) -> String {
     case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
-    case .printsettings: return "printsettings [type=scene (calib|scene)]" // print settings of calib or scene type. defaults to scene
+    case .printsettings: return "printsettings" // print settings
     // communications
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
@@ -213,25 +213,9 @@ func processCommand(_ input: String) -> Bool {
         
     // print scene settings properties & values
     case .printsettings:
-        guard tokens.count <= 2 else {
+        guard tokens.count == 1 else {
             print(usage)
             break
-        }
-        if tokens.count == 2 {
-            // print calib or throw an error
-            if(tokens[1] == "calib"){
-                let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)
-                let calibProperties = calibSettings.properties()
-                print("Calibration Settings:")
-                for prop in calibProperties {
-                    print("    \(prop.0): \(prop.1)")
-                }
-                break
-            } else if (tokens[1] != "scene") { // if the second token is not calib or scene, print an error and exit
-                print("token \"\(tokens[1])\" is not a valid token.")
-                print(usage)
-                break
-            }
         }
         // if we've gotten this far, print scene settings
         let sceneProperties = sceneSettings.properties()

@@ -366,7 +366,7 @@ class Decoder {
         
         if binaryCodeSystem == .MinStripeWidthCode && minSW_codeToPos == nil {
             do {
-                let filepath = Bundle.main.resourcePath! + "/minSW.dat" 
+                let filepath = Bundle.main.resourcePath! + "/minSW.dat"
                 try loadMinSWCodesConversionArrays(filepath: filepath)
             } catch {
                 print("Decoder: failed to load minSWcodes for processing.")

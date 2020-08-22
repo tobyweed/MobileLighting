@@ -101,16 +101,6 @@ case "init":
         board.save()
         print("Successfully created board file at \(dirStruc.boardsDir)/board0.yml")
         
-//        OLD
-        try CalibrationSettings.create(dirStruc)
-        // set contingent values
-        let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)
-        calibSettings.set( key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.calibComputed + "/extrinsics.yml"))
-        calibSettings.set( key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.calibComputed + "/intrinsics.yml"))
-        calibSettings.set( key: .ImageList_Filename, value: Yaml.string(dirStruc.calibration + "/imageLists/intrinsicsImageList.yml"))
-        calibSettings.save()
-        print("successfully created calibration file at \(scenesDirectory)/\(sceneName)/settings/calibration.yml")
-        
         // try to create scenePictures directory
         let sceneInfo = dirStruc.sceneInfo
         try? FileManager.default.createDirectory(atPath: sceneInfo, withIntermediateDirectories: true, attributes: nil)
@@ -150,7 +140,7 @@ default:
     exit(0)
 }
 
-// Save the paths to the settings files
+// Save the paths from the settings files
 scenesDirectory = sceneSettings.scenesDirectory
 sceneName = sceneSettings.sceneName
 minSWfilepath = sceneSettings.minSWfilepath
