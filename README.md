@@ -37,7 +37,7 @@
     * [Communication between ML Mac and ML iOS](#communication-between-ml-mac-and-ml-ios)
     * [Communication between ML Mac and ML Robot Control](#communication-between-ml-mac-and-ml-robot-control)
         * [Loading Paths](#loading-paths)
-        * [Debug.swift and running modes](#debug.swift-&-running-modes)
+        * [Debug.swift and running modes](#debugswift--running-modes)
     * [Bridging C++ to Swift](#bridging-cpp-to-swift)
 * [Known Issues and Loose Ends](#known-issues-and-loose-ends)
    * [Robot Crashes](#robot-crashes)
