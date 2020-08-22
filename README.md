@@ -72,14 +72,8 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 
 ### Installation
 1. Install Xcode (available through the Mac App Store).
+1. Add a developer account: **Xcode > Preferences > Accounts > Add**
 1. Install openCV 4 with `brew install opencv@4`.
-1. Install the Mac USB-to-Serial driver.
-    1. Go to the website <https://www.mac-usb-serial.com/dashboard/>
-    1. Download the package called **PL-2303 Driver (V3.1.5)**
-    1. Login using these credentials:
-    **username:** _nmosier_
-    **password:** _scharsteinmobileimagematching_
-    1. Open & install the driver package.
 1. Clone the entire Xcode project from the GitHub repository:
 `git clone https://github.com/tobyweed/MobileLighting.git`
 1. Open the Xcode project at MobileLighting/MobileLighting.xcodeproj.
@@ -95,7 +89,12 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 1. You may also encounter code signing errors — these can generally be resolved by opening the Xcode project's settings (in the left sidebar where all the files are listed, click on the blue Xcode project icon with the name <project>.xcodeproj). Select the target, and then open the "General" tab. Check the "Automatically manage signing" box under the "signing" section. [Here's a visual guide](readme_images/codesign.png)
 1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it from Xcode. To run it from a non-Xcode command line, first build the project (the easiest way to do that is ⌘-b from within Xcode). This should write all necessary products into a bin/ directory within MobileLighting/. Then run "bin/MobileLighting_Mac" with any tokens (init or a path to a sceneSettings.yml file) to run the app.
     * Note that whenever running the app, it expects either "init" or an absolute path to a sceneSettings.yml file as an argument. From Xcode, these arguments can be passed by going to the build target menu in the top left and clicking "Edit Scheme...". When executing the ML Mac product from Terminal, pass the arguments as you would to any command-line tool.
-1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). You will need to connect an iOS device to your computer, go through the Xcode setup process, and then select the device in the menu.
+1. If you want to build the iPhone app, get the iOS opencv framework. One way to do this is by building it from source:
+    1. Clone the opencv repo (you probably don’t want to do this inside of the MobileLighting directory): `git clone https://github.com/opencv/opencv.git`
+    1. Build it: `python opencv/platforms/ios/build_framework.py ios`
+    1. Move the iOS framework to the iPhone project: `mv <path to install directory>/ios/opencv2.framework <path to workspace>/MobileLighting/MobileLighting_iPhone`
+1. Verify that the opencv iOS framework is linked by checking **MobileLighting.xcodeproj > Targets > MobileLighting_iPhone > Build Phases > Link Binary With Libraries**
+1. Select the MobileLighting_iPhone target from the same menu as before (in the top left corner). You will need to connect an iOS device to your computer, go through the Xcode setup process, and then select the device in the menu.
 1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it. After the app is on the phone, it can be run without being connected to the Mac--just click on the icon.
 
 
@@ -133,15 +132,11 @@ Directions to do this from Xcode:
 Next, update the Yaml files with the parameters you will use for the scene. 
 Some important parameters to consider changing:
 1. sceneSettings.yml:
-    * minSWdataPath: enter the path to the min SW data file here. This is important for structured lighting capture, as the program will try to read the data at this path to determine what structured lighting patterns to display on the projectors.
+    * minSWdataPath: enter the path to the min SW data file here. This is important for structured lighting capture, as the program will try to read the data at this path to determine what structured lighting patterns to display on the projectors. Note, 8/22/20: we only ever use the same file, so this should be changed.
     * struclight (exposureISOs & exposureDurations): these parameters contain lists of numbers which set the exposures taken for structured lighting. It is good for these to have a wide range, as that'll make the system do better with particularly dark or light surfaces, but it is also important to note that the larger the list of exposures, the longer the already time-consuming structured lighting capture step will take.
     * ambient (exposureISOs & exposureDurations): another pair of lists which determine the exposures of images to be taken, in this case for ambients. Since ambient image capture doesn't take long, this list can be longer. Note that ISOs may not need to vary (durations are more important to change) and that the durations should be varied on a log scale (e.g. 0.01, 0.1, 1.0 or  Or 0.01, 0.03, 0.1, 0.3, 1).
     * robotPathName: this will be used to try and automatically load the correct robot path to the Rosvita server. Once you have set the robot path on the server, make sure to enter its name here.
-    * focus: this parameter, ranging from 0.0 to 1.0 where 0.0 is close and 1.0 is far, sets the camera focus when the app starts. The focus then remains fixed for the entire capture session. This should be initially established with both apps running by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. 
-1. calibration.yml:
-    * Alpha parameter: the free scaling factor. If -1, the focal lengths of the camera are kept fixed when computing the projection matrices. If 1, the rectified images are decimated and shifted so that all the pixels from the original image are retained in the rectified image -- focal lengths get reduced in the process. If 0, the received pictures are zoomed and shifted so that only valid pixels are visible -- focal lengths get increased in the process.
-    * Resizing factor: determines how much to resize the image by on rectification. For example, "2" will zoom the image by 100%.
-    * There are also a number of parameters (Num_MarkersX, Marker_Length, Num_of_Boards, Num_MarkersY, First_Marker) which the program uses to generate calibration matrices based on the positions of ArUco or chessboards in calibration images. These need to be changed whenever the board(s) being used for calibration are changed.
+    * focus: this parameter, ranging from 0.0 to 1.0 where 0.0 is close and 1.0 is far, sets the camera focus when the app starts. The focus then remains fixed for the entire capture session. This should be initially established with both apps running by tapping the phone screen to focus on the scene, then using `readfocus` and pasting the focus value into the sceneSettings file. Note, 8/22/20: Usually, the iPhone focus gets set to a slightly higher value than listed here. Make sure to check for stability using **readfocus**.
     
 ##### Scene selection
 The system has a few limitations and caveats to be considered when taking a scene:
@@ -183,11 +178,12 @@ Photos:
 4. Save the files and directories from steps 1-3 and save them in the sceneInfo directory.
 
 
+**Note, 8/22/20:** The information below about the processing commands is out of date/in flux. It will be updated when the functionality is finalized.
 ### Calibration
 In order to capture calibration images, the Mac must be connected to the robot arm (and the iPhone).
 ##### Intrinsic Calibration
 To capture intrinsics calibration images, use the following command:
-`calibrate (-a|-d)? [resolution=high]`
+`takeintrinsics (-a|-d)? [resolution=high]`
 Flags:
 * `-a`: append photos to existing ones in <scene>/orig/calibration/intrinsics
 * `-d`: delete all photos in <scene>/orig/calibration/intrinsics before beginning capture
@@ -207,8 +203,7 @@ Flags:
 ML Mac automatically sets the correct exposure before taking the photos. This exposure is specified in the `calibration -> exposureDuration, exposureISO` properties in the scene settings file.
 
 This command will first prompt the user to hit enter to take a set or to write "q" to quit. If the user hits enter, ML Mac will move the robot arm to the 0th position. It will then take a photo. It will iterate through all positions in the path loaded on the Rosvita server, taking a picture at each one, and saving those pictures at <scene>/orig/calibration/stereo/posX/IMGn.JPG, where X is the postion number and n is the set number. Then it will prompt the user whether they want to continue taking sets, retake the last set (overwriting the IMGn.JPG photos), or stop running the command.
-
-
+   
 ### Ambient
 In order to capture ambient data, the Mac must be connected to the robot arm (and the iPhone).
 
@@ -416,7 +411,7 @@ The two apps of the ML system communicate wirelessly using Bonjour / async socke
     * Try restarting both apps, but launching ML iOS _before_ ML Mac.
     * Sometimes, the connection between ML Mac and ML iOS drops unexpectedly. The "solution" is to try the same steps listed directly above.
     
-    **Update:** As of June 2019, the two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
+    **Note, 06/19:** The two apps have been communicating by connecting to local wifi network **RobotLab** in the robot lab. This works fine. The trouble with the **MiddleburyCollege** network appears to have been some authorization caveat.
 
 ### Communication Between ML Mac and ML Robot Control
 The main program, ML Mac, communicates with the robot via a server running Rosvita (robot control software). This is necessarily on a different machine, as Rosvita only runs on Ubuntu. 
@@ -430,8 +425,8 @@ The server stores robot positions in sets called "paths," which are initialized 
 
 ML Mac automatically tries to load the path specified in the sceneSettings.yml file whenever the program is started.
 
-##### Debug Mode
-There is a variable hard-coded in main.swift called debugMode. When this is set to true, the app will not try to connect to the robot server at all, and will automatically skip robot motion. This is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization (with the message **trying to connect to robot server**). Note that this will load a simulated path with 3 viewpoints, and the number of viewpoints is used to compute, for example, extrinsics, so **some processing steps might be affected in debugmode**.
+##### Debug.swift & Running Modes
+There are variables hard-coded in `Debug.swift` which determine the run mode: `processingMode`, `emulateRobot`, and `verboseConnection`. Toggling these will affect the way the program runs: processing mode disables any connection, & commands which require connection. Emulate robot disables connecting to the robot, and allows commands which require the robot by just skipping the parts where commands are sent to the robot (this is recommended when testing the app without the robot, as otherwise the program will try to connect to the robot server indefinitely on program initialization with the message **trying to connect to robot server**). Verbose connection changes the quanitity of debugging messages output by the Mac & iPhone connection services & clients. 
 
 ### Bridging cpp to Swift
 Here's a link that describes the process: <http://www.swiftprogrammer.info/swift_call_cpp.html>
