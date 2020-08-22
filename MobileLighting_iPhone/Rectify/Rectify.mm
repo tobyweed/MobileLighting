@@ -27,6 +27,7 @@ const bool smartInterpolation = false;
     
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
+int resizing_factor = 1;
 
 // computemaps -- computes maps for stereo rectification based on intrinsics & extrinsics matrices
 // only needs to be computed once per stereo pair
@@ -79,8 +80,8 @@ extern "C" UIImage *rectifyCodes(int camera, UIImage *inIm) {
         Mat g_result(ims, CV_8UC1);
         remap(imageT, im_linear, mapx, mapy, INTER_LINEAR);
         remap(imageT, im_nearest, mapx, mapy, INTER_NEAREST);
-        cvtColor(im_linear, g_linear, CV_BGRA2GRAY);
-        cvtColor(im_nearest, g_nearest, CV_BGRA2GRAY);
+        cvtColor(im_linear, g_linear, COLOR_BGRA2GRAY);
+        cvtColor(im_nearest, g_nearest, COLOR_BGRA2GRAY);
         assert (g_linear.channels() == 1 && g_nearest.channels() == 1);
         for (int j = 0; j < g_linear.size().height; ++j) {
             for (int i = 0; i < g_linear.size().width; ++i) {
@@ -102,7 +103,7 @@ extern "C" UIImage *rectifyCodes(int camera, UIImage *inIm) {
                 g_result.at<uint8_t>(j,i) = val;
             }
         }
-        cvtColor(g_result, image2, CV_GRAY2BGRA);
+        cvtColor(g_result, image2, COLOR_GRAY2BGRA);
         assert (image2.channels() == 4);
     } else {
         remap(imageT, image2, mapx, mapy, INTER_LINEAR);

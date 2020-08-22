@@ -22,6 +22,7 @@ func +(left: [CChar], right: [CChar]) -> [CChar] {
     return result
 }
 
+// Convert String to [CChar]
 prefix operator *
 extension String {
     static prefix func * (swiftString: String) -> [CChar] {
@@ -29,12 +30,14 @@ extension String {
     }
 }
 
+// Convert [String] to [[CChar]]
 prefix func * (swiftStringArray: [String]) -> [[CChar]] {
     return swiftStringArray.map {
         return *$0
     }
 }
 
+// Convert [[CChar]] to [UnsafeMutablePointer<CChar>?]
 prefix operator **
 prefix func ** (cStringArray: inout [[CChar]]) -> [UnsafeMutablePointer<CChar>?] {
     var ptrs = [UnsafeMutablePointer<CChar>?]()
@@ -52,7 +55,7 @@ enum PathError: Error {
 
 func safePath(_ path: String) throws -> [CChar] {
     if(!pathExists(path)) {
-        print( "path \(path) does not exist." )
+        print( "Path \(path) does not exist." )
         throw PathError.invalidPath
     }
     return *path
@@ -184,7 +187,6 @@ func partitionTokens(_ tokens: [String]) -> ([String], [String]) {
 // used for supporting arrays as command line arguments
 func stringToIntArray(_ string: String ) -> [Int] {
     // initialize an array of the connected ports on the switcher.
-    let startlist = string.index(string.startIndex, offsetBy: 1)
     var liststr = string.dropFirst()// cut off the first character
     // if last character is ], cut it off too
     // this isn't a requirement because Xcode will sometimes automatically appear to add "]" without actially doing so

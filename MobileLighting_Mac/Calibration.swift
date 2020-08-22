@@ -1,8 +1,42 @@
 import Foundation
 import Yaml
 
+// Load boards from all eligible .yml files in given directory
+// returns an array of paths to valid board Yaml files and an array of Boards
+// returns empty arrays when errors are thrown
+func loadBoardsFromDirectory(boardsDir: String) -> ([String], [Board]) {
+    // Retrieve paths of all files in given directory
+    var paths: [String]
+    do {
+        paths = try FileManager.default.contentsOfDirectory(atPath: "\(boardsDir)/")
+    } catch let err {
+        print(err.localizedDescription)
+        return ([],[])
+    }
+    guard paths.count > 0 else {
+        print("No files were found in directory \(boardsDir)/")
+        return ([],[])
+    }
+    
+    // Try to load a board from each path. If successful, load a board and add a path to the return list.
+    // else print a message
+    var boards: [Board] = []
+    var boardPaths: [String] = []
+    for path in paths {
+        do {
+            let board = try Board("\(boardsDir)/\(path)")
+            boards.append(board)
+            boardPaths.append("\(boardsDir)/\(path)")
+        } catch let err {
+            print(err.localizedDescription)
+            print("Could not initialize board from file \(path).")
+        }
+    }
+    return (boardPaths,boards)
+}
+
 // captureNPosCalibration: takes stereo calibration photos for all N positions
-func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String) {
+func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: String, live: Bool) {
     // Instruction packet to take a photo
     let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: resolution)
     
@@ -17,118 +51,118 @@ func captureNPosCalibration(posIDs: [Int], resolution: String = "high", mode: St
         photoReceiver.dataReceivers.insertFirst(dataReceiver)
         while !received {}
     }
+
+    // Not currently supported. To implement, either read old tracks file and overwrite, or append to old tracks file.
+//    // Determine whether to delete or append to photos already in directory
+//    var photoID: Int // Determines what ID we should write photos with
+//    switch mode { // Switch in case we want to add more flags later
+//    case "-a":
+//        // not yet implemented. TODO: add delete flag support
+//        let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
+//            let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
+//            return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
+//        }
+//        let maxVal = idArray.map {
+//            return $0.max() ?? -1 // find max photo ID, or -1 if no photos empty, so that counting will begin at 0
+//            }.max() ?? -1
+//        // maxVal = max(idArray)
+//        photoID = maxVal + 1
+//        break
+//    default:
+//        // erase directories
+//        for dir in stereoDirs {
+//            removeFiles(dir: dir)
+//        }
+//        photoID = 0
+//    }
     
-    // Get the directories to save photos to
-    let stereoDirs = posIDs.map {
-        return dirStruc.stereoPhotos($0)
+    print("\nHit Enter to begin taking photos, or q then enter to quit.")
+    guard let input = readLine() else {
+        fatalError("Unexpected error reading stdin.")
     }
-    let stereoDirDict = posIDs.reduce([Int : String]()) { (dict: [Int : String], id: Int) in
-        var dictNew = dict
-        dictNew[id] = dirStruc.stereoPhotos(id)
-        return dictNew
-    }
-    
-    // Determine whether to delete or append to photos already in directory
-    var photoID: Int // Determines what ID we should write photos with
-    switch mode { // Switch in case we want to add more flags later
-    case "-a":
-        // not yet implemented. TODO: add delete flag support
-        let idArray: [[Int]] = stereoDirs.map { (stereoDir: String) in
-            let existingPhotos = try! FileManager.default.contentsOfDirectory(atPath: stereoDir)
-            return getIDs(existingPhotos, prefix: "IMG", suffix: ".JPG")
-        }
-        let maxVal = idArray.map {
-            return $0.max() ?? -1 // find max photo ID, or -1 if no photos empty, so that counting will begin at 0
-            }.max() ?? -1
-        // maxVal = max(idArray)
-        photoID = maxVal + 1
-        break
-    default:
-        // erase directories
-        for dir in stereoDirs {
-            removeFiles(dir: dir)
-        }
-        photoID = 0
-    }
-    
-    let settingsPath = dirStruc.calibrationSettingsFile
-    var cSettingsPath: [CChar]
-    do {
-        try cSettingsPath = safePath(settingsPath)
-    } catch let err {
-        print(err.localizedDescription)
+    if input == "q" {
+        print("Program quit. Exiting command.")
         return
     }
-    let settings = CalibrationSettings(settingsPath)
-    settings.set(key: .Calibration_Pattern, value: Yaml.string("ARUCO_SINGLE"))
-    settings.set(key: .Mode, value: Yaml.string("STEREO"))
-    settings.save()
+
+    // Insert photos starting at the correct index, stopping on user prompt
+    var keyCode:Int32 = 0; // user input key code
+    var i: Int = 0; // iteration count
     
-    // take the photos
-    while(true) {
-        var i = 0
+    // Initialize objects to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+    var calibDataPtrs: [UnsafeMutableRawPointer?] = []
+    for pos in posIDs {
+        var photoDirCString = *dirStruc.stereoPhotos(pos)
+        calibDataPtrs.append( UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&photoDirCString)) )
+    }
+    
+    while(keyCode != 113) {
+        print("Taking a photo set")
         
-        print("Hit enter to take a set or write q to finish taking photos");
-        guard let input = readLine() else {
-            fatalError("Unexpected error in reading stdin.")
-        }
-        if ["q", "quit"].contains(input) {
+        // Load and create boards
+        print("Collecting board paths")
+        let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
+        guard boards.count > 0 else {
+            print("ERROR: No boards were successfully initialized.")
             break
         }
+        // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
+        var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
+        var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
         
+        var imgNames: [String] = []
         // Take set of calibration photos, one from each position
-        while i < posIDs.count {
-            // Move the robot to the right position
-            if (!debugMode) {
-                var posStr = *String(i)
-                GotoView(&posStr)
+        for pos in posIDs {
+            if (live) {
+                // Move the robot to the right position
+                if (!emulateRobot) {
+                    var posStr = *String(pos)
+                    GotoView(&posStr)
+                }
+
+                print("\nTaking image from position \(pos)...")
+                receiveCalibrationImageSync(dir: dirStruc.stereoPhotos(pos), id: i)
+                print("\nChecking path \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
+            } else {
+                print("Running on preexisting images. Skipping robot motion and photo capture.")
             }
-
-            print("\nTaking image from position \(i)...")
-
-            // take photo at position i
-            guard let photoDir = stereoDirDict[i] else {
-                print("stereocalib: ERROR -- could not find directory for position \(i)")
+            
+            do {
+                try _ = safePath("\(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
+            } catch let err {
+                print("Could not find image \(dirStruc.stereoPhotos(pos))/IMG\(i).JPG")
+                print(err.localizedDescription)
                 return
             }
-            receiveCalibrationImageSync(dir: photoDir, id: photoID)
-            
-            if i > 0 {
-                print("\nDetecting objectPoints...")
-                var leftpath: [CChar]
-                var rightpath: [CChar]
-                do {
-                    try leftpath = safePath("\(stereoDirDict[i]!)/IMG\(photoID).JPG")
-                    try rightpath = safePath("\(stereoDirDict[i-1]!)/IMG\(photoID).JPG")
-                } catch let err {
-                    print(err.localizedDescription)
-                    break
-                }
-                // generate image lists for DetectionCheck to read
-                generateStereoImageList(left: stereoDirDict[i]!, right: stereoDirDict[i-1]!)
-                // make sure DetectionCheck will read from the right image list
-                settings.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
-                settings.save()
-                // now perform check what patterns were detected
-                _ = DetectionCheck(&cSettingsPath, &leftpath, &rightpath)
-            }
+            let imgName = "IMG\(i).JPG"
+            imgNames.append(imgName)
+        }
+        var imgNamesCChar = *imgNames;
+        var imgNamesCpp = **(imgNamesCChar);
+        
+        DispatchQueue.main.sync(execute: {
+            keyCode = TrackMarkers(&imgNamesCpp, Int32(imgNames.count), &boardPathsCpp, Int32(boards.count), &calibDataPtrs)
+        })
+        
+        if( keyCode == -1 ) {
+            print("ERROR: Something went wrong with call to TrackMarkers.")
+            return;
+        }
+        
+        if( keyCode != 114 ) {
             i += 1
-        }
-        print("\nFinished \(photoID + 1) set.")
             
-        // Ask the user if they'd like to retake the photo from that position
-        print("Continue (c), retake the last set (r), or finish taking photos (q).")
-        var quit = false
-        switch readLine() {
-        case "c":
-            photoID += 1
-        case "r":
-            print("Retaking...")
-        case "q":
-            quit = true
-        default:
-            photoID += 1
+            // Loop through each position ID and save the corresponding track
+            for pos in posIDs {
+                let outputTrackPath = "\(dirStruc.tracks)/pos\(pos)-track.json"
+                print("Saving track to path \(outputTrackPath)")
+                var outputTrackPathCString = *outputTrackPath;
+                SaveCalibDataToFile( &outputTrackPathCString, calibDataPtrs[pos] ); // write the data extracted by TrackMarkers to a file
+            }
+            
+            print("\nFinished \(i) sets.")
+        } else {
+            print("\nRetaking set \(i).")
         }
-        if(quit){ break }
     }
 }

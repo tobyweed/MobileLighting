@@ -25,15 +25,14 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case printsettings
     
     // photo capture
-    case calibrate, c
-    case stereocalib, sc
+    case takeintrinsics, ti
+    case takeextrinsics, te
     case struclight, sl
     case takeamb, ta
     
     // camera control
     case readfocus, rf, keepfocus, autofocus, setfocus, lockfocus
     case readexposure, autoexposure, lockexposure, setexposure
-    case lockwhitebalance
     case focuspoint
     
     // projector control
@@ -54,8 +53,10 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // camera calibration
     case getintrinsics, gi
     case getextrinsics, ge
+    case trackexistingstereo
     
     // image processing
+    case processpairs
     case refine, ref
     case rectify, rect
     case rectifyamb, ra
@@ -83,15 +84,15 @@ func getUsage(_ command: Command) -> String {
     case .help: return "help [command name]?"
     case .quit: return "quit"
     case .reloadsettings: return "reloadsettings"
-    case .printsettings: return "printsettings [type=scene (calib|scene)]" // print settings of calib or scene type. defaults to scene
+    case .printsettings: return "printsettings" // print settings
     // communications
     case .connect: return "connect (switcher|vxm) [/dev/tty*Repleo*]"
     case .disconnect: return "disconnect (switcher|vxm)"
     case .disconnectall: return "disconnectall"
     // photo capture
-    case .calibrate, .c:
-        return "calibrate (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
-    case .stereocalib, .sc: return "stereocalib [resolution=high] (-a)?\n        -d: delete existing photos"
+    case .takeintrinsics, .ti:
+        return "takeintrinsics (-d|-a)?\n       -d: delete existing photos\n       -a: append to existing photos"
+    case .takeextrinsics, .te: return "takeextrinsics [resolution=high] (-a)?\n        -d: delete existing photos"
     case .struclight, .sl: return "struclight [projector pos id(s)] [projector #(s)] [position #(s)] [resolution=high]\n"
     case .takeamb, .ta: return "takeamb still (-f|-t)? (-a|-d)? [resolution=high]\n       takeamb video (-f|-t)? [exposure#=1]"
     // camera control
@@ -101,7 +102,6 @@ func getUsage(_ command: Command) -> String {
     case .lockfocus: return "lockfocus"
     case .setfocus: return "setfocus [lensPosition s.t. 0≤ l.p. ≤1]"
     case .focuspoint: return "focuspoint [x_coord] [y_coord]"
-    case .lockwhitebalance: return "lockwhitebalance"
     case .readexposure: return "readexposure"
     case .autoexposure: return "autoexposure"
     case .lockexposure: return "lockexposure"
@@ -118,6 +118,7 @@ func getUsage(_ command: Command) -> String {
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .setvelocity: return "setvelocity [velocity]\n"
     // image processing
+    case .processpairs: return "processpairs [proj] [(pos1,pos2)]\n processpairs -a [(pos1,pos2)]"
     case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
     case .rectify, .rect: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
@@ -128,6 +129,7 @@ func getUsage(_ command: Command) -> String {
     // camera calibration
     case .getintrinsics, .gi: return "getintrinsics"
     case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .trackexistingstereo: return "trackexistingstereo"
     // debugging
     case .showshadows, .ss: return "showshadows"
     case .transform: return "transform"
@@ -138,9 +140,6 @@ func getUsage(_ command: Command) -> String {
     case .sleep: return "sleep [secs: Float]"
     }
 }
-
-
-var processingCommand: Bool = false
 
 // nextCommand: prompts for next command at command line, then handles command
 // -Return value -> true if program should continue, false if should exit
@@ -166,8 +165,6 @@ func processCommand(_ input: String) -> Bool {
         command = .unrecognized
     }
     let usage = "usage: \t\(getUsage(command))"
-    
-    processingCommand = true
     
     nextToken += 1
     cmdSwitch: switch command {
@@ -216,25 +213,9 @@ func processCommand(_ input: String) -> Bool {
         
     // print scene settings properties & values
     case .printsettings:
-        guard tokens.count <= 2 else {
+        guard tokens.count == 1 else {
             print(usage)
             break
-        }
-        if tokens.count == 2 {
-            // print calib or throw an error
-            if(tokens[1] == "calib"){
-                let calibSettings = CalibrationSettings(dirStruc.calibrationSettingsFile)
-                let calibProperties = calibSettings.properties()
-                print("Calibration Settings:")
-                for prop in calibProperties {
-                    print("    \(prop.0): \(prop.1)")
-                }
-                break
-            } else if (tokens[1] != "scene") { // if the second token is not calib or scene, print an error and exit
-                print("token \"\(tokens[1])\" is not a valid token.")
-                print(usage)
-                break
-            }
         }
         // if we've gotten this far, print scene settings
         let sceneProperties = sceneSettings.properties()
@@ -248,6 +229,10 @@ func processCommand(_ input: String) -> Bool {
     
     // connect: use to connect external devices
     case .connect:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count >= 2 else {
             print(usage)
             break
@@ -289,6 +274,10 @@ func processCommand(_ input: String) -> Bool {
         
     // disconnect: use to disconnect vxm or switcher (generally not necessary)
     case .disconnect:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2 else {
             print(usage)
             break
@@ -308,11 +297,19 @@ func processCommand(_ input: String) -> Bool {
         
     // disconnects both switcher and vxm box
     case .disconnectall:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         vxmController.stop()
         displayController.switcher?.endConnection()
         
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
-    case .calibrate, .c:
+    case .takeintrinsics, .ti:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 1 || tokens.count == 2 else {
             print(usage)
             break
@@ -324,57 +321,81 @@ func processCommand(_ input: String) -> Bool {
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        let nPhotos: Int
+        // Handle flags
+        let _: Int
         let startIndex: Int
         if tokens.count == 2 {
             let mode = tokens[1]
             guard ["-d","-a"].contains(mode) else {
-                print("calibrate: unrecognized flag \(mode)")
+                print("takeintrinsics: unrecognized flag \(mode)")
                 break
             }
-            var photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
+            let photos = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.intrinsicsPhotos)).map {
                 return "\(dirStruc.intrinsicsPhotos)/\($0)"
             }
             switch mode {
             case "-d":
                 for photo in photos {
                     do { try FileManager.default.removeItem(atPath: photo) }
-                    catch { print("could not remove \(photo)") }
+                    catch { print("Could not remove \(photo)") }
                 }
                 startIndex = 0
-            case "-a":
-                photos = photos.map{
-                    return String($0.split(separator: "/").last!)
-                }
-                let ids: [Int] = photos.map{
-                    guard $0.hasPrefix("IMG"), $0.hasSuffix(".JPG"), let id = Int($0.dropFirst(3).dropLast(4)) else {
-                        return -1
-                    }
-                    return id
-                }
-                startIndex = ids.max()! + 1
+//            case "-a":
+//                photos = photos.map{
+//                    return String($0.split(separator: "/").last!)
+//                }
+//                let ids: [Int] = photos.map{
+//                    guard $0.hasPrefix("IMG"), $0.hasSuffix(".JPG"), let id = Int($0.dropFirst(3).dropLast(4)) else {
+//                        return -1
+//                    }
+//                    return id
+//                }
+//                startIndex = ids.max()! + 1
             default:
                 startIndex = 0
             }
         } else {
             startIndex = 0
         }
-        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
         
-        // Insert photos starting at the right index, stopping on user prompt
+        // Load and create boards
+        print("Collecting board paths")
+        let (boardPaths, boards) = loadBoardsFromDirectory(boardsDir: dirStruc.boardsDir) // collect boards
+        guard boards.count > 0 else {
+            print("ERROR: No boards were successfully initialized.")
+            break
+        }
+        // convert boardPaths from [String] -> [[CChar]] -> [UnsafeMutablePointer<Int8>?] -> Optional<UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>> so they can be passed to C bridging header
+        var boardPathsCChar = *boardPaths // Convert [String] -> [[CChar]]
+        var boardPathsCpp = **(boardPathsCChar) // Convert [[CChar]] -> [UnsafeMutablePointer<Int8>?]
+        
+        // Initialize an object to store the data (charuco corners, object points, etc..) gained during calibration photo capture
+        var intrinsicsPhotosDir = *dirStruc.intrinsicsPhotos;
+        var calibDataPtr: [UnsafeMutableRawPointer?] = [UnsafeMutableRawPointer(mutating: InitializeCalibDataStorage(&intrinsicsPhotosDir))]; // wrapped in an array for compatibility with TrackMarkers
+        
+        // Prepare for photo capture
+        let packet = CameraInstructionPacket(cameraInstruction: .CaptureStillImage, resolution: defaultResolution)
+        print("\nHit Enter to begin taking photos, or q then enter to quit.")
+        guard let input = readLine() else {
+            fatalError("Unexpected error reading stdin.")
+        }
+        if input == "q" {
+            print("Program quit. Exiting command \(tokens[0])")
+            break
+        }
+        
+        // Insert photos starting at the correct index, stopping on user prompt
+        var keyCode:Int32 = 0;
         var i: Int = startIndex;
-        while(true) {
-            print("Enter to take a photo, q to finish taking photos, or r to retake the last photo.")
-            guard let input = readLine() else {
-                fatalError("Unexpected error in reading stdin.")
-            }
-            if ["q", "quit"].contains(input) {
-                break
-            } else if ["r"].contains(input) {
+        while(keyCode != 113) {
+            if keyCode == 114 {
                 i -= 1
+                print("Retaking last photo")
+            } else{
+                print("Taking a photo")
             }
             
-            // take calibration photo
+            // Capture calibration photo
             var receivedCalibrationImage = false
             cameraServiceBrowser.sendPacket(packet)
             let completionHandler = { receivedCalibrationImage = true }
@@ -383,38 +404,47 @@ func processCommand(_ input: String) -> Bool {
             )
             while !receivedCalibrationImage {}
             
-            // make sure we have the right image list
-            generateIntrinsicsImageList()
-            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-            calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-            calib.save()
-            
-            print("\nDetecting objectPoints...")
-            var imgpath: [CChar]
+            // Make sure there is a photo where we think there is
             do {
-                try imgpath = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
+                try _ = safePath("\(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
             } catch let err {
+                print("No file found with name \(dirStruc.intrinsicsPhotos)/IMG\(i).JPG")
                 print(err.localizedDescription)
                 break
             }
-            let settingsPath = dirStruc.calibrationSettingsFile
-            var cSettingsPath: [CChar]
-            do {
-                try cSettingsPath = safePath(settingsPath)
-            } catch let err {
-                print(err.localizedDescription)
-                break
-            }
+            let imgName = "IMG\(i).JPG"
+            var imgNamesCChar = *[imgName]
+            var imgNameCpp = **(imgNamesCChar); // wrap in ptr-to-ptr format for compatibility with TrackMarkers
             
-            DetectionCheck(&cSettingsPath, &imgpath, nil)
+            print("Tracking ChArUco markers from image")
+            
+            // Track ChArUco markers: detect markers, show visualization, and save data on user prompt
+            DispatchQueue.main.sync(execute: {
+                keyCode = TrackMarkers(&imgNameCpp,Int32(1),&boardPathsCpp,Int32(boards.count),&calibDataPtr)
+            })
+            
+            if( keyCode == -1 ) {
+                print("ERROR: Something went wrong with call to TrackMarkers.")
+                break;
+            }
             
             print("\n\(i-startIndex+1) photos recorded.")
             i += 1
         }
+        
+        let outputTrackPath = "\(dirStruc.tracks)/intrinsics-track.json"
+        print("Saving track to path \(outputTrackPath)")
+        var outputTrackPathCString = *outputTrackPath
+        SaveCalibDataToFile( &outputTrackPathCString, calibDataPtr[0] ); // write the data extracted by TrackMarkers to a file
+        
+        print("Photo capture ended. Exiting command \(tokens[0])")
         break
         
-    case .stereocalib, .sc:
+    case .takeextrinsics, .te:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let (params, flags) = partitionTokens([String](tokens[1...]))
         // Make sure we have the right number of tokens
         guard params.count <= 1, flags.count <= 1 else {
@@ -435,29 +465,59 @@ func processCommand(_ input: String) -> Bool {
         if flags.count == 1 {
             mode = flags[0]
         }
-        
-        var appending = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                print("stereocalib: appending images.")
-                appending = true
-            default:
-                print("stereocalib: unrecognized flag \(flag).")
-            }
-        }
+//        
+//        var appending = false
+//        for flag in flags {
+//            switch flag {
+//            case "-a":
+//                print("takeextrinsics: appending images.")
+//                appending = true
+//            default:
+//                print("takeextrinsics: unrecognized flag \(flag).")
+//            }
+//        }
         
         if calibrationExposure != (0, 0) {
             let packet = CameraInstructionPacket(cameraInstruction: .SetExposure, photoBracketExposureDurations: [calibrationExposure.0], photoBracketExposureISOs: [calibrationExposure.1])
             cameraServiceBrowser.sendPacket(packet)
         }
         
-        var posIDs: [Int] = Array(0..<nPositions)
-        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
+        var posIDs: [Int]
+        if( !emulateRobot ) {
+            posIDs = Array(0..<nPositions)
+        } else {
+            print("Emulating robot motion. Proceeding with photo capture as though there were 3 robot positions.")
+            posIDs = Array(0..<3)
+        }
+        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode, live: true)
+        print("Photo capture ended. Exiting command.")
         break
+        
+    case .trackexistingstereo:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        // Make sure we have the right number of tokens
+        guard params.count <= 1, flags.count <= 1 else {
+            print(usage)
+            break
+        }
+        var posIDs: [Int]
+        if( !emulateRobot ) {
+            posIDs = Array(0..<nPositions)
+        } else {
+            posIDs = Array(0..<3)
+        }
+        captureNPosCalibration(posIDs: posIDs, resolution: defaultResolution, mode: "default", live: false)
         
     // captures scene using structured lighting from specified projector
     case .struclight, .sl:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let system: BinaryCodeSystem
         
         guard tokens.count >= 4 else {
@@ -502,7 +562,7 @@ func processCommand(_ input: String) -> Bool {
         let arg3 = tokens[3]
         if arg3.hasPrefix("[") { // if the string starts with [ assume we're being passed an array of strings
             multiPos = true
-            var poses_ = stringToIntArray(arg3)
+            let poses_ = stringToIntArray(arg3)
             for pos in poses_ {
                 if pos < 0 || pos >= nPositions {
                     print("pos \(pos) is not a valid robot position; not including it in poses array.")
@@ -560,14 +620,14 @@ func processCommand(_ input: String) -> Bool {
             
             for pos in poses {
                 // Tell the Rosvita server to move the arm to the selected position
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     var posStr = *String(pos) // get cchar version of pose string
                     if(GotoView(&posStr) < 0) {
                         print("ROBOT ERROR: problem moving to start position")
                         break struclightloop
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
                 captureWithStructuredLighting(system: system, projector: projIDs[i], position: pos, resolution: resolution)
             }
@@ -581,6 +641,10 @@ func processCommand(_ input: String) -> Bool {
               -d: delete ALL contents of the ambient/photos directory
         if neither -a nor -d is given, photos will be written to IMG0.JPG, overwriting any previous file with the same name */
     case .takeamb, .ta:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let (params, flags) = partitionTokens([String](tokens[1...]))
         
         guard params.count >= 1 else {
@@ -625,7 +689,7 @@ func processCommand(_ input: String) -> Bool {
                 case "-d":
                     print("deleting all ambient photos...")
                     // delete ALL contents of the ambient/photos directory
-                    var photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
+                    let photoDirectoryContents: [String] = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball))).map {
                         return "\(dirStruc.ambientPhotos(ball))/\($0)"
                     }
                     for item in photoDirectoryContents {
@@ -644,14 +708,14 @@ func processCommand(_ input: String) -> Bool {
             
             // Move the robot to the correct position and prompt photo capture
             for pos in 0..<nPositions {
-                if ( !debugMode ) {
+                if ( !emulateRobot ) {
                     var posStr = *String(pos) // get cchar version of pos string
                     if(GotoView(&posStr) < 0) {
                         print("ROBOT ERROR: problem moving to start position")
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
             
                 // take photo bracket
@@ -736,14 +800,14 @@ func processCommand(_ input: String) -> Bool {
             }
             
             // get the right lighting to write to
-            var startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
+            let startIndex = dirStruc.getAmbientDirectoryStartIndex(appending: appending, photo: false, ball: false, mode: mode, humanMotion: humanMotion)
             
             // capture video at all selected exposures
             for exp in exps {
                 print("\ntaking video at exposure \(exp)")
                 
                 // go to the start position
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     if (GotoVideoStart() == 0) {
                         print("robot moved to video start position.")
                     } else {
@@ -751,7 +815,7 @@ func processCommand(_ input: String) -> Bool {
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
+                    print("program is in emulateRobot mode. skipping robot motion")
                 }
                 
                 print("starting to record")
@@ -775,18 +839,18 @@ func processCommand(_ input: String) -> Bool {
                 photoReceiver.dataReceivers.insertFirst(imuReceiver)
                 
                 // Tell the Rosvita server to move the robot smoothly through its whole trajectory
-                if( !debugMode ) {
+                if( !emulateRobot ) {
                     if( !humanMotion && ExecutePath(0.05, 0.7) == 0 ) { // velocities hard-coded, should be programmatically set prob from sceneSettings file
                         print("path completed. stopping recording.")
                     } else if( ExecuteHumanPath() == 0 ) {
                         print("path completed. stopping recording.")
                     } else {
-                        print("ROBOT ERROR: problem executing path. exiting command.")
+                        print("ERROR: Problem executing path.")
                         break
                     }
                 } else {
-                    print("program is in debugMode. skipping robot motion")
-                    print("hit enter when ready to take video.")
+                    print("Program is in emulateRobot mode. Skipping robot motion")
+                    print("Hit enter when ready to take video.")
                     _ = readLine()
                 }
                 
@@ -807,18 +871,25 @@ func processCommand(_ input: String) -> Bool {
         
     // requests current lens position from iPhone camera, prints it
     case .readfocus, .rf:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .GetLensPosition)
         cameraServiceBrowser.sendPacket(packet)
         
         photoReceiver.dataReceivers.insertFirst(
             LensPositionReceiver { (pos: Float) in
                 print("Lens position: \(pos)")
-                processingCommand = false
             }
         )
         
     // locks the focus and writes it to the sceneSettings file so it gets set whenever the app is booted up
     case .keepfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         // lock the focus
         let pos = lockLensPosition()
         print("Locked lens position to \(pos)")
@@ -826,7 +897,9 @@ func processCommand(_ input: String) -> Bool {
         //save the focus to the sceneSettings files
         do {
             sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
-            sceneSettings.set( key: "focus", value: Yaml.double(Double(pos)) )
+            print("float: \(Float(pos))")
+            print("double: \(Double(Float(pos)))")
+            sceneSettings.set( key: "focus", value: Yaml.double(Double(Float(pos))) )
             sceneSettings.save()
             print("Saved lens position \(pos) to scene settings")
         } catch let error {
@@ -835,16 +908,27 @@ func processCommand(_ input: String) -> Bool {
         
     // tells the iPhone to use the 'auto focus' focus mode
     case .autofocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         _ = setLensPosition(-1.0)
-        processingCommand = false
         
     // tells the iPhone to lock the focus at the current position
     case .lockfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let pos = lockLensPosition()
         print("Locked lens position to \(pos)")
         
     // tells the iPhone to set the focus to the given lens position & lock the focus
     case .setfocus:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard nextToken < tokens.count else {
             print(usage)
             break
@@ -853,12 +937,16 @@ func processCommand(_ input: String) -> Bool {
             print("ERROR: Could not parse float value for lens position.")
             break
         }
+        print("pos: \(pos)")
         _ = setLensPosition(pos)
-        processingCommand = false
         
         // autofocus on point, given in normalized x and y coordinates
     // NOTE: top left corner of image frame when iPhone is held in landscape with home button on the right corresponds to (0.0, 0.0).
     case .focuspoint:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         // arguments: x coord then y coord (0.0 <= 1.0, 0.0 <= 1.0)
         guard tokens.count >= 3 else {
             //            print("usage: focuspoint [x_coord] [y_coord]")
@@ -875,20 +963,12 @@ func processCommand(_ input: String) -> Bool {
         _ = photoReceiver.receiveLensPositionSync()
         break
         
-    // currently useless, but leaving in here just in case it ever comes in handy
-    case .lockwhitebalance:
-        let packet = CameraInstructionPacket(cameraInstruction: .LockWhiteBalance)
-        cameraServiceBrowser.sendPacket(packet)
-        var receivedUpdate = false
-        photoReceiver.dataReceivers.insertFirst(
-            StatusUpdateReceiver { (update: CameraStatusUpdate) in
-                receivedUpdate = true
-            }
-        )
-        while !receivedUpdate {}
-        
     // tells iphone to send current exposure duration & ISO
     case .readexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .ReadExposure)
         cameraServiceBrowser.sendPacket(packet)
         let completionHandler = { (exposure: (Double, Float)) -> Void in
@@ -898,15 +978,27 @@ func processCommand(_ input: String) -> Bool {
         
     // tells iPhone to use auto exposure mode (automatically adjusts exposure)
     case .autoexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .AutoExposure)
         cameraServiceBrowser.sendPacket(packet)
         
         // tells iPhone to use locked exposure mode (does not change exposure settings, even when lighting changes)
     case .lockexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         let packet = CameraInstructionPacket(cameraInstruction: .LockExposure)
         cameraServiceBrowser.sendPacket(packet)
         
     case .setexposure:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -921,6 +1013,10 @@ func processCommand(_ input: String) -> Bool {
         // displays checkerboard pattern
     // optional parameter: side length of squares, in pixels
     case .cb:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         //        let usage = "usage: cb [squareSize]?"
         let size: Int
         guard tokens.count >= 1 && tokens.count <= 2 else {
@@ -937,17 +1033,29 @@ func processCommand(_ input: String) -> Bool {
         
     // paints entire window black
     case .black:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         displayController.currentWindow?.displayBlack()
         break
         
     // paints entire window white
     case .white:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         displayController.currentWindow?.displayWhite()
         break
         
         // displays diagonal stripes (at 45°) of specified width (measured horizontally)
     // (tool for testing pico projector and its diagonal pixel grid)
     case .diagonal:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -958,6 +1066,10 @@ func processCommand(_ input: String) -> Bool {
         // displays vertical bars of specified width
     // (tool originaly made for testing pico projector)
     case .verticalbars:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2, let stripeWidth = Int(tokens[1]) else {
             print(usage)
             break
@@ -967,25 +1079,27 @@ func processCommand(_ input: String) -> Bool {
         
     // Select the appropriate robot arm path for the Rosvita server to load
     case .loadpath:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 2 else {
             print(usage)
             break
         }
-        
+
         let path: String = tokens[1] // the first argument should specify a pathname
-        var pathPointer = *path // get cchar version of the string
-        var status = LoadPath(&pathPointer) // load the path with "pathname" on Rosvita server
-        
-        if status == -1 { // print a message if the LoadPath doesn't return 0
-            print("Could not load path \"\(path)\"")
-        } else {
-            nPositions = Int(status)
-            print("Succesfully loaded path with \(nPositions) positions")
-        }
+        // Load a path from the robot server
+        print("Attempting to load path \(path) from Rosvita server...")
+        loadPathFromRobotServer(path: path, emulate: emulateRobot)
         break
         
     // moves robot arm to specified position ID by communicating with Rosvita server
     case .movearm:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         switch tokens.count {
         case 2:
             if let posInt = Int(tokens[1]) {
@@ -993,7 +1107,7 @@ func processCommand(_ input: String) -> Bool {
                     print("Moving arm to position \(posInt)")
                     DispatchQueue.main.async {
                         // Tell the Rosvita server to move the arm to the selected position
-                        if (!debugMode) {
+                        if (!emulateRobot) {
                             var posStr = *String(posInt)
                             if(GotoView(&posStr) < 0) {
                                 print("ROBOT ERROR: problem moving to start position")
@@ -1016,6 +1130,10 @@ func processCommand(_ input: String) -> Bool {
         
     // Set robot arm velocity. Expects a float from 0 to 1. Note that higher velocities correspond to less repetition (eg precision) in positions.
     case .setvelocity:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         switch tokens.count {
         case 2:
             if let vFloat = Float(tokens[1]) {
@@ -1042,6 +1160,10 @@ func processCommand(_ input: String) -> Bool {
     //  -argument 2: either 'on', 'off', '1', or '0', where '1' turns the respective projector(s) on
     // NOTE: the Kramer switcher box must be connected (use 'connect switcher' command), of course
     case .proj, .p:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
         guard tokens.count == 3 else {
             print(usage)
             break
@@ -1067,6 +1189,11 @@ func processCommand(_ input: String) -> Bool {
         } else {
             print("Not a valid projector number: \(tokens[1])")
         }
+        break
+        
+    // MARK: Processing
+    // Runs all processing steps on given pairs
+    case .processpairs:
         break
         
         // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
@@ -1359,6 +1486,7 @@ func processCommand(_ input: String) -> Bool {
                 posIDpairs = [singlePosPair!]
             }
             for (left, right) in posIDpairs {
+                print("left: \(left), right: \(right), proj: \(proj)")
                 rectifyDec(left: left, right: right, proj: proj)
             }
         }
@@ -1527,7 +1655,7 @@ func processCommand(_ input: String) -> Bool {
             }
             positions = [Int](posset).sorted()
         }
-        
+
         for (left, right) in zip(positions, positions[1...]) {
             reproject(left: left, right: right)
         }
@@ -1587,43 +1715,24 @@ func processCommand(_ input: String) -> Bool {
         // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
         // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
     // ABSOLUTE PATHS NOT REQUIRED
+    // Not currently implemented!
     case .getintrinsics, .gi:
         guard tokens.count <= 2 else {
-            //            print("usage: \(commandUsage[command]!)")
             print(usage)
             break
         }
-        let patternEnum: CalibrationSettings.CalibrationPattern
-        if tokens.count == 1 {
-            patternEnum = CalibrationSettings.CalibrationPattern.ARUCO_SINGLE
-        } else {
-            let pattern = tokens[1].uppercased()
-            guard let patternEnumTemp = CalibrationSettings.CalibrationPattern(rawValue: pattern) else {
-                print("getintrinsics: \(pattern) not recognized pattern.")
-                break
-            }
-            patternEnum = patternEnumTemp
-        }
-        generateIntrinsicsImageList()
-        let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-        
-        calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-        calib.set(key: .Mode, value: Yaml.string(CalibrationSettings.CalibrationMode.INTRINSIC.rawValue))
-        calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.intrinsicsImageList))
-        calib.set(key: .IntrinsicOutput_Filename, value: Yaml.string(dirStruc.intrinsicsYML))
-        calib.save()
-        
         
         var path: [CChar]
         do {
-            try path = safePath(dirStruc.calibrationSettingsFile)
+            try path = safePath("\(dirStruc.tracks)/intrinsics-track.json")
         } catch let err {
             print(err.localizedDescription)
             break
         }
-        
+        var outputDir = *"\(dirStruc.calibComputed)"
+
         DispatchQueue.main.async {
-            CalibrateWithSettings(&path)
+            ComputeIntrinsics(&path, &outputDir)
         }
         break
         
@@ -1644,8 +1753,8 @@ func processCommand(_ input: String) -> Bool {
         
         let positionPairs: [(Int, Int)]
         var curParam: Int
-        if all {
-            guard [1,2].contains(params.count) else {
+        if all { // Pairs all adjacent viewpoints, e.g. (1,2), (2,3), etc..
+            guard [1,2].contains(params.count) else { // make sure we have one or two parameters
                 print(usage)
                 break
             }
@@ -1660,37 +1769,22 @@ func processCommand(_ input: String) -> Bool {
             positionPairs = [(pos0, pos1)]
             curParam = 3
         }
-        
-        let patternEnum: CalibrationSettings.CalibrationPattern
-        if params.count > curParam {
-            guard let patternEnum_ = CalibrationSettings.CalibrationPattern(rawValue: params[curParam]) else {
-                print("getextrinsics: unrecognized board pattern \(params[curParam]).")
-                break
-            }
-            patternEnum = patternEnum_
-        } else {
-            patternEnum = .ARUCO_SINGLE
-        }
-        
+
         for (leftpos, rightpos) in positionPairs {
-            generateStereoImageList(left: dirStruc.stereoPhotos(leftpos), right: dirStruc.stereoPhotos(rightpos))
-            
-            let calib = CalibrationSettings(dirStruc.calibrationSettingsFile)
-            calib.set(key: .Calibration_Pattern, value: Yaml.string(patternEnum.rawValue))
-            calib.set(key: .Mode, value: Yaml.string("STEREO"))
-            calib.set(key: .ImageList_Filename, value: Yaml.string(dirStruc.stereoImageList))
-            calib.set(key: .ExtrinsicOutput_Filename, value: Yaml.string(dirStruc.extrinsicsYML(left: leftpos, right: rightpos)))
-            calib.save()
-            
-            var path: [CChar]
+            var track1: [CChar]
+            var track2: [CChar]
+            var intrinsicsFile: [CChar]
             do {
-                try path = safePath(dirStruc.calibrationSettingsFile)
+                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
             } catch let err {
-                print("here")
                 print(err.localizedDescription)
                 break
             }
-            CalibrateWithSettings(&path)
+            var outputDir = *"\(dirStruc.calibComputed)"
+            
+            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
         }
         
         
@@ -1706,7 +1800,7 @@ func processCommand(_ input: String) -> Bool {
         }
         
         // later insert functionality to not automatically use all projectors & positions
-        var allproj = true
+        let allproj = true
         var projs: [Int] = []
         if allproj {
             let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
@@ -1793,7 +1887,7 @@ func processCommand(_ input: String) -> Bool {
     
     // toggle debug. Note that this will not affect what path has been loaded on the Rosvita server. 
     case .toggledebug:
-        debugMode = !debugMode
+        emulateRobot = !emulateRobot
         
         
     // scripting
@@ -1810,8 +1904,8 @@ func processCommand(_ input: String) -> Bool {
         
     case .clearpackets:
         photoReceiver.dataReceivers.removeAll()
+        
     }
-    
     return true
 }
 

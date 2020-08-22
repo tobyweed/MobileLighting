@@ -103,7 +103,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
             
             
             if (shouldSendThreshImgs) {
-                let direction = horizontal ? 1 : 0
+                let direction = horizontal ? 1 : 0 
                 let prethreshpath = dirStruc.prethresh + "/proj\(projector)/pos\(position)"//dirStruc.subdir(dirStruc.prethresh)
                 let threshpath = dirStruc.thresh + "/proj\(projector)/pos\(position)"
                 for path in [prethreshpath, threshpath] { try! FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil) }
@@ -150,7 +150,7 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
         DecodedImageReceiver(completionHandler, path: imgpath, horizontal: false)
     )
     
-    var metadataCompletionHandler: ()->Void = {
+    let metadataCompletionHandler: ()->Void = {
         //        if rectificationMode == .NONE || rectificationMode == .ON_PHONE {
         let direction: Int = horizontal ? 1 : 0
         let filepath = dirStruc.metadataFile(direction, proj: projector, pos: position)
@@ -241,14 +241,14 @@ func captureWithStructuredLighting(system: BinaryCodeSystem, projector: Int, pos
 
 
 
-// Configures the display controller object, whcih manages the displays
+// Configures the display controller object, which manages the displays
 // Untested for more than two screens; Kramer switcher box is treated as only one screen
 func configureDisplays() -> Bool {
     if displayController == nil {
         displayController = DisplayController()
     }
     guard NSScreen.screens.count > 1  else { // We need multiple displays. The primary one counts.
-        print("Only one screen connected.")
+        print("Only one screen connected. Connect additional screen to configure structured lighting display.")
         return false
     }
     for screen in NSScreen.screens {

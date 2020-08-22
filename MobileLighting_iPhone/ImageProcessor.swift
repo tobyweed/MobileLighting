@@ -366,7 +366,7 @@ class Decoder {
         
         if binaryCodeSystem == .MinStripeWidthCode && minSW_codeToPos == nil {
             do {
-                let filepath = Bundle.main.resourcePath! + "/minSW.dat" 
+                let filepath = Bundle.main.resourcePath! + "/minSW.dat"
                 try loadMinSWCodesConversionArrays(filepath: filepath)
             } catch {
                 print("Decoder: failed to load minSWcodes for processing.")
@@ -559,22 +559,22 @@ class PGMFile {
 
 
 extension CMSampleBuffer {
+    @available(iOS 13.0, *)
     func save() -> Bool {
         guard let pixelbuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(self) else { return false }
         let img: CIImage = CIImage(cvPixelBuffer: pixelbuffer)
         let colorspace = CGColorSpaceCreateDeviceRGB()
         let jpegData: Data = CIContext().jpegRepresentation(of: img, colorSpace: colorspace, options: [kCGImageDestinationLossyCompressionQuality as String : 0.9])!
         
-        func completionHandler(_ success: Bool, _ error: Error?) {
-            if success {
-                print("Successfully added photo to library.")
-            }
-        }
-        
         PHPhotoLibrary.shared().performChanges( {
             let creationRequest = PHAssetCreationRequest.forAsset()
             creationRequest.addResource(with: PHAssetResourceType.photo, data: jpegData, options: nil)
-        }, completionHandler: completionHandler(_:_:))
+        }, completionHandler: {
+            (success, error) -> Void in
+            if success {
+                print("Successfully added photo to library.")
+            }
+        })
         return true
     }
     

@@ -8,9 +8,67 @@
 
 import Foundation
 import AVFoundation
+import Cocoa
 
 /*=====================================================================================
- Setup/capture routines and utils
+Robot communication
+======================================================================================*/
+// Struct for coding robot positions to and from JSON strings
+struct RobotPose: Codable {
+    let posNum: Int
+    let translation: [Float]
+    let rotation: [[Float]]
+
+    private enum CodingKeys: String, CodingKey {
+        case posNum = "pos_num"
+        case translation = "translation"
+        case rotation = "rotation"
+    }
+}
+
+// Attempts to load the path listed on the robot server. Also, writes a JSON file containing the poses returned by the server.
+func loadPathFromRobotServer(path: String, emulate: Bool) {
+    var poses: [RobotPose] = []
+    if( !emulate ) {
+        var pathChars = *path
+        let jsonBuffer = UnsafeMutablePointer<CChar>.allocate(capacity: 3072) // create a buffer for the C++ to write to
+        
+        let status = LoadPath(&pathChars, jsonBuffer)
+        
+        if status < 0 { // print a message if the LoadPath indicates failure
+            print("Could not load path \"\(path)\" to Rosvita server. Positions not initialized.")
+        } else {
+            let jsonString = String(cString: jsonBuffer) // convert the C-string to String
+            if(jsonString.isEmpty) {
+                print("No robot poses received. Check Rosvita server.")
+                print("Warning: robotPoses and nPositions uninitialized.")
+                return
+            }
+            let data: Data? = jsonString.data(using: .utf8) // get a Data object from the String
+            do {
+                try data!.write(to: URL(fileURLWithPath:"\(dirStruc.tracks)/robot-poses.json"))
+                poses = try JSONDecoder().decode([RobotPose].self, from: data!) // attempt to decode Data to [Poses]
+            } catch {
+                print(error)
+                print("Issue loading path \"\(path)\" to Rosvita server.")
+                print("Warning: robotPoses and nPositions uninitialized.")
+                return
+            }
+            print("Succesfully loaded path \"\(path)\".")
+        }
+    } else {
+        print("Emulating robot motion.")
+        print("robotPoses and nPositions uninitialized.")
+        return
+    }
+    robotPoses = poses
+    nPositions = poses.count
+}
+
+
+
+/*=====================================================================================
+ Camera setup/capture routines and utils
  ======================================================================================*/
 
 // -Parameters
@@ -18,6 +76,7 @@ import AVFoundation
 // -Return value: Float -> camera's lens position directly after done adjusting focus
 // Note that the focus apparently cannot be set perfectly -- there are only some values which the camera focus can be set to, so the camera will default to the closest possible
 func setLensPosition(_ lensPosition: Float) -> Float {
+    print("lensPosition: \(lensPosition)")
     let packet = CameraInstructionPacket(cameraInstruction: .SetLensPosition, lensPosition: lensPosition)
     cameraServiceBrowser.sendPacket(packet)
     let lensPos = photoReceiver.receiveLensPositionSync()
@@ -39,7 +98,9 @@ func initializeIPhoneCommunications() {
     cameraServiceBrowser = CameraServiceBrowser()
     photoReceiver = PhotoReceiver(scenesDirectory)
     
+    print("Initializing PhotoReceiver broadcast")
     photoReceiver.startBroadcast()
+    print("Initializing CameraServiceBrowser browsing")
     cameraServiceBrowser.startBrowsing()
 }
 

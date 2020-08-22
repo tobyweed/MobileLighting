@@ -1,6 +1,5 @@
 //
 //  PhotoSender.swift
-//  demo_iPhone
 //
 //  Created by Nicholas Mosier on 5/30/17.
 //  Copyright © 2017 Nicholas Mosier. All rights reserved.
@@ -17,11 +16,13 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
     var readyToSendPacket = false
     var packetsToSend = [PhotoDataPacket]()    
     
+    
     //MARK: Public functions
     
     // startBrowsing
     // -begins browsing for Mac's Bonjour service "PhotoReceiver"
     public func startBrowsing() {
+        print(" -- PhotoSender: Browsing services")
         serviceBrowser = NetServiceBrowser()
         serviceBrowser.delegate = self
         serviceBrowser.searchForServices(ofType: "_photoReceiver._tcp", inDomain: "local.")     // will call "netServiceBrowserDidFindService" (NetServiceBrowserDelegate function) when photo receiver found
@@ -34,7 +35,15 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
         // add packet to sending queue
         packetsToSend.append(packet)
         
-        if readyToSendPacket {
+        print(" -- PhotoSender: Attempting to send packet")
+        if(self.serviceBrowser == nil) {
+            print(" -- PhotoSender: No service found")
+            startBrowsing()
+        } else if(self.socket == nil || !self.socket.isConnected) {
+            print(" -- PhotoSender: No socket connected")
+            serviceBrowser.stop()
+            serviceBrowser.searchForServices(ofType: "_photoReceiver._tcp", inDomain: "local.")
+        } else if readyToSendPacket {
             writeNextPacket()
         }
     }
@@ -52,16 +61,7 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
     // netServiceDidResolveAddress: NetServiceDelegate function
     // -if service address is successfully resolved, connects with service
     func netServiceDidResolveAddress(_ sender: NetService) {
-        let isConnected = connectWithService(service: sender)
-        self.readyToSendPacket = isConnected
-        
-        if isConnected {
-            print("Connected with service on port \(sender.port) in domain \(sender.domain) under name \(sender.name)")
-        } else {
-            print("Failed to connect to service.")
-        }
-        
-        writeNextPacket()   // write next packet if any packets pending
+        connectWithService(service: sender)
     }
     
     // netServiceDidNotResolveAddress: NetServiceDelegate function
@@ -72,12 +72,10 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
     }
     
     // connectWithService
-    // -attempts to connect with service
+    // -attempts to connect with socket indicated by found service
     // (precondition: service must have resolved address(es))
-    // -returns "true" on success, "false" on failure
-    func  connectWithService(service: NetService) -> Bool {
+    func  connectWithService(service: NetService) {
         let addresses = service.addresses!
-        
         if (self.socket == nil || !self.socket.isConnected) {
             // need to create new socket & connect it to Mac's photo receiver service
             socket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
@@ -85,16 +83,13 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
             // iterate through addresses until successful connection established
             for address in addresses {
                 do {
-                    try socket.connect(toAddress: address)
-                    return true                         // successfully connected, return true
+                    print(" -- PhotoSender: Attempting to connect to socket at address \(address)")
+                    try socket.connect(toAddress: address, withTimeout: 5)
+                    return
                 } catch {
-                    print("Failed to connect to address \(address).")
+                    print(" -- PhotoSender: Failed to connect to socket at address \(address).")
                 }
             }
-            return false    // unabled to connect to any addresses of service
-        } else {
-            // if socket already created, return its current connection status
-            return socket.isConnected
         }
     }
     
@@ -104,12 +99,28 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
         guard tag == 0 else {
             return
         }
+        print(" -- PhotoSender: Wrote data with tag \(tag)")
         self.readyToSendPacket = socket.isConnected // ready to send next packet if socket still connected
         
         // remove sent packet from queue
         self.packetsToSend.removeFirst()
         writeNextPacket()
     }
+    
+    // Called when the sockets are successfully connected
+    func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
+        self.readyToSendPacket = true
+        print(" -- PhotoSender: Connected with service on port \(port)")
+        writeNextPacket()   // write next packet if any packets pending
+    }
+    
+    // Called when the sockets are disconnected or a connection attempt times out.
+    // Retries address resolution from the beginning.
+    func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
+        self.service.stop()
+        self.service.resolve(withTimeout: -1)
+    }
+    
 
     // writeNextPacket: writes next packet in queue
     func writeNextPacket() {
@@ -117,12 +128,12 @@ class PhotoSender: NSObject, NetServiceDelegate, NetServiceBrowserDelegate, GCDA
             return
         }
         let packet = packetsToSend.first!
-        print("Sending packet #\(packet.hashValue)")
+        print(" -- PhotoSender:  Sending packet #\(packet.hashValue)")
         
         let packetData = NSKeyedArchiver.archivedData(withRootObject: packet)   // archive packet for sending
         
         var packetDataLength = UInt32(packetData.count)
-        print("packetDataLength: \(packetDataLength)")
+        print(" -- PhotoSender:  packetDataLength: \(packetDataLength)")
         var dataToSend = Data()
         for _ in 0..<4 {
             dataToSend.append(UInt8(packetDataLength % UInt32(256)))

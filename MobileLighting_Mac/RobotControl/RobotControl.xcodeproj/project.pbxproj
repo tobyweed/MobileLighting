@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		AAA0AA1A22AEB76A00002E78 /* RobotControl.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0AA1622AEB76900002E78 /* RobotControl.h */; };
 		AAA0AA1B22AEB76A00002E78 /* LoadPath_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0AA1722AEB76900002E78 /* LoadPath_client.cpp */; };
-		AAA0AA1C22AEB76A00002E78 /* LoadPath_client.h in Headers */ = {isa = PBXBuildFile; fileRef = AAA0AA1822AEB76A00002E78 /* LoadPath_client.h */; };
 		AAA0AA1D22AEB76A00002E78 /* RobotControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AAA0AA1922AEB76A00002E78 /* RobotControl.cpp */; };
 /* End PBXBuildFile section */
 
@@ -66,7 +65,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAA0AA1C22AEB76A00002E78 /* LoadPath_client.h in Headers */,
 				AAA0AA1A22AEB76A00002E78 /* RobotControl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -111,6 +109,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = E1A2170A20C9B50F0016DFC6;
 			productRefGroup = E1A2171420C9B50F0016DFC6 /* Products */;

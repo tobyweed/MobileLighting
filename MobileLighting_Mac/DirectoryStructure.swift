@@ -19,11 +19,10 @@ class DirectoryStructure {
     
     private var dirList: [String] {
         get {
-            return [scenes, scene, settings, orig, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, extrinsics, imageLists, reprojected, merged2, ambientPhotos, ambientVideos]
+            return [scenes, scene, settings, orig, tracks, ambient, ambientBall, computed, decoded, disparity, merged, calibComputed, intrinsicsPhotos, stereoPhotos, metadata, imageLists, reprojected, merged2, ambientPhotos, ambientVideos]
         }
     }
     
-    // MARK: generated directory paths
     var scenes: String {
         get {
             return scenesDir
@@ -50,6 +49,12 @@ class DirectoryStructure {
         }
     }
     
+    var tracks: String {
+        get {
+            return self.scene + "/" + "tracks"
+        }
+    }
+    
     var settings: String {
         return "\(self.scene)/settings"
     }
@@ -67,6 +72,12 @@ class DirectoryStructure {
     var calibrationSettingsFile: String {
         get {
             return self.settings + "/" + "calibration.yml"
+        }
+    }
+    
+    var boardsDir: String {
+        get {
+            return "\(self.settings)/boards"
         }
     }
     
@@ -398,18 +409,31 @@ class DirectoryStructure {
         }
     }
     
+    var intrinsicsJSON: String {
+        get {
+            return self.calibComputed + "/" + "intrinsics.json"
+        }
+    }
+    
+    func extrinsicsJSON(left: Int, right: Int) -> String {
+        return self.calibComputed + "/extrinsics\(left)\(right).json"
+    }
+    
+    // old
     var intrinsicsYML: String {
         get {
             return self.calibComputed + "/" + "intrinsics.yml"
         }
     }
     
+    // old
     var extrinsics: String {
         get {
             return self.calibComputed + "/" + "extrinsics"
         }
     }
     
+    // old
     func extrinsicsYML(left: Int, right: Int) -> String {
         return self.extrinsics + "/" + "extrinsics\(left)\(right).yml"
     }

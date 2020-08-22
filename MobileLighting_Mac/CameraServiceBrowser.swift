@@ -40,7 +40,15 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
         // add packet to sending queue
         packetsToSend.append(packet)
         
-        if readyToSendPacket {
+        if (verboseConnection) { print(" -- CameraServiceBrowser: Attempting to send packet") }
+        if(self.serviceBrowser == nil) {
+            print(" -- CameraServiceBrowser: No service found")
+            startBrowsing()
+        } else if(self.socket == nil || !self.socket.isConnected) {
+            print(" -- CameraServiceBrowser: No socket connected")
+            serviceBrowser.stop()
+            serviceBrowser.searchForServices(ofType: "_cameraService._tcp", inDomain: "local.")
+        } else if readyToSendPacket {
             writeNextPacket()
         }
     }
@@ -56,17 +64,7 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
     // netServiceDidResolveAddress: NetServiceDelegate function
     // -if service address is successfully resolved, connects with service
     func netServiceDidResolveAddress(_ sender: NetService) {
-        let isConnected = connectWithService(service: sender)
-        self.readyToSendPacket = isConnected
-        
-        if isConnected {
-            print(" -- CameraServiceBrowser: Connected with service on port \(sender.port) in domain \(sender.domain) under name \(sender.name)")
-        } else {
-            print(" -- CameraServiceBrowser: Failed to connect to service.")
-        }
-        
-        // if any packets ready to send, begin sending
-        writeNextPacket()
+        connectWithService(service: sender)
     }
     
     // netServiceDidNotResolveAddress: NetServiceDelegate function
@@ -77,29 +75,24 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
     }
     
     // connectWithService
-    // -attempts to connect with service
+    // -attempts to connect with socket indicated by found service
     // (precondition: service must have resolved address(es))
-    // -returns "true" on success, "false" on failure
-    func  connectWithService(service: NetService) -> Bool {
+    func  connectWithService(service: NetService) {
         let addresses = service.addresses!
-        
         if (self.socket == nil || !self.socket.isConnected) {
-            // need to create new socket & connect it to camera service
+            // need to create new socket & connect it to Mac's photo receiver service
             socket = GCDAsyncSocket(delegate: self, delegateQueue: DispatchQueue.main)
             
             // iterate through addresses until successful connection established
             for address in addresses {
                 do {
-                    try socket.connect(toAddress: address)
-                    return true                         // successfully connected, return true
+                    if (verboseConnection) { print(" -- CameraServiceBrowser: Attempting to connect to socket.") }
+                    try socket.connect(toAddress: address, withTimeout: 5)
+                    return
                 } catch {
-                    print(" -- CameraServiceBrowser: Failed to connect to address \(address).")
+                    if (verboseConnection) { print(" -- CameraServiceBrowser: Failed to connect to socket.") }
                 }
             }
-            return false    // unabled to connect to any addresses of service
-        } else {
-            // if socket already created, return its current connection status
-            return socket.isConnected
         }
     }
     
@@ -109,11 +102,26 @@ class CameraServiceBrowser: NSObject, NetServiceDelegate, NetServiceBrowserDeleg
         guard tag == 0 else {
             return
         }
+        if (verboseConnection) { print(" -- CameraServiceBrowser: Wrote data with tag \(tag)") }
         self.readyToSendPacket = socket.isConnected // ready to send next packet if socket still connected
                 
         // remove sent packet from queue
         self.packetsToSend.removeFirst()
         writeNextPacket()
+    }
+    
+    // Called when the sockets are successfully connected
+    func socket(_ sock: GCDAsyncSocket, didConnectToHost host: String, port: UInt16) {
+        self.readyToSendPacket = true
+        print(" -- CameraServiceBrowser: Connected with service on port \(port)")
+        writeNextPacket()   // write next packet if any packets pending
+    }
+    
+    // Called when the sockets are disconnected or a connection attempt times out.
+    // Retries address resolution from the beginning.
+    func socketDidDisconnect(_ sock: GCDAsyncSocket, withError err: Error?) {
+        self.service.stop()
+        self.service.resolve(withTimeout: -1)
     }
     
     // writeNextPacket: writes next packet in queue
