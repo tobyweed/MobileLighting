@@ -59,14 +59,14 @@ It also has a number of associated, but standalone, applications:
 * **[ML Robot Control:](https://github.com/guanghanp/RobotControl)** server which controls a UR5 robot arm via [Rosvita](https://xamla.com/en/) and communicates with ML Mac to coordinate robot motion during dataset capture.
 * **[ML SteamVR Tracking:](https://github.com/tianshengs/SteamVR_Tracking)** software which uses an HTC VIVE tracker and SteamVR software to record realistic human-held camera trajectories for simulation by ML Robot Control during dataset capture.
 * **[ML Vision Website:](https://github.com/pgh245340802/vision-website)** python scripts used to generate HTML files for the display of ML datasets. 
-* **[Camera Calibration:](https://github.com/tianshengs/Camera_Calibration_MobileLighting2019)** not really standalone software (everything is incorporated into ML Mac). However, the README there is useful.
+* **[Camera Calibration:](https://github.com/tianshengs/Camera_Calibration_MobileLighting2019)** not really standalone software (everything is incorporated into ML Mac). However, the README there is useful. Note, 8/22/20: The calibration code has been replaced, so the code in this repository is no longer included in ML Mac.
 
 
 
 
 ## Setup and Installation
 ### Compatibility
-MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Control has only been tested on macOS versions High Sierra (10.13) through Mojave (10.14.5).
+MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Mac has only been tested on macOS versions High Sierra (10.13) through Mojave (10.14.5).
 
 MobileLighting iOS is compatible with all devices that run iOS 11+ and have a rear-facing camera and flashlight.
 
@@ -82,13 +82,17 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
     1. Open & install the driver package.
 1. Clone the entire Xcode project from the GitHub repository:
 `git clone https://github.com/tobyweed/MobileLighting.git`
-1. Run the script called `makeLibraries`
-`cd MobileLighting`
-`./makeLibraries`
 1. Open the Xcode project at MobileLighting/MobileLighting.xcodeproj.
 `open MobileLighting.xcodeproj`
 1. Try building MobileLighting Control by opening the MobileLighting_Mac build target menu in the top-left corner of the window, to the right of the play button. Select "MobileLighting_Mac" -> "My Mac". Type ⌘+B (or "Product" -> "Build") to build MobileLighting_Mac. [See picture](readme_images/build_mac.png)
-1. You'll probably encounter some errors at buildtime. These can normally be fixed by changing the Xcode settings and/or re-adding the linked frameworks & libraries. Here's a full list of libraries that should be linked with the Xcode project:
+1. You'll probably encounter some errors at buildtime. These can normally be fixed by changing the Xcode settings and/or re-adding the linked frameworks & libraries. In the .xcodeproj settings of each associated project, there is a category Build Phases > Link Binary With Libraries. Make sure each library listed under each project is correctly linked. Here's a list of the subproject structure of the system:
+    * MobileLighting
+        * MobileLighting_Mac
+            *
+    
+
+
+Here's a full list of libraries that should be linked with the Xcode project:
     * System libraries:
         * libopencv_calib3d
         * libopencv_core
@@ -101,7 +105,6 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
     * MobileLighting libraries/frameworks:
         * MobileLighting_Mac/CocoaAsyncSocket.framework
         * MobileLighting_iPhone/CocoaAsyncSocket.framework
-        * MobileLighting_Mac/calib/libcalib (this currently needs to be manually recompiled using "make")
         * MobileLighting_Mac/activeLighting/libImgProcessor
         
         If they appear in _red_ in the left sidebar under "MobileLighting/Frameworks", then they cannot be found. This means they need to be re-added. Instructions:
