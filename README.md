@@ -1,6 +1,6 @@
 #  MobileLighting System
 * Nicholas Mosier, 07/2018
-* Toby Weed, 07/2019
+* Toby Weed, 08/2020
 
 
 ## Table of Contents
@@ -85,38 +85,18 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 1. Open the Xcode project at MobileLighting/MobileLighting.xcodeproj.
 `open MobileLighting.xcodeproj`
 1. Try building MobileLighting Control by opening the MobileLighting_Mac build target menu in the top-left corner of the window, to the right of the play button. Select "MobileLighting_Mac" -> "My Mac". Type ⌘+B (or "Product" -> "Build") to build MobileLighting_Mac. [See picture](readme_images/build_mac.png)
-1. You'll probably encounter some errors at buildtime. These can normally be fixed by changing the Xcode settings and/or re-adding the linked frameworks & libraries. In the .xcodeproj settings of each associated project, there is a category Build Phases > Link Binary With Libraries. Make sure each library listed under each project is correctly linked. Here's a list of the subproject structure of the system:
+1. You'll probably encounter some errors at buildtime. These can normally be fixed by changing the Xcode settings and/or re-adding the linked frameworks & libraries. In the .xcodeproj settings of each associated project, there is a category Build Phases > Link Binary With Libraries. Make sure each library listed under each project is correctly linked. Sometimes, it will be necessary to delete and re-add libraries. **Remember to check each of these library's locations in your filesystem by right-clicking and clicking Show in Finder**. Here's a list of the subproject structure of the system:
     * MobileLighting
-        * MobileLighting_Mac
-            *
-    
-
-
-Here's a full list of libraries that should be linked with the Xcode project:
-    * System libraries:
-        * libopencv_calib3d
-        * libopencv_core
-        * libopencv_features2d
-        * libopencv_imgproc
-        * libopencv_videoio
-        * libopencv_aruco
-        * libopencv_imgcodecs
-        * libpng
-    * MobileLighting libraries/frameworks:
-        * MobileLighting_Mac/CocoaAsyncSocket.framework
-        * MobileLighting_iPhone/CocoaAsyncSocket.framework
-        * MobileLighting_Mac/activeLighting/libImgProcessor
-        
-        If they appear in _red_ in the left sidebar under "MobileLighting/Frameworks", then they cannot be found. This means they need to be re-added. Instructions:
-        1. Select red libraries, hit "delete". A dialog pop up — click "Remove Reference".
-        1. Now, re-add the libraries. Go back to the MobileLighting.xcodeproj settings, select the MobileLighting_Mac target, and go to the "General" tab and find the "Linked Libraries" section. Click the "+". [picture](readme_images/lib_readd.png)
-        1. Some of the libraries will be in /usr/lib, and others will be in /usr/local/lib. To navigate to these folders in the dialog, click "Add Other..." and then the command ⌘+Shift+G. Enter in one of those paths, hit enter, and search for the libraries you need to re-add.
-        1. After re-adding, the libraries should all have reappaeared under MobileLighting/Frameworks in the left sidebar, and there should no longer be any red ones.
+      * MobileLighting_Mac
+         * processing
+         * RobotControl
+         * SerialTools
+      * MobileLighting_iPhone
 1. You may also encounter code signing errors — these can generally be resolved by opening the Xcode project's settings (in the left sidebar where all the files are listed, click on the blue Xcode project icon with the name <project>.xcodeproj). Select the target, and then open the "General" tab. Check the "Automatically manage signing" box under the "signing" section. [Here's a visual guide](readme_images/codesign.png)
 1. Once MobileLighting Mac successfully compiles, click the "play" button in the top left corner to run it from Xcode. To run it from a non-Xcode command line, first build the project (the easiest way to do that is ⌘-b from within Xcode). This should write all necessary products into a bin/ directory within MobileLighting/. Then run "bin/MobileLighting_Mac" with any tokens (init or a path to a sceneSettings.yml file) to run the app.
     * Note that whenever running the app, it expects either "init" or an absolute path to a sceneSettings.yml file as an argument. From Xcode, these arguments can be passed by going to the build target menu in the top left and clicking "Edit Scheme...". When executing the ML Mac product from Terminal, pass the arguments as you would to any command-line tool.
-1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). If you have an iPhone (or iPod Touch), connect it to the computer and then select the device in the menu. Otherwise, select "Generic Build-only Device". Then, hit ⌘+B to build for the device.
-1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it.
+1. Compiling the MobileLighting_iPhone target should be a lot easier. Just select the MobileLighting_iPhone target from the same menu as before (in the top left corner). You will need to connect an iOS device to your computer, go through the Xcode setup process, and then select the device in the menu.
+1. To upload the MobileLighting iOS app onto the device, click the "Play" button in the top left corner. This builds the app, uploads it to the phone, and runs it. After the app is on the phone, it can be run without being connected to the Mac--just click on the icon.
 
 
 
