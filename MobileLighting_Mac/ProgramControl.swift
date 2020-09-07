@@ -128,7 +128,7 @@ func getUsage(_ command: Command) -> String {
     case .merge2, .m2: return "merge2 [left] [right]\n       merge2 -a"
     // camera calibration
     case .getintrinsics, .gi: return "getintrinsics\ngi"
-    case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .getextrinsics, .ge: return "getextrinsics leftpos rightpos\ngetextrinsics [leftpos1,leftpos2,...] [rightpos1,rightpos2,...]\ngetextrinsics -a"
     case .trackexistingstereo: return "trackexistingstereo"
     // debugging
     case .showshadows, .ss: return "showshadows"
@@ -1231,6 +1231,17 @@ func processCommand(_ input: String) -> Bool {
         // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine, .ref:
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+        
+        if(numAs > 2) {
+            print("Unrecognized number of flags \(flags.count)")
+            print(usage)
+            break
+        }
+        
+        //
+        
         let projs = getProjs(tokens: tokens, usage: usage, inputDir: dirStruc.decoded(true))
         print("projs: \(projs)")
         for proj in projs {
@@ -1649,37 +1660,25 @@ func processCommand(_ input: String) -> Bool {
     case .getextrinsics, .ge:
         let (params, flags) = partitionTokens(tokens)
         
-        var all = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                all = true
-                print("getextrinsics: computing extrinsics for all positions.")
-            default:
-                print("getextrinsics: unrecognized flag \(flag).")
-                break
-            }
-        }
+        let numAs = countAFlags(flags: flags)
         
-        let positionPairs: [(Int, Int)]
-        var curParam: Int
-        if all { // Pairs all adjacent viewpoints, e.g. (1,2), (2,3), etc..
-            guard [1,2].contains(params.count) else { // make sure we have one or two parameters
-                print(usage)
-                break
-            }
-            let posIDs = [Int](0..<nPositions)
-            positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
-            curParam = 1
-        } else {
-            guard [3,4].contains(params.count), let pos0 = Int(params[1]), let pos1 = Int(params[2]) else {
-                print(usage)
-                break
-            }
-            positionPairs = [(pos0, pos1)]
-            curParam = 3
+        if !((numAs == 1 && params.count == 1) ||
+            (numAs == 0 && params.count == 3)) {
+            print(usage)
+            break
         }
 
+        let all = (numAs == 1) ? true : false
+        
+        var positionPairs: [(Int, Int)]
+        if (all) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+            print("positionpairs: \(positionPairs)")
+        } else {
+            positionPairs = getPosPairsFromParams(params: params, inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+            print("positionpairs not all: \(positionPairs)")
+        }
+        
         for (leftpos, rightpos) in positionPairs {
             var track1: [CChar]
             var track2: [CChar]
@@ -1693,9 +1692,45 @@ func processCommand(_ input: String) -> Bool {
                 break
             }
             var outputDir = *"\(dirStruc.calibComputed)"
-            
+
             ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
         }
+        
+        
+//        var curParam: Int
+//        if all { // Pairs all adjacent viewpoints, e.g. (1,2), (2,3), etc..
+//            guard [1,2].contains(params.count) else { // make sure we have one or two parameters
+//                print(usage)
+//                break
+//            }
+//            let posIDs = [Int](0..<nPositions)
+//            positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
+//            curParam = 1
+//        } else {
+//            guard [3,4].contains(params.count), let pos0 = Int(params[1]), let pos1 = Int(params[2]) else {
+//                print(usage)
+//                break
+//            }
+//            positionPairs = [(pos0, pos1)]
+//            curParam = 3
+//        }
+//
+//        for (leftpos, rightpos) in positionPairs {
+//            var track1: [CChar]
+//            var track2: [CChar]
+//            var intrinsicsFile: [CChar]
+//            do {
+//                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+//                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+//                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
+//            } catch let err {
+//                print(err.localizedDescription)
+//                break
+//            }
+//            var outputDir = *"\(dirStruc.calibComputed)"
+//
+//            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
+//        }
         
         
     /*=====================================================================================

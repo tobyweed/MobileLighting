@@ -18,12 +18,7 @@ import Yaml
 func getProjs(tokens: [String], usage: String, inputDir: String) -> [Int] {
     let (params, flags) = partitionTokens(tokens)
 
-    for flag in flags {
-        if(flag != "-a") {
-            print("Unrecognized flag \(flag)")
-            return []
-        }
-    }
+    let numAs = countAFlags(flags: flags)
 
     // determine whether/how many -a flags were used
     var allproj = false
@@ -58,6 +53,63 @@ func getProjs(tokens: [String], usage: String, inputDir: String) -> [Int] {
     }
     return projs
 }
+
+// Count the number of -a flags appearing in array of flags
+func countAFlags(flags: [String]) -> Int {
+    var numAs = 0
+    for flag in flags {
+        if(flag != "-a") {
+            print("Unrecognized flag \(flag)")
+            return -1
+        } else {
+            numAs += 1
+        }
+    }
+    return numAs
+}
+
+// Return all adjacent pairs in the given directory
+func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
+    let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+    let allpos = getIDs(posDirs, prefix: prefix, suffix: suffix).sorted()
+    if(allpos.count <= 0) {
+        print("No positions found.")
+        return []
+    }
+    return [(Int,Int)](zip(allpos, [Int](allpos[1...])))
+}
+
+// Convert input to pairs. Accepts a pair of integer arrays or a pair of integers.
+func getPosPairsFromParams(params: [String], inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
+    // make sure we have an array of projectors or a single projector as the second token
+    guard (params.count >= 3) else {
+        print("Not enough arguments")
+        return []
+    }
+    var pos1 = [Int]()
+    var pos2 = [Int]()
+    if (params[1].hasPrefix("[") && params[2].hasPrefix("[")) {
+        pos1 = stringToIntArray(params[1])
+        pos2 = stringToIntArray(params[2])
+    } else if (Int(params[1]) != nil && Int(params[2]) != nil) {
+        pos1.append(Int(params[1])!)
+        pos2.append(Int(params[2])!)
+    } else {
+        print("Bad input, no projector positions initialized")
+        return []
+    }
+    
+    guard pos1.count == pos2.count else {
+        print("Each position array must have the same length.")
+        return []
+    }
+    
+    pos1.sort()
+    pos2.sort()
+    let pairs = [(Int,Int)](zip(pos1, pos2))
+    return pairs
+}
+
 
 
 // Takes an array of tokens, returns a tuple of arrays representing the projectors (1st array) and positions (2nd array)
@@ -215,9 +267,10 @@ func runAllProcessing() {
 }
 
 // compute extrinsics (left, right)
+// -a: all adjacent pairs
 
 // rectify decoded (left, right)
-// -a: all adjacent pairs
+// -a: all adjacent pairs for which we have extrinsics & decoded images
 
 // rectify amb (left, right)
 // -a: all adjacent

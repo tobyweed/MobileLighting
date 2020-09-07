@@ -61,11 +61,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/vision/workspace/scenes/curuleseats/settings/sceneSettings.yml"
+            argument = "init"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "init"
+            argument = "/Users/vision/workspace/scenes/chess/settings/sceneSettings.yml"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
