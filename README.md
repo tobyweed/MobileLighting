@@ -339,14 +339,15 @@ The intrinsics file is saved at <scene>/computed/calibration/intrinsics.yml.
 
 ### Extrinsics
 To compute extrinsics, use the following command:
-`getextrinsics (-a | [left] [right])`
+`getextrinsics (-a | leftpos rightpos | [leftpos1,leftpos2,...] [rightpos1,rightpos2,...])`
 
 Parameters:
-* `[left]`: left position
-* `[right]`: right position
+* `leftpos rightpos`: the pair of positions to compute extrinsics for, e.g. `getextrinsics 0 1`
+* `[leftpos1,leftpos2,...]`: a list of left positions formatted as an array, e.g. `getextrinsics [0,2,3] [1,3,4]` (results in computing extrinsics
+for pairs `(0,1), (2,3), (3,4)`
 Flags:
 * `-a`: compute extrinsics for all adjacent stereo pairs (pos0 & pos1, pos1 & pos2, etc.)
-The extrinsics files are saved at <scene>/computed/calibration/extrinsics/extrinsicsAB.yml.
+The extrinsics files are saved at `<scene>/computed/calibration/extrinsicsAB.json`.
 
 ### Rectify Decoded Images
 To rectify decoded images, use one of the following commands:

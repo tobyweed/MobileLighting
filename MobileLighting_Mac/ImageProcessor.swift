@@ -68,6 +68,18 @@ func countAFlags(flags: [String]) -> Int {
     return numAs
 }
 
+
+// Return all projectrs in the given directory
+func getAllProj(inputDir: String, prefix: String, suffix: String) -> [Int] {
+    let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+    let allproj = getIDs(projDirs, prefix: prefix, suffix: suffix).sorted()
+    if(allproj.count <= 0) {
+        print("No projector positions found.")
+        return []
+    }
+    return allproj
+}
+
 // Return all adjacent pairs in the given directory
 func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
     let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
