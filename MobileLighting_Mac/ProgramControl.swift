@@ -121,7 +121,7 @@ func getUsage(_ command: Command) -> String {
     case .processpairs: return "processpairs [proj] [(pos1,pos2)]\n processpairs -a [(pos1,pos2)]"
     case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
     case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
-    case .rectify, .rect: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
+    case .rectify, .rect: return "rectify [proj] [left] [right]\nrectify -a [left] [right]\nrectify [proj] -a\n rectify -a -a"
     case .rectifyamb, .ra: return "rectifyamb (-a|-n|-t|-f]\n"
     case .merge, .m: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
     case .reproject, .rp: return "reproject [left] [right]\n       reproject -a"
@@ -1362,106 +1362,38 @@ func processCommand(_ input: String) -> Bool {
         let numAs = countAFlags(flags: flags)
 
         var allProj = false, allPosPairs = false
-        var positionPairs: [(Int, Int)]
         if (numAs == 2 && params.count == 1) { // all projectors and position pairs
             allProj = true; allPosPairs = true
         } else if (numAs == 1 && params.count == 2) { // all position pairs, projectors specified
             allPosPairs = true
-        } else if (numAs == 1 && params.count == 3) { // all projects, position pairs specified
+        } else if (numAs == 1 && params.count == 3) { // all projectors, position pairs specified
             allProj = true
         } else if !(numAs == 0 && params.count == 4) {
             print(usage)
             break
         }
         
-        print("allproj: \(allProj), allpps: \(allPosPairs)")
-        
-        var proj: [Int] = []
+        var projs: [Int] = []
         if (allProj) {
-            proj = getAllProj(inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+            projs = getAllProj(inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+        } else {
+            projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
         }
         
-        print(proj)
+        for proj in projs {
+            var positionPairs: [(Int, Int)]
+            if (allPosPairs) {
+                positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
+            } else {
+                let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+                positionPairs = getPosPairsFromParams(params: args, inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
+            }
 
-        // determine targets
-//        let all = (numAs == 1) ? true : false
-//
-//        var positionPairs: [(Int, Int)]
-//        if (allPosPairs) {
-//            positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
-//        } else {
-//            positionPairs = getPosPairsFromParams(params: params, inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
-//        }
-//        //
-//        //        // run processing
-//        let (params, flags) = partitionTokens([String](tokens[1...]))
-//
-//        var allproj = false
-//        var allpos = false
-//        for flag in flags {
-//            switch flag {
-//            case "-a":
-//                if !allproj {
-//                    allproj = true
-//                } else {
-//                    allpos = true
-//                }
-//            default:
-//                print("rectify: invalid flag \(flag)")
-//                break cmdSwitch
-//            }
-//        }
-        
-//        var curTok = 0
-//        let projIDs: [Int]
-//        if allproj {
-//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
-//            projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
-//        } else {
-//            guard params.count >= curTok+1 else {
-//                print(usage)
-//                break
-//            }
-//            guard let proj = Int(params[curTok]) else {
-//                print("rectify: unrecognized projector ID \(params[curTok])")
-//                break
-//            }
-//            projIDs = [proj]
-//            curTok += 1
-//        }
-//
-//        let singlePosPair: (Int,Int)?
-//        if allpos {
-//            singlePosPair = nil
-//        } else {
-//            guard params.count == curTok + 2 else {
-//                print(usage)
-//                break
-//            }
-//            guard let left = Int(params[curTok]), let right = Int(params[curTok+1]) else {
-//                print("rectify: unrecognized positions \(params[curTok]), \(params[curTok+1])")
-//                break
-//            }
-//            singlePosPair = (left, right)
-//        }
-//        for proj in projIDs {
-//            let posIDpairs: [(Int,Int)]
-//            if allpos {
-//                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: false)), prefix: "pos", suffix: "")
-//                guard posIDs.count > 1 else {
-//                    print("rectify: skipping projectory \(proj), not enough positions.")
-//                    continue
-//                }
-//                posIDs.sort()
-//                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
-//            } else {
-//                posIDpairs = [singlePosPair!]
-//            }
-//            for (left, right) in posIDpairs {
-//                print("left: \(left), right: \(right), proj: \(proj)")
-//                rectifyDec(left: left, right: right, proj: proj)
-//            }
-//        }
+            for (leftpos, rightpos) in positionPairs {
+                print("Trying to rectify position pair (\(leftpos),\(rightpos)) for projector \(proj)")
+                rectifyDec(left: leftpos, right: rightpos, proj: proj)
+            }
+        }
         
     // rectify ambient images of all positions and exposures
     case .rectifyamb, .ra:
@@ -1711,7 +1643,7 @@ func processCommand(_ input: String) -> Bool {
         if (all) {
             positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
         } else {
-            positionPairs = getPosPairsFromParams(params: params, inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+            positionPairs = getPosPairsFromParams(params: Array(params[1...]), inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
         }
         
         // run processing

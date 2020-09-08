@@ -80,6 +80,22 @@ func getAllProj(inputDir: String, prefix: String, suffix: String) -> [Int] {
     return allproj
 }
 
+func getProjFromParam(param: String, inputDir: String, prefix: String, suffix: String) -> [Int] {
+    // make sure we have an array of projectors or a single projector as the second token
+    var projs = [Int]()
+    if (param.hasPrefix("[")) {
+        projs = stringToIntArray(param)
+    } else if (Int(param) != nil) {
+        projs.append(Int(param)!)
+    } else {
+        print("Bad input, no projector positions initialized")
+        return []
+    }
+    
+    projs.sort()
+    return projs
+}
+
 // Return all adjacent pairs in the given directory
 func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
     let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
@@ -94,20 +110,20 @@ func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,I
 // Convert input to pairs. Accepts a pair of integer arrays or a pair of integers.
 func getPosPairsFromParams(params: [String], inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
     // make sure we have an array of projectors or a single projector as the second token
-    guard (params.count >= 3) else {
-        print("Not enough arguments")
+    guard (params.count == 2) else {
+        print("Must provide two arguments")
         return []
     }
     var pos1 = [Int]()
     var pos2 = [Int]()
-    if (params[1].hasPrefix("[") && params[2].hasPrefix("[")) {
-        pos1 = stringToIntArray(params[1])
-        pos2 = stringToIntArray(params[2])
-    } else if (Int(params[1]) != nil && Int(params[2]) != nil) {
-        pos1.append(Int(params[1])!)
-        pos2.append(Int(params[2])!)
+    if (params[0].hasPrefix("[") && params[1].hasPrefix("[")) {
+        pos1 = stringToIntArray(params[0])
+        pos2 = stringToIntArray(params[1])
+    } else if (Int(params[0]) != nil && Int(params[1]) != nil) {
+        pos1.append(Int(params[0])!)
+        pos2.append(Int(params[1])!)
     } else {
-        print("Bad input, no projector positions initialized")
+        print("Bad input, no position pairs initialized")
         return []
     }
     
@@ -416,18 +432,21 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
 //MARK: rectification
 //rectify decoded images
 func rectifyDec(left: Int, right: Int, proj: Int) {
-    var intr = *dirStruc.intrinsicsJSON
-    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
-    var settings = *dirStruc.calibrationSettingsFile
+//    var intr = *dirStruc.intrinsicsJSON
+//    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
     //paths for storing output
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
     //paths for retreiving input
+    var intr: [CChar]
+    var extr: [CChar]
     var result0l: [CChar]
     var result0r: [CChar]
     var result1l: [CChar]
     var result1r: [CChar]
     do {
+        try intr = safePath(dirStruc.intrinsicsJSON)
+        try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
         try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm")
         try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm")
         try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm")

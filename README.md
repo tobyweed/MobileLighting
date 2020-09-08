@@ -328,6 +328,11 @@ Here is the approximate outline of the image processing pipeline:
 1. Reproject rectified, merged disparity maps
 1. Merge reprojected disparities with original disparities and merged disparities for final result
 
+**Note on input formatting:** most commands have several options for inputting target projector positions and/or viewpoint positions. Where integers are requested (marked like `[ name ]` in the usage output and the documentation below), they can be formatted in several ways:
+* Single integers, e.g. `command 0` or `command 0 1` for pairs
+* Arrays of integers, e.g. `command [0,2,3]` or `command [0,2,3] [1,3,4]` (results in running the command
+for pairs `(0,1), (2,3), (3,4)`)
+
 ### Intrinsics
 To compute intrinsics, use the following command:
 `getintrinsics [pattern=ARUCO_SINGLE]`
@@ -339,25 +344,25 @@ The intrinsics file is saved at <scene>/computed/calibration/intrinsics.yml.
 
 ### Extrinsics
 To compute extrinsics, use the following command:
-`getextrinsics (-a | leftpos rightpos | [leftpos1,leftpos2,...] [rightpos1,rightpos2,...])`
+`getextrinsics (-a | [left] [right])`
 
 Parameters:
-* `leftpos rightpos`: the pair of positions to compute extrinsics for, e.g. `getextrinsics 0 1`
-* `[leftpos1,leftpos2,...]`: a list of left positions formatted as an array, e.g. `getextrinsics [0,2,3] [1,3,4]` (results in computing extrinsics
-for pairs `(0,1), (2,3), (3,4)`
+* `[left] [right]`: the pair of positions to compute extrinsics for, formatted either as integers or arrays of integers, e.g. `getextrinsics 0 1` or `getextrinsics [0,1,2] [1,2,4]`
 Flags:
 * `-a`: compute extrinsics for all adjacent stereo pairs (pos0 & pos1, pos1 & pos2, etc.)
 The extrinsics files are saved at `<scene>/computed/calibration/extrinsicsAB.json`.
 
 ### Rectify Decoded Images
 To rectify decoded images, use one of the following commands:
-_for one position pair, one projector:_
+_for specified position pairs, specified projectors:_
 `rectify [proj] [left] [right]`
-where `[left]` and `[right]` are positions and `[proj]` is the projector position ID.
+where `[left]` and `[right]` are positions (or arrays of positions) and `[proj]` is/are the projector position ID(s).
 
-_for all projectors, one position pair_:
+_for all projectors, specified position pairs_:
 `rectify -a [left] [right]`
-where `[left]` & `[right]` are positions
+
+_for specified projectors, all position pairs_:
+`rectify [proj] -a`
 
 _for all projectors, all position pairs_:
 `rectify -a -a`
