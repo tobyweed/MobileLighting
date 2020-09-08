@@ -348,6 +348,7 @@ To compute extrinsics, use the following command:
 
 Parameters:
 * `[left] [right]`: the pair of positions to compute extrinsics for, formatted either as integers or arrays of integers, e.g. `getextrinsics 0 1` or `getextrinsics [0,1,2] [1,2,4]`
+
 Flags:
 * `-a`: compute extrinsics for all adjacent stereo pairs (pos0 & pos1, pos1 & pos2, etc.)
 The extrinsics files are saved at `<scene>/computed/calibration/extrinsicsAB.json`.
