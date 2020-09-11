@@ -1398,17 +1398,13 @@ func processCommand(_ input: String) -> Bool {
     // rectify ambient images of all positions and exposures
     case .rectifyamb, .ra:
         let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var ball = false
-        for flag in flags {
-            switch flag {
-            case "-b":
-                print("rectifying ball images...")
-                ball = true
-            default:
-                print("flag \(flag) not recognized.")
-            }
+        let numAs = countAFlags(flags: flags)
+        if !((numAs == 1 && params.count == 0) ||
+            (numAs == 0 && params.count == 2)) {
+            print(usage)
+            break
         }
+        let allPosPairs = (numAs == 1) ? true : false
         
         let modes: [String] = ["normal", "flash", "torch"]
         
@@ -1430,27 +1426,23 @@ func processCommand(_ input: String) -> Bool {
             }
             let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
             for lighting in lightings {
-                print("\nrectifying directory: \(prefix)\(lighting)");
-                
-                //assign the correct position pairs to posIDpairs
-                let posIDpairs: [(Int,Int)]
-                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball: ball, mode: mode, lighting: lighting)), prefix: "pos", suffix: "")
-                guard posIDs.count > 1 else {
-                    print("rectifyamb: not enough positions.")
-                    break
+                print("\nRectifying directory: \(prefix)\(lighting)");
+                var positionPairs: [(Int, Int)]
+                if (allPosPairs) {
+                    positionPairs = getAllPosPairs(inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
+                } else {
+                    positionPairs = getPosPairsFromParams(params: params, inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
                 }
-                posIDs.sort()
-                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
                 
                 // loop through all pos pairs and rectify them
-                for (left, right) in posIDpairs {
-                    print("rectifying position pair: \(left) (left) and \(right) (right)");
+                for (left, right) in positionPairs {
+                    print("Rectifying position pair: \(left) (left) and \(right) (right)");
                     // set numExp to zero if in flash mode
                     let numExp: Int = (mode == "flash") ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
                     // loop through all exposures
                     for exp in 0..<numExp {
-                        print("rectifying exposure: \(exp)");
-                        rectifyAmb(ball: ball, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
+                        print("Rectifying exposure: \(exp)");
+                        rectifyAmb(ball: false, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
                     }
                 }
             }
