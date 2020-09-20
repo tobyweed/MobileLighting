@@ -30,6 +30,7 @@
 #include <vector>
 
 #include <iostream>
+#include <sys/stat.h>
 
 // Comment out next line if you don't have the PNG library
 #define HAVE_PNG_LIB

@@ -1260,7 +1260,7 @@ func processCommand(_ input: String) -> Bool {
                 positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
             } else {
                 let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
-                positionPairs = getPosPairsFromParams(params: args, inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+                positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
             }
 
             for (leftpos, rightpos) in positionPairs {
@@ -1299,72 +1299,6 @@ func processCommand(_ input: String) -> Bool {
         //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
     case .disparity, .d:
-//        let (params, flags) = partitionTokens([String](tokens[1...]))
-//        var curParam = 0
-//
-//        var rectified = false
-//        var allproj = false, allpos = false
-//        for flag in flags {
-//            switch flag {
-//            case "-r":
-//                rectified = true
-//            case "-a":
-//                if !allproj {
-//                    allproj = true
-//                } else {
-//                    allpos = true
-//                }
-//            default:
-//                print("disparity: invalid flag \(flag)")
-//                break cmdSwitch
-//            }
-//        }
-//
-//        if allproj, allpos {
-//            guard params.count == 0 else {
-//                print(usage)
-//                break
-//            }
-//        } else if allproj {
-//            guard params.count == 2 else {
-//                print(usage)
-//                break
-//            }
-//        } else {
-//            guard params.count == 3 else {
-//                print(usage)
-//                break
-//            }
-//        }
-//
-//        var projs = [Int]()
-//        if !allproj {
-//            guard let proj = Int(params[curParam]) else {
-//                print("disparity: invalid projector \(params[curParam])")
-//                break
-//            }
-//            projs = [proj]
-//            curParam += 1
-//        } else {
-//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
-//            projs = getIDs(projDirs, prefix: "proj", suffix: "")
-//        }
-//
-//        for proj in projs {
-//                    let positions: [Int]
-//if !allpos {
-//    guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
-//        print("disparity: invalid positions \(params[curParam]), \(params[curParam+1])")
-//        break
-//    }
-//    positions = [leftpos, rightpos]
-//} else {
-//    let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
-//    positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
-//}
-//
-//for (leftpos, rightpos) in zip(positions, positions[1...]) {
-        
         // check input format
         let (params, flags) = partitionTokens(tokens)
         let numAs = countAFlags(flags: flags)
@@ -1394,11 +1328,11 @@ func processCommand(_ input: String) -> Bool {
                 positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
             } else {
                 let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
-                positionPairs = getPosPairsFromParams(params: args, inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+                positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
             }
 
             for (leftpos, rightpos) in positionPairs {
-                disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: false)
+                disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: true)
             }
         }
         
@@ -1432,7 +1366,7 @@ func processCommand(_ input: String) -> Bool {
                 positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
             } else {
                 let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
-                positionPairs = getPosPairsFromParams(params: args, inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
+                positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
             }
 
             for (leftpos, rightpos) in positionPairs {
@@ -1477,7 +1411,7 @@ func processCommand(_ input: String) -> Bool {
                 if (allPosPairs) {
                     positionPairs = getAllPosPairs(inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
                 } else {
-                    positionPairs = getPosPairsFromParams(params: params, inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
+                    positionPairs = getPosPairsFromParams(params: params, prefix: "pos", suffix: "")
                 }
                 
                 // loop through all pos pairs and rectify them
@@ -1495,162 +1429,77 @@ func processCommand(_ input: String) -> Bool {
         }
         
     case .merge, .m:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var rectified = false, allpos = false
-        for flag in flags {
-            switch flag {
-            case "-r":
-                rectified = true
-            case "-a":
-                allpos = true
-            default:
-                print("merge: unrecognized flag \(flag)")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos { nparams = 0 }
-        else { nparams = 2 }
-        guard params.count == nparams else {
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
             print(usage)
             break
         }
         
-        let positions: [Int]
-        if !allpos {
-            guard let leftpos = Int(params[0]), let rightpos = Int(params[1]) else {
-                print(usage)
-                break
-            }
-            positions = [leftpos, rightpos]
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
         } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(rectified)))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.disparity(proj: $0, rectified: rectified)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
         }
-        
-        for (left, right) in zip(positions, positions[1...]) {
-            merge(left: left, right: right, rectified: rectified)
+
+        for (left, right) in positionPairs {
+            merge(left: left, right: right, rectified: true)
         }
         
     case .reproject, .rp:
-        // implement -a functionality
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var allpos = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                allpos = true
-            default:
-                print("reproject: unrecognized flag \(flag)")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos {
-            nparams = 0
-        } else {
-            nparams = 2
-        }
-        guard params.count == nparams else {
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
             print(usage)
             break
         }
         
-        let positions: [Int]
-        if !allpos {
-            guard let left = Int(params[0]), let right = Int(params[1]) else {
-                print("reproject: invalid stereo position pair provided.")
-                break
-            }
-            positions = [left, right]
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
         } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(true)))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.decoded(proj: $0, rectified: true)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
         }
 
-        for (left, right) in zip(positions, positions[1...]) {
+        for (left, right) in positionPairs {
             reproject(left: left, right: right)
         }
         
     case .merge2, .m2:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var allpos = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                allpos = true
-            default:
-                print("merge2: unrecognized flag \(flag).")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos { nparams = 0 }
-        else { nparams = 2 }
-        
-        guard params.count == nparams else {
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
             print(usage)
             break
         }
         
-        let positions: [Int]
-        if !allpos {
-            guard let left = Int(params[0]), let right = Int(params[1]) else {
-                print("reproject: invalid stereo position pair provided.")
-                break
-            }
-            positions = [left, right]
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.reprojected(proj: 0), prefix: "pos", suffix: "")
         } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.reprojected))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.reprojected(proj: $0)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
         }
-        
-        for (left, right) in zip(positions, positions[1...]) {
+
+        for (left, right) in positionPairs {
             mergeReprojected(left: left, right: right)
         }
         
@@ -1681,7 +1530,7 @@ func processCommand(_ input: String) -> Bool {
         if (all) {
             positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
         } else {
-            positionPairs = getPosPairsFromParams(params: Array(params[1...]), inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+            positionPairs = getPosPairsFromParams(params: Array(params[1...]), prefix: "pos", suffix: "-track.json")
         }
         
         // run processing

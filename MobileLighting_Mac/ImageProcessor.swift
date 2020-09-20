@@ -108,7 +108,7 @@ func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,I
 }
 
 // Convert input to pairs. Accepts a pair of integer arrays or a pair of integers.
-func getPosPairsFromParams(params: [String], inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
+func getPosPairsFromParams(params: [String], prefix: String, suffix: String) -> [(Int,Int)] {
     // make sure we have an array of projectors or a single projector as the second token
     guard (params.count == 2) else {
         print("Must provide two arguments")
@@ -324,34 +324,6 @@ func runAllProcessing() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //MARK: disparity matching
 // uses bridged C++ code from image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from
@@ -361,8 +333,14 @@ func runAllProcessing() {
 // NOW: also refines disparity maps
 func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var refinedDirLeft: [CChar], refinedDirRight: [CChar]
-    refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
-    refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
+    do {
+        try refinedDirLeft = safePath(dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified))
+        try refinedDirRight = safePath(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))
+        try _ = safePath("\(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))/result\(leftpos)\(rightpos)u-4refined2.pfm") // just check one of the files that should be there, hope that if it is the others will be there too. necessary to avoid crashes from C exceptions due to missing files
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
     var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: leftpos)
     var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: rightpos)
     let l = Int32(leftpos)
@@ -386,12 +364,12 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
         ymin = 0
         ymax = 0
     }
+    
     disparitiesOfRefinedImgs(&refinedDirLeft, &refinedDirRight,
                              &disparityDirLeft,
                              &disparityDirRight,
                              l, r, rectified ? 1 : 0,
                              xmin, xmax, ymin, ymax)
-    
     var in_suffix = "0initial".cString(using: .ascii)!
     var out_suffix = "1crosscheck1".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 0, 0, &in_suffix, &out_suffix)
@@ -422,7 +400,6 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     outy = disparityDirRight + out_suffix_y
 //    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
     filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
-
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
     crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
@@ -529,24 +506,12 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     let positionDirs = projectors.map {
         return (dirStruc.disparity(proj: $0, pos: leftpos, rectified: rectified), dirStruc.disparity(proj: $0, pos: rightpos, rectified: rectified))
     }
-//    var positionDirs: [(String, String)] = projectorDirs.map {
-//        return ("\($0)/pos\(leftpos)", "\($0)/pos\(rightpos)")
-//    }
     var pfmPathsLeft, pfmPathsRight: [(String, String)]
-    if rectified {
-        pfmPathsLeft = positionDirs.map {
-            return ("\($0.0)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
-        }
-        pfmPathsRight = positionDirs.map {
-            return ("\($0.1)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
-        }
-    } else {
-        pfmPathsLeft = positionDirs.map {
-            return ("\($0.0)/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm")
-        }
-        pfmPathsRight = positionDirs.map {
-            return ("\($0.1)/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm")
-        }
+    pfmPathsLeft = positionDirs.map {
+        return ("\($0.0)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
+    }
+    pfmPathsRight = positionDirs.map {
+        return ("\($0.1)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
     }
     
     pfmPathsLeft = pfmPathsLeft.filter {
@@ -557,7 +522,6 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         let (rightx, righty) = $0
         return FileManager.default.fileExists(atPath: rightx) && FileManager.default.fileExists(atPath: righty)
     }
-    
     leftx = pfmPathsLeft.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }
     lefty = pfmPathsLeft.map{ return $0.1 }.map{ return $0.cString(using: .ascii)! }
     rightx = pfmPathsRight.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }
@@ -574,17 +538,15 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     for i in 0..<lefty.count {
         imgsy.append(getptr(&lefty[i]))
     }
-//    var leftout = dirStruc.merged(pos: leftpos, rectified: rectified).cString(using: .ascii)!
-    if rectified {
-        outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
-        outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y-0initial.pfm").cString(using: .ascii)!
-    } else {
-        outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x.pfm").cString(using: .ascii)!
-        outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y.pfm").cString(using: .ascii)!
-    }
-    
+
+    outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
+    outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y-0initial.pfm").cString(using: .ascii)!
     let mingroup: Int32 = 2
     let maxdiff: Float = 1.0
+    guard (imgsx.count > 0 && imgsy.count > 0) else {
+        print("No images to be merged for left position \(leftpos), right position \(rightpos).")
+        return
+    }
     mergeDisparities(&imgsx, &imgsy, &outx, &outy, Int32(imgsx.count), mingroup, maxdiff)
     
     imgsx.removeAll()
@@ -605,22 +567,31 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         outx = (dirStruc.merged(pos: rightpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x.pfm").cString(using: .ascii)!
         outy = (dirStruc.merged(pos: rightpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y.pfm").cString(using: .ascii)!
     }
-//    var rightout = dirStruc.merged(pos: rightpos, rectified: rectified).cString(using: .ascii)!
-//    mergeDisparities(&imgsx, &imgsy, &rightout, Int32(imgsx.count), mingroup, maxdiff)
+
+    guard (imgsx.count > 0 && imgsy.count > 0) else {
+        print("No images to be merged for left position \(leftpos), right position \(rightpos).")
+        return
+    }
     mergeDisparities(&imgsx, &imgsy, &outx, &outy, Int32(imgsx.count), mingroup, maxdiff)
     
-    if rectified {
-        var posdir0 = dirStruc.merged(pos: leftpos, rectified: true).cString(using: .ascii)!
-        var posdir1 = dirStruc.merged(pos: rightpos, rectified: true).cString(using: .ascii)!
-        let l = Int32(leftpos)
-        let r = Int32(rightpos)
-        let thresh: Float = 0.5
-        let xonly: Int32 = 1
-        let halfocc: Int32 = 0
-        var in_suffix = "0initial".cString(using: .ascii)!
-        var out_suffix = "1crosscheck".cString(using: .ascii)!
-        crosscheckDisparities(&posdir0, &posdir1, l, r, thresh, xonly, halfocc, &in_suffix, &out_suffix)
+    var posdir0: [CChar]
+    var posdir1: [CChar]
+    do {
+        try posdir0 = safePath(dirStruc.merged(pos: leftpos, rectified: true))
+        try posdir1 = safePath(dirStruc.merged(pos: rightpos, rectified: true))
+    } catch let err {
+        print(err.localizedDescription)
+        return
     }
+    let l = Int32(leftpos)
+    let r = Int32(rightpos)
+    let thresh: Float = 0.5
+    let xonly: Int32 = 1
+    let halfocc: Int32 = 0
+    var in_suffix = "0initial".cString(using: .ascii)!
+    var out_suffix = "1crosscheck".cString(using: .ascii)!
+    
+    crosscheckDisparities(&posdir0, &posdir1, l, r, thresh, xonly, halfocc, &in_suffix, &out_suffix)
 }
 
 //MARK: reproject
