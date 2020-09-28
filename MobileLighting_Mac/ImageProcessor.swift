@@ -99,14 +99,14 @@ func getPosPairsFromParams(params: [String], prefix: String, suffix: String) -> 
 }
 
 
-// steps
-func getExtrinsics(all: Bool, params: [String]) {
+// Processing control flow entrypoints
+func runGetExtrinsics(all: Bool, params: [String]) {
     // determine targets
     var positionPairs: [(Int, Int)]
     if (all) {
         positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
     } else {
-        positionPairs = getPosPairsFromParams(params: params, prefix: "pos", suffix: "-track.json")
+        positionPairs = getPosPairsFromParams(params: Array(params[1...]), prefix: "pos", suffix: "-track.json")
     }
     
     // run processing
@@ -128,6 +128,185 @@ func getExtrinsics(all: Bool, params: [String]) {
     }
 }
 
+func runRefine(allProj: Bool, allPosPairs: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            for direction: Int in [0, 1] {
+                for pos in [leftpos, rightpos] {
+                    var cimg: [CChar]
+                    var coutdir: [CChar]
+                    do {
+                        try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
+                        try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
+                    } catch let err {
+                        print(err.localizedDescription)
+                        break
+                    }
+
+                    let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
+                    do {
+                        let metadataStr = try String(contentsOfFile: metadatapath)
+                        let metadata: Yaml = try Yaml.load(metadataStr)
+                        if let angle: Double = metadata.dictionary?["angle"]?.double {
+                            var posID = *"\(leftpos)\(rightpos)"
+                            refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
+                        }
+                    } catch {
+                        print("refine error: could not load metadata file \(metadatapath).")
+                    }
+                }
+            }
+        }
+    }
+}
+
+func runDisparity(allProj: Bool, allPosPairs: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: true)
+        }
+    }
+}
+
+func runRectify(allProj: Bool, allPosPairs: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            print("Trying to rectify position pair (\(leftpos),\(rightpos)) for projector \(proj)")
+            rectifyDec(left: leftpos, right: rightpos, proj: proj)
+        }
+    }
+}
+
+func runRectifyAmb(allPosPairs: Bool, params: [String]) {
+    let modes: [String] = ["normal", "flash", "torch"]
+    
+    // loop though all modes & rectify them
+    for mode in modes {
+        let dirNames = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
+            return "\(dirStruc.ambientPhotos)/\($0)"
+        }
+        var prefix: String
+        switch mode {
+        case "flash":
+            prefix = "F"
+            break
+        case "torch":
+            prefix = "T"
+            break
+        default:
+            prefix = "L"
+        }
+        let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
+        for lighting in lightings {
+            print("\nRectifying directory: \(prefix)\(lighting)");
+            var positionPairs: [(Int, Int)]
+            if (allPosPairs) {
+                positionPairs = getAllPosPairs(inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
+            } else {
+                positionPairs = getPosPairsFromParams(params: params, prefix: "pos", suffix: "")
+            }
+            
+            // loop through all pos pairs and rectify them
+            for (left, right) in positionPairs {
+                print("Rectifying position pair: \(left) (left) and \(right) (right)");
+                // set numExp to zero if in flash mode
+                let numExp: Int = (mode == "flash") ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
+                // loop through all exposures
+                for exp in 0..<numExp {
+                    print("Rectifying exposure: \(exp)");
+                    rectifyAmb(ball: false, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
+                }
+            }
+        }
+    }
+}
+
+func runMerge(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        merge(left: left, right: right, rectified: true)
+    }
+}
+
+func runReproject(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        reproject(left: left, right: right)
+    }
+}
+
+func runMerge2(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.reprojected(proj: 0), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        mergeReprojected(left: left, right: right)
+    }
+}
 
 func runAllProcessing() {
     if !getintrinsics() { return }
