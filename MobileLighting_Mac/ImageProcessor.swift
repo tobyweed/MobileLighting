@@ -308,40 +308,6 @@ func runMerge2(allPosPairs: Bool, params: [String]) {
     }
 }
 
-func runAllProcessing() {
-    if !getintrinsics() { return }
-    
-    
-}
-
-// compute extrinsics (left, right)
-// -a: all adjacent pairs
-
-// rectify decoded (left, right)
-// -a: all adjacent pairs for which we have extrinsics & decoded images
-
-// rectify amb (left, right)
-// -a: all adjacent
-
-// refine (projectors, position pairs)
-// -a: all projectors
-// -a: all position pairs for which there are rectified decoded images
-
-// disparity (projs, pos pairs)
-// -a: all projectors
-// -a: all position pairs for which there are refined decoded images
-
-// merge (pos pairs)
-// -a: all position pairs for which there are disparities
-
-// reproject (proj, pos pairs)
-// -a: all projectors
-// -a: all position pairs for which there are merged images
-
-// merge2 (pos pairs)
-// -a: all position pairs for which there are reprojected images
-
-
 
 
 //MARK: disparity matching

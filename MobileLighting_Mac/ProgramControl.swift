@@ -53,7 +53,7 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case trackexistingstereo
     
     // image processing
-    case processpairs
+    case processpairs, pp
     case refine, ref
     case rectify, rect
     case rectifyamb, ra
@@ -118,20 +118,20 @@ func getUsage(_ command: Command) -> String {
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .setvelocity: return "setvelocity [velocity]\n"
     // image processing
-    case .processpairs: return "processpairs [proj] [(pos1,pos2)]\n processpairs -a [(pos1,pos2)]"
-    case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
-    case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
-    case .rectify, .rect: return "rectify [proj] [left] [right]\nrectify -a [left] [right]\nrectify [proj] -a\n rectify -a -a"
-    case .rectifyamb, .ra: return "rectifyamb (-a|-n|-t|-f]\n"
-    case .merge, .m: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
-    case .reproject, .rp: return "reproject [left] [right]\n       reproject -a"
-    case .merge2, .m2: return "merge2 [left] [right]\n       merge2 -a"
+    case .processpairs, .pp: return "(processpairs | pp) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .refine, .ref: return "(refine | ref) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .disparity, .d: return "(disparity | d) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .rectify, .rect: return "(rectify | rect) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .rectifyamb, .ra: return "(rectifyamb | ra) (-a | [left positions] [right positions])\n"
+    case .merge, .m: return "(merge | m) (-a | [left positions] [right positions])"
+    case .reproject, .rp: return "(reproject | rp) (-a | [left positions] [right positions])"
+    case .merge2, .m2: return "(merge2 | m2) (-a | [left positions] [right positions])"
     // camera calibration
-    case .getintrinsics, .gi: return "getintrinsics\ngi"
-    case .getextrinsics, .ge: return "getextrinsics leftpos rightpos\ngetextrinsics [leftpos1,leftpos2,...] [rightpos1,rightpos2,...]\ngetextrinsics -a"
+    case .getintrinsics, .gi: return "(getintrinsics | gi)"
+    case .getextrinsics, .ge: return "(getextrinsics | ge) (-a | [left positions] [right positions])"
     case .trackexistingstereo: return "trackexistingstereo"
     // debugging
-    case .showshadows, .ss: return "showshadows"
+    case .showshadows, .ss: return "(showshadows | ss)"
     case .transform: return "transform"
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
@@ -1221,7 +1221,7 @@ func processCommand(_ input: String) -> Bool {
     MARK: processing
     ======================================================================================*/
     // Runs all processing steps on given pairs and projectors
-    case .processpairs:
+    case .processpairs, .pp:
         // check input format
         let (params, flags) = partitionTokens(tokens)
         let numAs = countAFlags(flags: flags)
