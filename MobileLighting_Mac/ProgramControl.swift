@@ -1222,6 +1222,7 @@ func processCommand(_ input: String) -> Bool {
     ======================================================================================*/
     // Runs all processing steps on given pairs
     case .processpairs:
+        // run all processing given projectors and position pairs
 //        runProcessingCommand(tokens: tokens, useproj: true, usage: usage)
         break
         
@@ -1526,30 +1527,32 @@ func processCommand(_ input: String) -> Bool {
         
         // determine targets
         let all = (numAs == 1) ? true : false
-        var positionPairs: [(Int, Int)]
-        if (all) {
-            positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
-        } else {
-            positionPairs = getPosPairsFromParams(params: Array(params[1...]), prefix: "pos", suffix: "-track.json")
-        }
         
-        // run processing
-        for (leftpos, rightpos) in positionPairs {
-            var track1: [CChar]
-            var track2: [CChar]
-            var intrinsicsFile: [CChar]
-            do {
-                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
-                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
-                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
-            } catch let err {
-                print(err.localizedDescription)
-                break
-            }
-            var outputDir = *"\(dirStruc.calibComputed)"
-
-            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
-        }
+        getExtrinsics(all: all, params: Array(params[1...]))
+//        var positionPairs: [(Int, Int)]
+//        if (all) {
+//            positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+//        } else {
+//            positionPairs = getPosPairsFromParams(params: Array(params[1...]), prefix: "pos", suffix: "-track.json")
+//        }
+//
+//        // run processing
+//        for (leftpos, rightpos) in positionPairs {
+//            var track1: [CChar]
+//            var track2: [CChar]
+//            var intrinsicsFile: [CChar]
+//            do {
+//                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+//                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+//                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
+//            } catch let err {
+//                print(err.localizedDescription)
+//                break
+//            }
+//            var outputDir = *"\(dirStruc.calibComputed)"
+//
+//            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
+//        }
         
         
     /*=====================================================================================

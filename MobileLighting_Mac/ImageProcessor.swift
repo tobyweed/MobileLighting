@@ -13,47 +13,7 @@ import Yaml
 
 // MARK: control flow
 
-// Takes an array of tokens, returns a tuple of arrays representing the projectors (1st array) and positions (2nd array)
-//  that the flags indicate using
-func getProjs(tokens: [String], usage: String, inputDir: String) -> [Int] {
-    let (params, flags) = partitionTokens(tokens)
-
-    let numAs = countAFlags(flags: flags)
-
-    // determine whether/how many -a flags were used
-    var allproj = false
-    if (flags.count == 1 || flags.count == 2) {
-        allproj = true
-    } else if (flags.count != 0) {
-        print("Unrecognized number of flags \(flags.count)")
-        print(usage)
-        return []
-    }
-
-    var projs = [Int]()
-    if (allproj) {
-        let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
-        projs = getIDs(projDirs, prefix: "proj", suffix: "")
-    } else {
-        // make sure we have an array of projectors or a single projector as the second token
-        guard(params.count >= 2) else {
-            print("Not enough arguments")
-            print(usage)
-            return []
-        }
-        if params[1].hasPrefix("[") {
-            projs = stringToIntArray(params[1])
-        } else if Int(params[1]) != nil {
-            projs.append(Int(params[1])!)
-        } else {
-            print("Missing projector position(s)")
-            print(usage)
-            return []
-        }
-    }
-    return projs
-}
-
+// Utils
 // Count the number of -a flags appearing in array of flags
 func countAFlags(flags: [String]) -> Int {
     var numAs = 0
@@ -139,154 +99,35 @@ func getPosPairsFromParams(params: [String], prefix: String, suffix: String) -> 
 }
 
 
-
-// Takes an array of tokens, returns a tuple of arrays representing the projectors (1st array) and positions (2nd array)
-//  that the flags indicate using
-func getPosPairs(tokens: [String], usage: String, inputDir: String, useproj: Bool) -> ([Int],[Int]) {
-    let (params, flags) = partitionTokens(tokens)
-
-    for flag in flags {
-        if(flag != "-a") {
-            print("Unrecognized flag \(flag)")
-            return ([],[])
-        }
-    }
-
-    // determine whether/how many -a flags were used
-    var allpos = false
-    if (flags.count == 1 && !useproj || flags.count == 2) {
-        allpos = true
-    } else if (flags.count > 2) {
-        print("Unrecognized number of flags \(flags.count)")
-        print(usage)
-        return ([],[])
-    }
-
-    var pos1 = [Int]()
-    var pos2 = [Int]()
-    if (allpos) {
-        let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
-        let allpos = getIDs(posDirs, prefix: "pos", suffix: "").sorted()
-        pos1 = Array(allpos[0..<(allpos.count-1)])
-        pos2 = Array(allpos[1..<(allpos.count)])
-        print("pos1: \(pos1)")
-        print("pos2: \(pos2)")
+// steps
+func getExtrinsics(all: Bool, params: [String]) {
+    // determine targets
+    var positionPairs: [(Int, Int)]
+    if (all) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
     } else {
-        // make sure we have an array of projectors or a single projector as the second token
-        guard (params.count >= 3) else {
-            print("Not enough arguments")
-            print(usage)
-            return ([],[])
-        }
-        if (params[1].hasPrefix("[") && params[2].hasPrefix("[")) {
-            pos1 = stringToIntArray(params[1])
-            pos2 = stringToIntArray(params[2])
-        } else if (Int(params[1]) != nil && Int(params[2]) != nil) {
-            pos1.append(Int(params[1])!)
-            pos2.append(Int(params[2])!)
-        } else {
-            print("Missing projector position(s)")
-            print(usage)
-            return ([],[])
-        }
+        positionPairs = getPosPairsFromParams(params: params, prefix: "pos", suffix: "-track.json")
     }
-    guard pos1.count == pos2.count else {
-        print("Each position array must have the same length.")
-        return ([],[])
+    
+    // run processing
+    for (leftpos, rightpos) in positionPairs {
+        var track1: [CChar]
+        var track2: [CChar]
+        var intrinsicsFile: [CChar]
+        do {
+            try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+            try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+            try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
+        } catch let err {
+            print(err.localizedDescription)
+            break
+        }
+        var outputDir = *"\(dirStruc.calibComputed)"
+
+        ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
     }
-    return (pos1,pos2)
 }
 
-//func getProjPos(tokens: [String], useproj: Bool, usage: String) -> Bool {
-//    let (params, flags) = partitionTokens(tokens)
-//
-//    for flag in flags {
-//        if(flag != "-a") {
-//            print("Unrecognized flag \(flag)")
-//            return false
-//        }
-//    }
-//
-//    // determine whether/how many -a flags were used
-//    var (allproj, allpos) = (false, false)
-//    if(flags.count == 2 && useproj) {
-//        (allproj, allpos) = (true,true)
-//    } else if(flags.count == 1) {
-//        if(useproj) {
-//            (allproj, allpos) = (true,false)
-//        } else {
-//            (allproj, allpos) = (false,true)
-//        }
-//    } else if(flags.count == 0) {
-//        (allproj, allpos) = (false,false)
-//    } else {
-//        print("Unrecognized number of flags \(flags.count)")
-//        print(usage)
-//        return false
-//    }
-//
-//    // get the projector positions from the directory that will be used as input
-//    func getprojs(inputDir: String) -> [Int] {
-//        var projs = [Int]()
-//        if(useproj) {
-//            if(allproj) {
-//                let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
-//                projs = getIDs(projDirs, prefix: "proj", suffix: "")
-//            } else {
-//                // make sure we have an array of projectors or a single projector as the second token
-//                guard(params.count >= 2) else {
-//                    print("Not enough arguments")
-//                    print(usage)
-//                    return []
-//                }
-//                if params[1].hasPrefix("[") {
-//                    projs = stringToIntArray(params[1])
-//                } else if Int(params[1]) != nil {
-//                    projs.append(Int(params[1])!)
-//                } else {
-//                    print("Missing projector position(s)")
-//                    print(usage)
-//                    return []
-//                }
-//            }
-//        }
-//        return projs
-//    }
-//
-//    let projs = getprojs(inputDir: dirStruc.decoded(true))
-//    if useproj && projs.count <= 0 {
-//        print("No projectors to be processed")
-//        return false
-//    }
-//
-//    func getpos(inputDir: String) -> [Int] {
-//        var pos = [Int]()
-//        if(allpos) {
-//            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
-//            pos = getIDs(projDirs, prefix: "pos", suffix: "")
-//        } else {
-//            // make sure we have an array of positions or a single position as the second token
-//            print(params[0])
-//            if params[0].hasPrefix("[") {
-//                projs = stringToIntArray(params[0])
-//            } else if Int(params[0]) != nil {
-//                projs.append(Int(params[0])!)
-//            } else {
-//                print("Missing projector position(s)")
-//                print(usage)
-//                return []
-//            }
-//        }
-//    }
-    
-    
-//    switch tokens[0] {
-//    case "processpairs":
-//        break
-//    default:
-//        break
-//    }
-//
 
 func runAllProcessing() {
     if !getintrinsics() { return }
