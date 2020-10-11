@@ -1242,6 +1242,7 @@ func processCommand(_ input: String) -> Bool {
         runGetExtrinsics(all: allPosPairs, params: params)
         runRectify(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runRectifyAmb(allPosPairs: allPosPairs, params: params)
+        runRefine(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runDisparity(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runMerge(allPosPairs: allPosPairs, params: params)
         runReproject(allPosPairs: allPosPairs, params: params)
