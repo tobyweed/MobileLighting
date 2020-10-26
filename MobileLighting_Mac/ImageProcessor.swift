@@ -128,18 +128,18 @@ func runGetExtrinsics(all: Bool, params: [String]) {
     }
 }
 
-func runRefine(allProj: Bool, allPosPairs: Bool, params: [String]) {
+func runRefine(allProj: Bool, allPosPairs: Bool, rectified: Bool, params: [String]) {
     var projs: [Int] = []
     if (allProj) {
-        projs = getAllProj(inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+        projs = getAllProj(inputDir: dirStruc.decoded(rectified), prefix: "proj", suffix: "")
     } else {
-        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(rectified), prefix: "proj", suffix: "")
     }
     
     for proj in projs {
         var positionPairs: [(Int, Int)]
         if (allPosPairs) {
-            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: rectified), prefix: "pos", suffix: "")
         } else {
             let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
             positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
@@ -151,8 +151,14 @@ func runRefine(allProj: Bool, allPosPairs: Bool, params: [String]) {
                     var cimg: [CChar]
                     var coutdir: [CChar]
                     do {
-                        try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
-                        try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
+                        if(rectified) {
+                            try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
+                            try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
+                        } else {
+                            try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm")
+                            try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: false))
+                        }
+                        
                     } catch let err {
                         print(err.localizedDescription)
                         break
@@ -163,7 +169,12 @@ func runRefine(allProj: Bool, allPosPairs: Bool, params: [String]) {
                         let metadataStr = try String(contentsOfFile: metadatapath)
                         let metadata: Yaml = try Yaml.load(metadataStr)
                         if let angle: Double = metadata.dictionary?["angle"]?.double {
-                            var posID = *"\(leftpos)\(rightpos)"
+                            var posID: [CChar]
+                            if(rectified) {
+                                posID = *"\(leftpos)\(rightpos)"
+                            } else {
+                                posID = *"\(pos)"
+                            }
                             refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
                         }
                     } catch {
@@ -198,6 +209,7 @@ func runDisparity(allProj: Bool, allPosPairs: Bool, params: [String]) {
     }
 }
 
+// refined: if true, run on the refined unrectified images. Otherwise run on the initial unrectified images.
 func runRectify(allProj: Bool, allPosPairs: Bool, params: [String]) {
     var projs: [Int] = []
     if (allProj) {
@@ -322,13 +334,13 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     do {
         try refinedDirLeft = safePath(dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified))
         try refinedDirRight = safePath(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))
-        try _ = safePath("\(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))/result\(leftpos)\(rightpos)u-4refined2.pfm") // just check one of the files that should be there, hope that if it is the others will be there too. necessary to avoid crashes from C exceptions due to missing files
+        try _ = safePath("\(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))/result\(leftpos)\(rightpos)u-4refined2.pfm")
     } catch let err {
         print(err.localizedDescription)
         return
     }
-    var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: leftpos)
-    var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: rightpos)
+    var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)
+    var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)
     let l = Int32(leftpos)
     let r = Int32(rightpos)
     
@@ -394,7 +406,7 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
 
 //MARK: rectification
 //rectify decoded images
-func rectifyDec(left: Int, right: Int, proj: Int) {
+func rectifyDec(left: Int, right: Int, proj: Int, refined: Bool = true) {
 //    var intr = *dirStruc.intrinsicsJSON
 //    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
     //paths for storing output
@@ -410,20 +422,21 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
     do {
         try intr = safePath(dirStruc.intrinsicsJSON)
         try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
-        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm")
-        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm")
-        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm")
-        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm")
+        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-4refined2.pfm")
+        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-4refined2.pfm")
+        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-4refined2.pfm")
+        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-4refined2.pfm")
     } catch let err {
         print(err.localizedDescription)
         return
     }
     computeMaps(&result0l, &intr, &extr)
 
-    let outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
-        rectdirleft + "/result\(left)\(right)v-0rectified.pfm",
-        rectdirright + "/result\(left)\(right)u-0rectified.pfm",
-        rectdirright + "/result\(left)\(right)v-0rectified.pfm",
+    let name = (refined ? "4refined2" : "0rectified")
+    let outpaths = [rectdirleft + "/result\(left)\(right)u-" + name + ".pfm",
+        rectdirleft + "/result\(left)\(right)v-" + name + ".pfm",
+        rectdirright + "/result\(left)\(right)u-" + name + ".pfm",
+        rectdirright + "/result\(left)\(right)v-" + name + ".pfm",
         ]
     for path in outpaths {
         let dir = path.split(separator: "/").dropLast().joined(separator: "/")
@@ -671,7 +684,7 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     var rightdir = *(dirStruc.merged2(rightpos))
     var in_suffix = *"1filtered"
     var out_suffix = *"2crosscheck1"
-    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1.0, 1, 1, &in_suffix, &out_suffix)
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1.0, 1, -1, &in_suffix, &out_suffix)
     
     // filter again, this can fill small holes of cross-checked regions
     for pos in [leftpos, rightpos] {
@@ -683,7 +696,7 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     // crosscheck one last time
     in_suffix = *"3filtered"
     out_suffix = *"4crosscheck2"
-    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1, 1, 1, &in_suffix, &out_suffix)
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1, 1, -1, &in_suffix, &out_suffix)
 }
 
 func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right rightpos: Int) -> [String] {

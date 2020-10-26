@@ -1240,9 +1240,9 @@ func processCommand(_ input: String) -> Bool {
         
         _ = getintrinsics()
         runGetExtrinsics(all: allPosPairs, params: params)
+        runRefine(allProj: allProj, allPosPairs: allPosPairs, rectified: false, params: params)
         runRectify(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runRectifyAmb(allPosPairs: allPosPairs, params: params)
-        runRefine(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runDisparity(allProj: allProj, allPosPairs: allPosPairs, params: params)
         runMerge(allPosPairs: allPosPairs, params: params)
         runReproject(allPosPairs: allPosPairs, params: params)
@@ -1330,7 +1330,7 @@ func processCommand(_ input: String) -> Bool {
             break
         }
         
-        runRefine(allProj: allProj, allPosPairs: allPosPairs, params: params)
+        runRefine(allProj: allProj, allPosPairs: allPosPairs, rectified: false, params: params)
         
         
         // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
