@@ -99,7 +99,6 @@ MobileLighting iOS is compatible with all devices that run iOS 11+ and have a re
 
 
 
-
 ## Dataset Acquisition
 There are numerous steps to dataset acquisition:
 1. Scene Setup and Description
@@ -121,6 +120,8 @@ These steps are executed/controlled from the MobileLighting Mac command-line int
 
 ### Scene Setup and Description
 ##### Scene directory creation and configuration
+**Note (11/28/20):** If attempting to run the system on an older scene (from 2019 or 2020), note that several of the Yaml and JSON files--including sceneSettings and each of the track files--store absolute paths, which the system uses to locate things. This should be changed at some point, but if you are running into problems because of this, the quickest fix will be to manually update the absolute paths where they appear.
+
 First, create a directory to store scenes. Then, run MobileLighting_Mac with the "init" option. 
 
 Directions to do this from Xcode:
