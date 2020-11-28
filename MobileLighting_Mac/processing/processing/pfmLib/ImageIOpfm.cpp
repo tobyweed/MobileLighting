@@ -223,32 +223,3 @@ int WriteFilePFM(const Mat &im, string path, float scalef=1/255.0){
     cout << setfill('=') << setw(19) << "=" << endl << endl;
     return 0;
 }
-
-/*
-int main(int argc, char ** argv){
-    Mat I, M;
-
-    ReadFilePFM(I, "disp0GTplaytable.pfm");  
-    WriteFilePFM(I, "disp0RW.pfm");
-    ReadFilePFM(M, "disp0RW.pfm");
-
-    Mat Iresult;
-    //I.convertTo(Iresult, CV_8UC1);
-    Iresult = I / 255.0;
-
-    Mat Mresult;
- 	//M.convertTo(Mresult, CV_8UC1);
- 	Mresult = M / 255.0;
-
-    namedWindow( "pfm_disp_after", CV_WINDOW_AUTOSIZE );
-    imshow( "pfm_disp_after", Mresult );
-
-    namedWindow( "pfm_disp_before", CV_WINDOW_AUTOSIZE );
-    imshow( "pfm_disp_before", Iresult );
-    
-    waitKey(0);
-    return 0;
-}
-*/
-
- 

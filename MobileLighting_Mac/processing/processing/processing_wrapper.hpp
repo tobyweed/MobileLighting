@@ -3,11 +3,12 @@
 
 #pragma GCC visibility push(default)
 
+// Processing
 void transformPfm(char *pfmPath, char *transformation);
 void writeShadowImgs(char *decodedDir, char *outDir, int projs[], int nProjs, int pos);
 void refineDecodedIm(char *outdir, int direction, char* decodedIm, double angle, char *posID);
 void disparitiesOfRefinedImgs(char *posdir0, char *posdir1, char *outdir0, char *outdir1, int pos0, int pos1, int rectified, int dXmin, int dXmax, int dYmin, int dYmax);
-void computeMaps(char *impath, char *intr, char *extr, char *settings);
+void computeMaps(char *impath, char *intr, char *extr);
 void rectifyDecoded(int camera, char *impath, char *outpath);
 void rectifyAmbient(int camera, char *impath, char *outpath);
 void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, int pos1, float thresh, int xonly, int halfocc, char *in_suffix, char *out_suffix);
@@ -26,3 +27,4 @@ int ComputeExtrinsics( int posid1, int posid2, char *trackFile1, char *trackFile
 #pragma GCC visibility pop
 
 #endif /* processing_wrapper_hpp */
+ // end

@@ -527,7 +527,6 @@ void computeDisparities(CFloatImage &fim0, CFloatImage &fim1, CFloatImage &fout0
 // thresh = allowable Euclidean distance
 // if xonly==1, ignore y channel
 // if halfocc==1, allow half occlusion
-//void runCrossCheck(char *in0, char *in1, char *out0, char *out1, float thresh, int xonly, int halfocc)
 pair<CFloatImage,CFloatImage> runCrossCheck(CFloatImage d0, CFloatImage d1, float thresh, int xonly, int halfocc)
 {
     int verbose=1;
@@ -1180,3 +1179,4 @@ void maskdisps(char *indfile, char *outdfile, char *mfile)
  
  
  */
+ // end

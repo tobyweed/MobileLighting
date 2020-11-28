@@ -6,7 +6,7 @@
 	<dict>
 		<key>Resources/Info.plist</key>
 		<data>
-		OBv1gvXqqeXfp4ecA9p15KolDJI=
+		mpkn3OAi2tl/lxLoPpxn0aI06lc=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -26,22 +26,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			9r6WMJ4J4UKrvgiSPsvAQRcv5QA=
+			A4S3phQ1yf9/2ydonLGCaucABM4=
 			</data>
 			<key>hash2</key>
 			<data>
-			2+24zhsRljIJLcRSh0jerJRxLyV2Gs9CvtHmLGiuX6o=
+			eBkxxgev2F6ng8/5k7gENWChaEFio3E6xZJAFepP3cU=
 			</data>
 		</dict>
 		<key>Modules/SwiftSerial.swiftmodule/Project/x86_64.swiftsourceinfo</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			9r6WMJ4J4UKrvgiSPsvAQRcv5QA=
+			A4S3phQ1yf9/2ydonLGCaucABM4=
 			</data>
 			<key>hash2</key>
 			<data>
-			2+24zhsRljIJLcRSh0jerJRxLyV2Gs9CvtHmLGiuX6o=
+			eBkxxgev2F6ng8/5k7gENWChaEFio3E6xZJAFepP3cU=
 			</data>
 		</dict>
 		<key>Modules/SwiftSerial.swiftmodule/x86_64-apple-macos.swiftdoc</key>
@@ -59,11 +59,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			IcyLwdrxNKiCamQYaTSKdvDZj58=
+			gqWvNFcccfS22SYK5Ue+OQved3k=
 			</data>
 			<key>hash2</key>
 			<data>
-			Ia8wUE7dfncobWQr3Ik22zRMaaRzRFG7jHnsjJRoXnI=
+			y58KBs7QL7O/HjpW5pFuGUFK2ZewARpoSSM01ll3e0E=
 			</data>
 		</dict>
 		<key>Modules/SwiftSerial.swiftmodule/x86_64.swiftdoc</key>
@@ -81,22 +81,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			IcyLwdrxNKiCamQYaTSKdvDZj58=
+			gqWvNFcccfS22SYK5Ue+OQved3k=
 			</data>
 			<key>hash2</key>
 			<data>
-			Ia8wUE7dfncobWQr3Ik22zRMaaRzRFG7jHnsjJRoXnI=
+			y58KBs7QL7O/HjpW5pFuGUFK2ZewARpoSSM01ll3e0E=
 			</data>
 		</dict>
 		<key>Resources/Info.plist</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			OBv1gvXqqeXfp4ecA9p15KolDJI=
+			mpkn3OAi2tl/lxLoPpxn0aI06lc=
 			</data>
 			<key>hash2</key>
 			<data>
-			rprI3pvQI6YmMead3NH8A5BMiaI4nnn3CoXOvSWBT6A=
+			eyhw+OVt3DSHmkleCEam9qBNEtEsKXy1bQJJ7Se0+qM=
 			</data>
 		</dict>
 	</dict>

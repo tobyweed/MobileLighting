@@ -17,12 +17,27 @@
 #include "calibration/calib_utils.hpp"
 #include "calibration/compute_params.hpp"
 
-#include <stdio.h>
-#include <iostream>
 #include <assert.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/aruco/charuco.hpp>
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cctype>
+#include <stdio.h>
+#include <string>
+#include <time.h>
+
+using namespace std;
+using namespace cv;
+using namespace aruco;
+
+
+#define BUFFERSIZE 1000
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +76,7 @@ extern "C" {
         refine(outdir, direction, decodedIm, angle, posID);	// returns final CFloatImage, ignore
     }
 
-    void computeMaps(char *impath, char *intr, char *extr, char *settings) {
+    void computeMaps(char *impath, char *intr, char *extr) {
         //get the file extension
         char* extension = strrchr(impath, '.');
         
@@ -71,13 +86,13 @@ extern "C" {
             ReadImage(im, impath);
             CShape s = im.Shape();
             printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
-            computemaps(s.width, s.height, intr, extr, settings);
+            computemaps(s.width, s.height, intr, extr);
         } else {
             cv::Mat im;
             im = cv::imread(impath);
             cv::Size s = im.size();
             printf("decoded image dimensions: [%d x %d]\n", s.width, s.height);
-            computemaps(s.width, s.height, intr, extr, settings);
+            computemaps(s.width, s.height, intr, extr);
         }
     }
 
@@ -89,7 +104,7 @@ extern "C" {
         CFloatImage x, y;
         CFloatImage merged0, merged1;
         CFloatImage fdisp0, fdisp1;
-        char filename[1000]; //, in0[1000], in1[1000];
+        char filename[BUFFERSIZE]; //, in0[1000], in1[1000];
         
         char leftID[50], rightID[50];
         if (rectified) {
@@ -140,12 +155,11 @@ extern "C" {
 
     void crosscheckDisparities(char *posdir0, char *posdir1, int pos0, int pos1, float thresh, int xonly, int halfocc, char *in_suffix, char *out_suffix) {
         CFloatImage x0,x1,y0,y1;
-        char buffer[100];
+        char buffer[BUFFERSIZE];
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, in_suffix);
         ReadImageVerb(x0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, in_suffix);
         ReadImageVerb(x1, buffer, 1);
-        
         if (xonly) {
             // create blank images for ydisps
             CShape sh = x0.Shape();
@@ -159,31 +173,25 @@ extern "C" {
             sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, in_suffix);
             ReadImageVerb(y1, buffer, 1);
         }
-        
         CFloatImage d0 = mergeToFloImage(x0, y0);
         CFloatImage d1 = mergeToFloImage(x1, y1);
         pair<CFloatImage,CFloatImage> outputs = runCrossCheck(d0, d1, thresh, xonly, halfocc);
         pair<CFloatImage,CFloatImage> crosscheck0, crosscheck1;
         crosscheck0 = splitFloImage(outputs.first);
         crosscheck1 = splitFloImage(outputs.second);
-        
         CFloatImage ccx0, ccy0, ccx1, ccy1;
         ccx0 = crosscheck0.first;
         ccx1 = crosscheck1.first;
         ccy0 = crosscheck0.second;
         ccy1 = crosscheck1.second;
-        
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir0, pos0, pos1, out_suffix);
         WriteImageVerb(ccx0, buffer, 1);
         sprintf(buffer, "%s/disp%d%dx-%s.pfm", posdir1, pos0, pos1, out_suffix);
         WriteImageVerb(ccx1, buffer, 1);
-        
-    //    if (!xonly) {
-            sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
-            WriteImageVerb(ccy0, buffer, 1);
-            sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
-            WriteImageVerb(ccy1, buffer, 1);
-    //    }
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir0, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy0, buffer, 1);
+        sprintf(buffer, "%s/disp%d%dy-%s.pfm", posdir1, pos0, pos1, out_suffix);
+        WriteImageVerb(ccy1, buffer, 1);
     }
 
     void filterDisparities(char *dispx, char *dispy, char *outx, char *outy, int pos0, int pos1, float ythresh, int kx, int ky, int mincompsize, int maxholesize) {
@@ -250,3 +258,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+ // end

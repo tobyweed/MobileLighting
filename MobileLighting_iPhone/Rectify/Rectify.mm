@@ -27,6 +27,7 @@ const bool smartInterpolation = false;
     
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
+int resizing_factor = 1;
 
 // computemaps -- computes maps for stereo rectification based on intrinsics & extrinsics matrices
 // only needs to be computed once per stereo pair

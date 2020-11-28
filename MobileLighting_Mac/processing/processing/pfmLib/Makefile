@@ -1,3 +1,6 @@
+# This Makefile is used for debugging purposes only. MobileLighting_Mac compiles the calibration code on its own
+#	whenever run through XCode.
+
 #Variables
 CC= g++
 CPPFLAGS= -O2 -W -c -Wall --std=c++17

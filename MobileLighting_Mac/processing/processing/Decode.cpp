@@ -533,3 +533,4 @@ CFloatImage refine(char *outdir, int direction, char* decodedIm, double angle, c
 	
 	return fval2;
 }
+ // end

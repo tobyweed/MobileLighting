@@ -139,3 +139,4 @@ void jet(float x, int& r, int& g, int& b)
     g = __max(0, __min(255, (int)(round(255 * (1.5 - 4*fabs(x - .5))))));
     b = __max(0, __min(255, (int)(round(255 * (1.5 - 4*fabs(x - .25))))));
 }
+ // end

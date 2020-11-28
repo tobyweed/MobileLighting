@@ -10,47 +10,319 @@ import Foundation
 import Darwin
 import Yaml
 
-func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
-    /*
-    let direction: Int = horizontal ? 1 : 0
-    
-    
-    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
-    let completionHandler: () -> Void = {
-        let filepath = dirStruc.metadataFile(direction)
-        do {
-            let metadataStr = try String(contentsOfFile: filepath)
-            let metadata: Yaml = try Yaml.load(metadataStr)
-            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
-                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
-            } else {
-                print("refine error: could not load angle (double) from YML file.")
-            }
-        } catch {
-            print("refine error: could not load metadata file.")
+
+// MARK: control flow
+
+// Utils
+// Count the number of -a flags appearing in array of flags
+func countAFlags(flags: [String]) -> Int {
+    var numAs = 0
+    for flag in flags {
+        if(flag != "-a") {
+            print("Unrecognized flag \(flag)")
+            return -1
+        } else {
+            numAs += 1
         }
     }
-    photoReceiver.dataReceivers.insertFirst(
-        SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
-    )
- */
+    return numAs
 }
 
-// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
-// used to help determine projector placement
-func showShadows(projs: [Int32], pos: Int32) {
-    var decodedDir = *dirStruc.decoded(false)
-    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
-    
-    // convert projs Int32 array to a pointer so that it can be passed to the C
-    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
-    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
-    projsPointer.initialize(from: &projs_, count: projs_.count)
-    
-    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+
+// Return all projectrs in the given directory
+func getAllProj(inputDir: String, prefix: String, suffix: String) -> [Int] {
+    let projDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+    let allproj = getIDs(projDirs, prefix: prefix, suffix: suffix).sorted()
+    if(allproj.count <= 0) {
+        print("No projector positions found.")
+        return []
+    }
+    return allproj
 }
 
-//MARK: disparity matching functions
+func getProjFromParam(param: String, inputDir: String, prefix: String, suffix: String) -> [Int] {
+    // make sure we have an array of projectors or a single projector as the second token
+    var projs = [Int]()
+    if (param.hasPrefix("[")) {
+        projs = stringToIntArray(param)
+    } else if (Int(param) != nil) {
+        projs.append(Int(param)!)
+    } else {
+        print("Bad input, no projector positions initialized")
+        return []
+    }
+    
+    projs.sort()
+    return projs
+}
+
+// Return all adjacent pairs in the given directory
+func getAllPosPairs(inputDir: String, prefix: String, suffix: String) -> [(Int,Int)] {
+    let posDirs = try! FileManager.default.contentsOfDirectory(atPath: inputDir)
+    let allpos = getIDs(posDirs, prefix: prefix, suffix: suffix).sorted()
+    if(allpos.count <= 0) {
+        print("No positions found.")
+        return []
+    }
+    return [(Int,Int)](zip(allpos, [Int](allpos[1...])))
+}
+
+// Convert input to pairs. Accepts a pair of integer arrays or a pair of integers.
+func getPosPairsFromParams(params: [String], prefix: String, suffix: String) -> [(Int,Int)] {
+    // make sure we have an array of projectors or a single projector as the second token
+    guard (params.count == 2) else {
+        print("Must provide two arguments")
+        return []
+    }
+    var pos1 = [Int]()
+    var pos2 = [Int]()
+    if (params[0].hasPrefix("[") && params[1].hasPrefix("[")) {
+        pos1 = stringToIntArray(params[0])
+        pos2 = stringToIntArray(params[1])
+    } else if (Int(params[0]) != nil && Int(params[1]) != nil) {
+        pos1.append(Int(params[0])!)
+        pos2.append(Int(params[1])!)
+    } else {
+        print("Bad input, no position pairs initialized")
+        return []
+    }
+    
+    guard pos1.count == pos2.count else {
+        print("Each position array must have the same length.")
+        return []
+    }
+    
+    pos1.sort()
+    pos2.sort()
+    let pairs = [(Int,Int)](zip(pos1, pos2))
+    return pairs
+}
+
+
+// Processing control flow entrypoints
+func runGetExtrinsics(all: Bool, params: [String]) {
+    // determine targets
+    var positionPairs: [(Int, Int)]
+    if (all) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.tracks, prefix: "pos", suffix: "-track.json")
+    } else {
+        positionPairs = getPosPairsFromParams(params: Array(params[1...]), prefix: "pos", suffix: "-track.json")
+    }
+    
+    // run processing
+    for (leftpos, rightpos) in positionPairs {
+        var track1: [CChar]
+        var track2: [CChar]
+        var intrinsicsFile: [CChar]
+        do {
+            try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
+            try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
+            try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
+        } catch let err {
+            print(err.localizedDescription)
+            break
+        }
+        var outputDir = *"\(dirStruc.calibComputed)"
+
+        ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
+    }
+}
+
+func runRefine(allProj: Bool, allPosPairs: Bool, rectified: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(rectified), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(rectified), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: rectified), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            for direction: Int in [0, 1] {
+                for pos in [leftpos, rightpos] {
+                    var cimg: [CChar]
+                    var coutdir: [CChar]
+                    do {
+                        if(rectified) {
+                            try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
+                            try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
+                        } else {
+                            try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm")
+                            try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: false))
+                        }
+                        
+                    } catch let err {
+                        print(err.localizedDescription)
+                        break
+                    }
+
+                    let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
+                    do {
+                        let metadataStr = try String(contentsOfFile: metadatapath)
+                        let metadata: Yaml = try Yaml.load(metadataStr)
+                        if let angle: Double = metadata.dictionary?["angle"]?.double {
+                            var posID: [CChar]
+                            if(rectified) {
+                                posID = *"\(leftpos)\(rightpos)"
+                            } else {
+                                posID = *"\(pos)"
+                            }
+                            refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
+                        }
+                    } catch {
+                        print("refine error: could not load metadata file \(metadatapath).")
+                    }
+                }
+            }
+        }
+    }
+}
+
+func runDisparity(allProj: Bool, allPosPairs: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(true), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: true), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: true)
+        }
+    }
+}
+
+// refined: if true, run on the refined unrectified images. Otherwise run on the initial unrectified images.
+func runRectify(allProj: Bool, allPosPairs: Bool, params: [String]) {
+    var projs: [Int] = []
+    if (allProj) {
+        projs = getAllProj(inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+    } else {
+        projs = getProjFromParam(param: params[1], inputDir: dirStruc.decoded(false), prefix: "proj", suffix: "")
+    }
+    
+    for proj in projs {
+        var positionPairs: [(Int, Int)]
+        if (allPosPairs) {
+            positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: proj, rectified: false), prefix: "pos", suffix: "")
+        } else {
+            let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+            positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+        }
+
+        for (leftpos, rightpos) in positionPairs {
+            print("Trying to rectify position pair (\(leftpos),\(rightpos)) for projector \(proj)")
+            rectifyDec(left: leftpos, right: rightpos, proj: proj)
+        }
+    }
+}
+
+func runRectifyAmb(allPosPairs: Bool, params: [String]) {
+    let modes: [String] = ["normal", "flash", "torch"]
+    
+    // loop though all modes & rectify them
+    for mode in modes {
+        let dirNames = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
+            return "\(dirStruc.ambientPhotos)/\($0)"
+        }
+        var prefix: String
+        switch mode {
+        case "flash":
+            prefix = "F"
+            break
+        case "torch":
+            prefix = "T"
+            break
+        default:
+            prefix = "L"
+        }
+        let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
+        for lighting in lightings {
+            print("\nRectifying directory: \(prefix)\(lighting)");
+            var positionPairs: [(Int, Int)]
+            if (allPosPairs) {
+                positionPairs = getAllPosPairs(inputDir: dirStruc.ambientPhotos(ball: false, mode: mode, lighting: lighting), prefix: "pos", suffix: "")
+            } else {
+                positionPairs = getPosPairsFromParams(params: params, prefix: "pos", suffix: "")
+            }
+            
+            // loop through all pos pairs and rectify them
+            for (left, right) in positionPairs {
+                print("Rectifying position pair: \(left) (left) and \(right) (right)");
+                // set numExp to zero if in flash mode
+                let numExp: Int = (mode == "flash") ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
+                // loop through all exposures
+                for exp in 0..<numExp {
+                    print("Rectifying exposure: \(exp)");
+                    rectifyAmb(ball: false, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
+                }
+            }
+        }
+    }
+}
+
+func runMerge(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        merge(left: left, right: right, rectified: true)
+    }
+}
+
+func runReproject(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.decoded(proj: 0, rectified: true), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        reproject(left: left, right: right)
+    }
+}
+
+func runMerge2(allPosPairs: Bool, params: [String]) {
+    var positionPairs: [(Int, Int)]
+    if (allPosPairs) {
+        positionPairs = getAllPosPairs(inputDir: dirStruc.reprojected(proj: 0), prefix: "pos", suffix: "")
+    } else {
+        let args = (params.count == 3) ? Array(params[1...]) : Array(params[2...]) // skip an additional param if needed
+        positionPairs = getPosPairsFromParams(params: args, prefix: "pos", suffix: "")
+    }
+
+    for (left, right) in positionPairs {
+        mergeReprojected(left: left, right: right)
+    }
+}
+
+
+
+//MARK: disparity matching
 // uses bridged C++ code from image processing pipeline
 // NOTE: this decoding step is not yet automated; it must manually be executed from
 //    the main command-line user input loop
@@ -59,10 +331,16 @@ func showShadows(projs: [Int32], pos: Int32) {
 // NOW: also refines disparity maps
 func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     var refinedDirLeft: [CChar], refinedDirRight: [CChar]
-    refinedDirLeft = *dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified)
-    refinedDirRight = *dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified)
-    var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: leftpos)
-    var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)//*dirStruc.subdir(dirStruc.disparity(rectified), proj: proj, pos: rightpos)
+    do {
+        try refinedDirLeft = safePath(dirStruc.decoded(proj: proj, pos: leftpos, rectified: rectified))
+        try refinedDirRight = safePath(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))
+        try _ = safePath("\(dirStruc.decoded(proj: proj, pos: rightpos, rectified: rectified))/result\(leftpos)\(rightpos)u-4refined2.pfm")
+    } catch let err {
+        print(err.localizedDescription)
+        return
+    }
+    var disparityDirLeft = *dirStruc.disparity(proj: proj, pos: leftpos, rectified: rectified)
+    var disparityDirRight = *dirStruc.disparity(proj: proj, pos: rightpos, rectified: rectified)
     let l = Int32(leftpos)
     let r = Int32(rightpos)
     
@@ -84,17 +362,15 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
         ymin = 0
         ymax = 0
     }
+    
     disparitiesOfRefinedImgs(&refinedDirLeft, &refinedDirRight,
                              &disparityDirLeft,
                              &disparityDirRight,
                              l, r, rectified ? 1 : 0,
                              xmin, xmax, ymin, ymax)
-    
-    
     var in_suffix = "0initial".cString(using: .ascii)!
     var out_suffix = "1crosscheck1".cString(using: .ascii)!
-    crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 0, 0, &in_suffix, &out_suffix)
-    
+    crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 1.5, 0, 0, &in_suffix, &out_suffix)
     // if images are not rectified, do not perform filter disparities
     if !rectified {
         return
@@ -122,42 +398,45 @@ func disparityMatch(proj: Int, leftpos: Int, rightpos: Int, rectified: Bool) {
     outy = disparityDirRight + out_suffix_y
 //    filterDisparities(&dispx, &dispy, &outx, &outy, l, r, 1.5, 3, 0, 20, 200)
     filterDisparities(&dispx, &dispy, &outx, &outy, l, r, Float(ythresh), 3, 0, 20, 200)
-
     in_suffix = "2filtered".cString(using: .ascii)!
     out_suffix = "3crosscheck2".cString(using: .ascii)!
-    crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 0.5, 1, 0, &in_suffix, &out_suffix)
+    crosscheckDisparities(&disparityDirLeft, &disparityDirRight, l, r, 1.5, 1, 0, &in_suffix, &out_suffix)
 }
 
 
-
+//MARK: rectification
 //rectify decoded images
-func rectifyDec(left: Int, right: Int, proj: Int) {
-    var intr = *dirStruc.intrinsicsJSON
-    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
-    var settings = *dirStruc.calibrationSettingsFile
+func rectifyDec(left: Int, right: Int, proj: Int, refined: Bool = true) {
+//    var intr = *dirStruc.intrinsicsJSON
+//    var extr = *dirStruc.extrinsicsJSON(left: left, right: right)
     //paths for storing output
     let rectdirleft = dirStruc.decoded(proj: proj, pos: left, rectified: true)
     let rectdirright = dirStruc.decoded(proj: proj, pos: right, rectified: true)
     //paths for retreiving input
+    var intr: [CChar]
+    var extr: [CChar]
     var result0l: [CChar]
     var result0r: [CChar]
     var result1l: [CChar]
     var result1r: [CChar]
     do {
-        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-2holefilled.pfm")
-        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-2holefilled.pfm")
-        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-2holefilled.pfm")
-        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-2holefilled.pfm")
+        try intr = safePath(dirStruc.intrinsicsJSON)
+        try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
+        try result0l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)u-4refined2.pfm")
+        try result0r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)u-4refined2.pfm")
+        try result1l = safePath("\(dirStruc.decoded(proj: proj, pos: left, rectified: false))/result\(left)v-4refined2.pfm")
+        try result1r = safePath("\(dirStruc.decoded(proj: proj, pos: right, rectified: false))/result\(right)v-4refined2.pfm")
     } catch let err {
         print(err.localizedDescription)
         return
     }
-    computeMaps(&result0l, &intr, &extr, &settings)
+    computeMaps(&result0l, &intr, &extr)
 
-    let outpaths = [rectdirleft + "/result\(left)\(right)u-0rectified.pfm",
-        rectdirleft + "/result\(left)\(right)v-0rectified.pfm",
-        rectdirright + "/result\(left)\(right)u-0rectified.pfm",
-        rectdirright + "/result\(left)\(right)v-0rectified.pfm",
+    let name = (refined ? "4refined2" : "0rectified")
+    let outpaths = [rectdirleft + "/result\(left)\(right)u-" + name + ".pfm",
+        rectdirleft + "/result\(left)\(right)v-" + name + ".pfm",
+        rectdirright + "/result\(left)\(right)u-" + name + ".pfm",
+        rectdirright + "/result\(left)\(right)v-" + name + ".pfm",
         ]
     for path in outpaths {
         let dir = path.split(separator: "/").dropLast().joined(separator: "/")
@@ -178,22 +457,20 @@ func rectifyDec(left: Int, right: Int, proj: Int) {
 func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, lighting: Int) {
     var intr: [CChar]
     var extr: [CChar]
-    var settings: [CChar]
     var resultl: [CChar]
     var resultr: [CChar]
     do {
         try intr = safePath(dirStruc.intrinsicsJSON)
         try extr = safePath(dirStruc.extrinsicsJSON(left: left, right: right))
-        try settings = safePath(dirStruc.calibrationSettingsFile)
         try resultl = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: left, mode: mode, lighting: lighting))/exp\(exp).JPG")
         try resultr = safePath("\(dirStruc.ambientPhotos(ball: ball, pos: right, mode: mode, lighting: lighting))/exp\(exp).JPG")
     } catch let err {
         print(err.localizedDescription)
         return
     }
-    
+    var settings = *dirStruc.calibrationSettingsFile
     if(exp == 0) { //maps only need to be computed once per stereo pair
-        computeMaps(&resultl, &intr, &extr, &settings)
+        computeMaps(&resultl, &intr, &extr)
     }
     
     //paths for storing output
@@ -212,6 +489,8 @@ func rectifyAmb(ball: Bool, left: Int, right: Int, mode: String, exp: Int, light
     rectifyAmbient(1, &resultr, &coutpaths[1])
 }
 
+
+//MARK: merge
 // merge disparity maps for one stereo pair across all projectors
 func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     var leftx, lefty: [[CChar]]
@@ -226,24 +505,12 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     let positionDirs = projectors.map {
         return (dirStruc.disparity(proj: $0, pos: leftpos, rectified: rectified), dirStruc.disparity(proj: $0, pos: rightpos, rectified: rectified))
     }
-//    var positionDirs: [(String, String)] = projectorDirs.map {
-//        return ("\($0)/pos\(leftpos)", "\($0)/pos\(rightpos)")
-//    }
     var pfmPathsLeft, pfmPathsRight: [(String, String)]
-    if rectified {
-        pfmPathsLeft = positionDirs.map {
-            return ("\($0.0)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
-        }
-        pfmPathsRight = positionDirs.map {
-            return ("\($0.1)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
-        }
-    } else {
-        pfmPathsLeft = positionDirs.map {
-            return ("\($0.0)/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm")
-        }
-        pfmPathsRight = positionDirs.map {
-            return ("\($0.1)/disp\(leftpos)\(rightpos)x-1crosscheck1.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-1crosscheck1.pfm")
-        }
+    pfmPathsLeft = positionDirs.map {
+        return ("\($0.0)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.0)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
+    }
+    pfmPathsRight = positionDirs.map {
+        return ("\($0.1)/disp\(leftpos)\(rightpos)x-3crosscheck2.pfm", "\($0.1)/disp\(leftpos)\(rightpos)y-3crosscheck2.pfm")
     }
     
     pfmPathsLeft = pfmPathsLeft.filter {
@@ -254,7 +521,6 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         let (rightx, righty) = $0
         return FileManager.default.fileExists(atPath: rightx) && FileManager.default.fileExists(atPath: righty)
     }
-    
     leftx = pfmPathsLeft.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }
     lefty = pfmPathsLeft.map{ return $0.1 }.map{ return $0.cString(using: .ascii)! }
     rightx = pfmPathsRight.map{ return $0.0 }.map{ return $0.cString(using: .ascii)! }
@@ -265,25 +531,21 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
     var outx = [CChar]()
     var outy = [CChar]()
     
-    
-    
     for i in 0..<leftx.count {
         imgsx.append(getptr(&leftx[i]))
     }
     for i in 0..<lefty.count {
         imgsy.append(getptr(&lefty[i]))
     }
-//    var leftout = dirStruc.merged(pos: leftpos, rectified: rectified).cString(using: .ascii)!
-    if rectified {
-        outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
-        outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y-0initial.pfm").cString(using: .ascii)!
-    } else {
-        outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x.pfm").cString(using: .ascii)!
-        outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y.pfm").cString(using: .ascii)!
-    }
-    
+
+    outx = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
+    outy = (dirStruc.merged(pos: leftpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y-0initial.pfm").cString(using: .ascii)!
     let mingroup: Int32 = 2
     let maxdiff: Float = 1.0
+    guard (imgsx.count > 0 && imgsy.count > 0) else {
+        print("No images to be merged for left position \(leftpos), right position \(rightpos).")
+        return
+    }
     mergeDisparities(&imgsx, &imgsy, &outx, &outy, Int32(imgsx.count), mingroup, maxdiff)
     
     imgsx.removeAll()
@@ -304,24 +566,34 @@ func merge(left leftpos: Int, right rightpos: Int, rectified: Bool) {
         outx = (dirStruc.merged(pos: rightpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)x.pfm").cString(using: .ascii)!
         outy = (dirStruc.merged(pos: rightpos, rectified: rectified) + "/disp\(leftpos)\(rightpos)y.pfm").cString(using: .ascii)!
     }
-//    var rightout = dirStruc.merged(pos: rightpos, rectified: rectified).cString(using: .ascii)!
-//    mergeDisparities(&imgsx, &imgsy, &rightout, Int32(imgsx.count), mingroup, maxdiff)
+
+    guard (imgsx.count > 0 && imgsy.count > 0) else {
+        print("No images to be merged for left position \(leftpos), right position \(rightpos).")
+        return
+    }
     mergeDisparities(&imgsx, &imgsy, &outx, &outy, Int32(imgsx.count), mingroup, maxdiff)
     
-    if rectified {
-        var posdir0 = dirStruc.merged(pos: leftpos, rectified: true).cString(using: .ascii)!
-        var posdir1 = dirStruc.merged(pos: rightpos, rectified: true).cString(using: .ascii)!
-        let l = Int32(leftpos)
-        let r = Int32(rightpos)
-        let thresh: Float = 0.5
-        let xonly: Int32 = 1
-        let halfocc: Int32 = 0
-        var in_suffix = "0initial".cString(using: .ascii)!
-        var out_suffix = "1crosscheck".cString(using: .ascii)!
-        crosscheckDisparities(&posdir0, &posdir1, l, r, thresh, xonly, halfocc, &in_suffix, &out_suffix)
+    var posdir0: [CChar]
+    var posdir1: [CChar]
+    do {
+        try posdir0 = safePath(dirStruc.merged(pos: leftpos, rectified: true))
+        try posdir1 = safePath(dirStruc.merged(pos: rightpos, rectified: true))
+    } catch let err {
+        print(err.localizedDescription)
+        return
     }
+    let l = Int32(leftpos)
+    let r = Int32(rightpos)
+    let thresh: Float = 0.5
+    let xonly: Int32 = 1
+    let halfocc: Int32 = 0
+    var in_suffix = "0initial".cString(using: .ascii)!
+    var out_suffix = "1crosscheck".cString(using: .ascii)!
+    
+    crosscheckDisparities(&posdir0, &posdir1, l, r, thresh, xonly, halfocc, &in_suffix, &out_suffix)
 }
 
+//MARK: reproject
 // reprojects merged 
 func reproject(left leftpos: Int, right rightpos: Int) {
     let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(true))
@@ -337,7 +609,8 @@ func reproject(left leftpos: Int, right rightpos: Int) {
                 try codey = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)v-4refined2.pfm")
             } catch let err {
                 print(err.localizedDescription)
-                return
+                print("Skipping projector \(proj), paths \(leftpos), \(rightpos).")
+                break
             }
                 
             outx = (dirStruc.reprojected(proj: proj, pos: pos) + "/disp\(leftpos)\(rightpos)x-0initial.pfm").cString(using: .ascii)!
@@ -366,6 +639,7 @@ func reproject(left leftpos: Int, right rightpos: Int) {
     }
 }
 
+//MARK: merge reprojected
 func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     for pos in [leftpos, rightpos] {
         _ = *(dirStruc.merged(pos: pos, rectified: true) + "/disp\(leftpos)\(rightpos)x-1crosschecked.pfm") // premerged. Currently unused?
@@ -410,7 +684,7 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     var rightdir = *(dirStruc.merged2(rightpos))
     var in_suffix = *"1filtered"
     var out_suffix = *"2crosscheck1"
-    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1.0, 1, 1, &in_suffix, &out_suffix)
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1.0, 1, -1, &in_suffix, &out_suffix)
     
     // filter again, this can fill small holes of cross-checked regions
     for pos in [leftpos, rightpos] {
@@ -422,12 +696,16 @@ func mergeReprojected(left leftpos: Int, right rightpos: Int) {
     // crosscheck one last time
     in_suffix = *"3filtered"
     out_suffix = *"4crosscheck2"
-    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1, 1, 1, &in_suffix, &out_suffix)
+    crosscheckDisparities(&leftdir, &rightdir, Int32(leftpos), Int32(rightpos), 1, 1, -1, &in_suffix, &out_suffix)
 }
 
 func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right rightpos: Int) -> [String] {
     return reprojDirs.filter {
         let logFile = $0 + "/log\(leftpos)\(rightpos).txt"
+        if(!FileManager.default.fileExists(atPath: logFile)){
+            print("File \(logFile) doesn't exist")
+            return false
+        }
         let logLines: [String] = (try! String(contentsOfFile: logFile)).split(separator: "\n").map { return String($0) }
         let logTokens: [[String]] = logLines.map {
             return $0.split(separator: " ").map { return String($0) }
@@ -449,4 +727,46 @@ func filterReliableReprojected(_ reprojDirs: [String], left leftpos: Int, right 
         print((reliable ? "reliable: " : "not reliable: ") + logFile )
         return reliable
     }
+}
+
+//MARK: misc
+// concatenate unrectified u-decoded images at position pos with projector placements projs and write to a png
+// used to help determine projector placement
+func showShadows(projs: [Int32], pos: Int32) {
+    var decodedDir = *dirStruc.decoded(false)
+    var outDir: [CChar] = *dirStruc.shadowvis(pos: Int(pos))
+    
+    // convert projs Int32 array to a pointer so that it can be passed to the C
+    var projs_: [Int32] = projs // first put it in another array bc parameter is let constant
+    let projsPointer = UnsafeMutablePointer<Int32>.allocate(capacity: projs_.count) // allocate space for the pointer
+    projsPointer.initialize(from: &projs_, count: projs_.count)
+    
+    writeShadowImgs( &decodedDir, &outDir, projsPointer, Int32(projs_.count), pos )
+}
+
+// Not sure what this is about -- Toby Weed, 8/20/20
+func decodedImageHandler(_ decodedImPath: String, horizontal: Bool, projector: Int, position: Int) {
+    /*
+    let direction: Int = horizontal ? 1 : 0
+    
+    
+    let outdir = dirStruc.subdir(dirStruc.refined, proj: projector, pos: position)
+    let completionHandler: () -> Void = {
+        let filepath = dirStruc.metadataFile(direction)
+        do {
+            let metadataStr = try String(contentsOfFile: filepath)
+            let metadata: Yaml = try Yaml.load(metadataStr)
+            if let angle: Double = metadata.dictionary?[Yaml.string("angle")]?.double {
+                refineDecodedIm(swift2Cstr(outdir), horizontal ? 1:0, swift2Cstr(decodedImPath), angle)
+            } else {
+                print("refine error: could not load angle (double) from YML file.")
+            }
+        } catch {
+            print("refine error: could not load metadata file.")
+        }
+    }
+    photoReceiver.dataReceivers.insertFirst(
+        SceneMetadataReceiver(completionHandler, path: dirStruc.metadataFile(direction))
+    )
+ */
 }

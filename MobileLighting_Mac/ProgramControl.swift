@@ -13,9 +13,6 @@ import SwitcherCtrl
 import Yaml
 import AVFoundation
 
-
-//MARK: COMMAND-LINE INPUT
-
 // Enum for all commands
 enum Command: String, EnumCollection, CaseIterable {      // rawValues are automatically the name of the case, i.e. .help.rawValue == "help" (useful for ensuring the command-handling switch statement is exhaustive)
     case help
@@ -53,8 +50,10 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     // camera calibration
     case getintrinsics, gi
     case getextrinsics, ge
+    case trackexistingstereo
     
     // image processing
+    case processpairs, pp
     case refine, ref
     case rectify, rect
     case rectifyamb, ra
@@ -75,6 +74,9 @@ enum Command: String, EnumCollection, CaseIterable {      // rawValues are autom
     case sleep
 }
 
+/*=====================================================================================
+MARK: usage messages
+======================================================================================*/
 // Return usage message for appropriate command
 func getUsage(_ command: Command) -> String {
     switch command {
@@ -116,18 +118,20 @@ func getUsage(_ command: Command) -> String {
     case .movearm: return "movearm [posID]\n        [pose/joint string]\n       (x|y|z) [dist]"
     case .setvelocity: return "setvelocity [velocity]\n"
     // image processing
-    case .refine, .ref: return "refine    [proj]    [pos]\nrefine    -a    [pos]\nrefine    -a    -a\nrefine  -r    [proj]    [left] [right]\nrefine     -r    -a    [left] [right]\nrefine    -r    -a    -a"
-    case .disparity, .d: return "disparity (-r)? [proj] [left] [right]\n       disparity (-r)?   -a   [left] [right]\n       disparity (-r)?   -a   -a"
-    case .rectify, .rect: return "rectify [proj] [left] [right]\n       rectify   -a   [left] [right]\n       rectify   -a    -a"
-    case .rectifyamb, .ra: return "rectifyamb (-a|-n|-t|-f]\n"
-    case .merge, .m: return "merge (-r)? [left] [right]\n       merge (-r)?  -a"
-    case .reproject, .rp: return "reproject [left] [right]\n       reproject -a"
-    case .merge2, .m2: return "merge2 [left] [right]\n       merge2 -a"
+    case .processpairs, .pp: return "(processpairs | pp) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .refine, .ref: return "(refine | ref) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .disparity, .d: return "(disparity | d) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .rectify, .rect: return "(rectify | rect) ([-a] | [projectors]) (-a | [left positions] [right positions])"
+    case .rectifyamb, .ra: return "(rectifyamb | ra) (-a | [left positions] [right positions])\n"
+    case .merge, .m: return "(merge | m) (-a | [left positions] [right positions])"
+    case .reproject, .rp: return "(reproject | rp) (-a | [left positions] [right positions])"
+    case .merge2, .m2: return "(merge2 | m2) (-a | [left positions] [right positions])"
     // camera calibration
-    case .getintrinsics, .gi: return "getintrinsics"
-    case .getextrinsics, .ge: return "getextrinsics [leftpos] [rightpos]\ngetextrinsics -a"
+    case .getintrinsics, .gi: return "(getintrinsics | gi)"
+    case .getextrinsics, .ge: return "(getextrinsics | ge) (-a | [left positions] [right positions])"
+    case .trackexistingstereo: return "trackexistingstereo"
     // debugging
-    case .showshadows, .ss: return "showshadows"
+    case .showshadows, .ss: return "(showshadows | ss)"
     case .transform: return "transform"
     case .dispres: return "dispres"
     case .dispcode: return "dispcode"
@@ -150,6 +154,10 @@ func nextCommand() -> Bool {
     return processCommand(command)
 }
 
+
+/*=====================================================================================
+MARK: process command
+======================================================================================*/
 func processCommand(_ input: String) -> Bool {
     var nextToken = 0
     let tokens: [String] = input.split(separator: " ").map{ return String($0) }
@@ -315,7 +323,10 @@ func processCommand(_ input: String) -> Bool {
         }
         vxmController.stop()
         displayController.switcher?.endConnection()
-        
+      
+    /*=====================================================================================
+    MARK: photo capture
+    ======================================================================================*/
     // takes specified number of calibration images; saves them to (scene)/orig/calibration/other
     case .takeintrinsics, .ti:
         if( processingMode ) {
@@ -501,10 +512,28 @@ func processCommand(_ input: String) -> Bool {
             print("Emulating robot motion. Proceeding with photo capture as though there were 3 robot positions.")
             posIDs = Array(0..<3)
         }
-        print("posIDS: \(posIDs)")
-        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode)
+        captureNPosCalibration(posIDs: posIDs, resolution: resolution, mode: mode, live: true)
         print("Photo capture ended. Exiting command.")
         break
+        
+    case .trackexistingstereo:
+        if( processingMode ) {
+            print("\(tokens[0]) cannot be run in processing mode.")
+            break
+        }
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        // Make sure we have the right number of tokens
+        guard params.count <= 1, flags.count <= 1 else {
+            print(usage)
+            break
+        }
+        var posIDs: [Int]
+        if( !emulateRobot ) {
+            posIDs = Array(0..<nPositions)
+        } else {
+            posIDs = Array(0..<3)
+        }
+        captureNPosCalibration(posIDs: posIDs, resolution: defaultResolution, mode: "default", live: false)
         
     // captures scene using structured lighting from specified projector
     case .struclight, .sl:
@@ -862,7 +891,9 @@ func processCommand(_ input: String) -> Bool {
         break
         
         
-        
+    /*=====================================================================================
+    MARK: control
+    ======================================================================================*/
     // requests current lens position from iPhone camera, prints it
     case .readfocus, .rf:
         if( processingMode ) {
@@ -891,7 +922,9 @@ func processCommand(_ input: String) -> Bool {
         //save the focus to the sceneSettings files
         do {
             sceneSettings = try SceneSettings(dirStruc.sceneSettingsFile)
-            sceneSettings.set( key: "focus", value: Yaml.double(Double(pos)) )
+            print("float: \(Float(pos))")
+            print("double: \(Double(Float(pos)))")
+            sceneSettings.set( key: "focus", value: Yaml.double(Double(Float(pos))) )
             sceneSettings.save()
             print("Saved lens position \(pos) to scene settings")
         } catch let error {
@@ -929,6 +962,7 @@ func processCommand(_ input: String) -> Bool {
             print("ERROR: Could not parse float value for lens position.")
             break
         }
+        print("pos: \(pos)")
         _ = setLensPosition(pos)
         
         // autofocus on point, given in normalized x and y coordinates
@@ -1182,154 +1216,121 @@ func processCommand(_ input: String) -> Bool {
         }
         break
         
+        
+    /*=====================================================================================
+    MARK: processing
+    ======================================================================================*/
+    // Runs all processing steps on given pairs and projectors
+    case .processpairs, .pp:
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allProj = false, allPosPairs = false
+        if (numAs == 2 && params.count == 1) { // all projectors and position pairs
+            allProj = true; allPosPairs = true
+        } else if (numAs == 1 && params.count == 2) { // all position pairs, projectors specified
+            allPosPairs = true
+        } else if (numAs == 1 && params.count == 3) { // all projectors, position pairs specified
+            allProj = true
+        } else if !(numAs == 0 && params.count == 4) {
+            print(usage)
+            break
+        }
+        
+        _ = getintrinsics()
+        runGetExtrinsics(all: allPosPairs, params: params)
+        runRefine(allProj: allProj, allPosPairs: allPosPairs, rectified: false, params: params)
+        runRectify(allProj: allProj, allPosPairs: allPosPairs, params: params)
+        runRectifyAmb(allPosPairs: allPosPairs, params: params)
+        runDisparity(allProj: allProj, allPosPairs: allPosPairs, params: params)
+        runMerge(allPosPairs: allPosPairs, params: params)
+        runReproject(allPosPairs: allPosPairs, params: params)
+        runMerge2(allPosPairs: allPosPairs, params: params)
+        
+        break
+        
+    // do intrinsics calibration
+    case .getintrinsics, .gi:
+        guard tokens.count == 1 else {
+            print(usage)
+            break
+        }
+        _ = getintrinsics()
+        break
+        
+    // do stereo calibration
+    case .getextrinsics, .ge:
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+        
+        if !((numAs == 1 && params.count == 1) ||
+            (numAs == 0 && params.count == 3)) {
+            print(usage)
+            break
+        }
+        
+        // determine targets
+        let all = (numAs == 1) ? true : false
+        
+        runGetExtrinsics(all: all, params: params)
+    
+    case .rectify, .rect:
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allProj = false, allPosPairs = false
+        if (numAs == 2 && params.count == 1) { // all projectors and position pairs
+            allProj = true; allPosPairs = true
+        } else if (numAs == 1 && params.count == 2) { // all position pairs, projectors specified
+            allPosPairs = true
+        } else if (numAs == 1 && params.count == 3) { // all projectors, position pairs specified
+            allProj = true
+        } else if !(numAs == 0 && params.count == 4) {
+            print(usage)
+            break
+        }
+        
+        runRectify(allProj: allProj, allPosPairs: allPosPairs, params: params)
+        
+    // rectify ambient images of all positions and exposures
+    case .rectifyamb, .ra:
+        let (params, flags) = partitionTokens([String](tokens[1...]))
+        let numAs = countAFlags(flags: flags)
+        if !((numAs == 1 && params.count == 0) ||
+            (numAs == 0 && params.count == 2)) {
+            print(usage)
+            break
+        }
+        let allPosPairs = (numAs == 1) ? true : false
+        
+        runRectifyAmb(allPosPairs: allPosPairs, params: params)
+        
         // refines decoded PFM image with given name (assumed to be located in the decoded subdirectory)
         //  and saves intermediate and final results to refined subdirectory
         //    -direction argument specifies which axis to refine in, where 0 <-> x-axis
         // TO-DO: this does not take advantage of the ideal direction calculations performed at the new smart
     //  thresholding step
     case .refine, .ref:
-        guard tokens.count > 1 else {
-            print(usage)
-            break cmdSwitch
-        }
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        var curParam = 0
-        
-        var rectified = false, allproj = false, allpos = false
-        for flag in flags {
-            switch flag {
-            case "-r":
-                rectified = true
-            case "-a":
-                if !allproj {
-                    allproj = true
-                } else {
-                    allpos = true
-                }
-            default:
-                print("refine: invalid flag \(flag)")
-                break cmdSwitch
-            }
-        }
-        
-        // verify proper # of tokens passed
-        if allproj, allpos {
-            guard params.count == 0 else {
-                print(usage)
-                break
-            }
-        } else if allproj {
-            guard params.count == (rectified ? 2 : 1) else {
-                print(usage)
-                break
-            }
-        } else {
-            guard params.count == (rectified ? 3 : 2) else {
-                print(usage)
-                break
-            }
-        }
-        
-        
-        var projs = [Int]()
-        if allproj {
-            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
-            projs = getIDs(projDirs, prefix: "proj", suffix: "")
-        } else {
-            guard let proj = Int(params[0]) else {
-                print("refine: invalid projector \(params[0])")
-                break
-            }
-            projs = [proj]
-            curParam += 1
-        }
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
 
-        let singlePositions: [Int]?
-        if !allpos {
-            if !rectified {
-                guard let pos = Int(params[curParam]) else {
-                    print(usage)
-                    break
-                }
-                singlePositions = [pos]
-            } else {
-                guard let left = Int(params[curParam]), let right = Int(params[curParam+1]) else {
-                    print(usage)
-                    break
-                }
-                singlePositions = [left, right]
-            }
-        } else {
-            singlePositions = nil
+        var allProj = false, allPosPairs = false
+        if (numAs == 2 && params.count == 1) { // all projectors and position pairs
+            allProj = true; allPosPairs = true
+        } else if (numAs == 1 && params.count == 2) { // all position pairs, projectors specified
+            allPosPairs = true
+        } else if (numAs == 1 && params.count == 3) { // all projectors, position pairs specified
+            allProj = true
+        } else if !(numAs == 0 && params.count == 4) {
+            print(usage)
+            break
         }
         
-        for proj in projs {
-            let positions: [Int]
-            if !allpos {
-                positions = singlePositions!
-            } else {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
-                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
-            }
-            
-            if !rectified {
-                for pos in positions {
-                    for direction: Int32 in [0, 1] {
-                        var imgpath: [CChar]
-                        var outdir: [CChar]
-                        do {
-                            try imgpath = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: false))/result\(pos)\(direction == 0 ? "u" : "v")-0initial.pfm")
-                            try outdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: false))
-                        } catch let err {
-                            print(err.localizedDescription)
-                            break
-                        }
-                        
-                        let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
-                        do {
-                            let metadataStr = try String(contentsOfFile: metadatapath)
-                            let metadata: Yaml = try Yaml.load(metadataStr)
-                            if let angle: Double = metadata.dictionary?["angle"]?.double {
-                                var posID = *"\(pos)"
-                                refineDecodedIm(&outdir, direction, &imgpath, angle, &posID)
-                            }
-                        } catch {
-                            print("refine error: could not load metadata file \(metadatapath).")
-                        }
-                    }
-                }
-            } else {
-                let positionPairs = zip(positions, positions[1...])
-                for (leftpos, rightpos) in positionPairs {
-                    for direction: Int in [0, 1] {
-                        for pos in [leftpos, rightpos] {
-                            var cimg: [CChar]
-                            var coutdir: [CChar]
-                            do {
-                                try cimg = safePath("\(dirStruc.decoded(proj: proj, pos: pos, rectified: true))/result\(leftpos)\(rightpos)\(direction == 0 ? "u" : "v")-0rectified.pfm")
-                                try coutdir = safePath(dirStruc.decoded(proj: proj, pos: pos, rectified: true))
-                            } catch let err {
-                                print(err.localizedDescription)
-                                break
-                            }
-                            
-                            let metadatapath = dirStruc.metadataFile(Int(direction), proj: proj, pos: pos)
-                            do {
-                                let metadataStr = try String(contentsOfFile: metadatapath)
-                                let metadata: Yaml = try Yaml.load(metadataStr)
-                                if let angle: Double = metadata.dictionary?["angle"]?.double {
-                                    var posID = *"\(leftpos)\(rightpos)"
-                                    refineDecodedIm(&coutdir, Int32(direction), &cimg, angle, &posID)
-                                }
-                            } catch {
-                                print("refine error: could not load metadata file \(metadatapath).")
-                            }
-                            
-                        }
-                    }
-                }
-            }
-        }
+        runRefine(allProj: allProj, allPosPairs: allPosPairs, rectified: false, params: params)
         
         
         // computes disparity maps from decoded & refined images; saves them to 'disparity' directories
@@ -1338,443 +1339,72 @@ func processCommand(_ input: String) -> Bool {
         //  -'disparity [projector #]': computes disparities for given projectors for all consecutive positions
     //  -'disparity [projector #] [leftPos] [rightPos]': computes disparity map for single viewpoint pair for specified projector
     case .disparity, .d:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        var curParam = 0
-        
-        var rectified = false
-        var allproj = false, allpos = false
-        for flag in flags {
-            switch flag {
-            case "-r":
-                rectified = true
-            case "-a":
-                if !allproj {
-                    allproj = true
-                } else {
-                    allpos = true
-                }
-            default:
-                print("disparity: invalid flag \(flag)")
-                break cmdSwitch
-            }
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allProj = false, allPosPairs = false
+        if (numAs == 2 && params.count == 1) { // all projectors and position pairs
+            allProj = true; allPosPairs = true
+        } else if (numAs == 1 && params.count == 2) { // all position pairs, projectors specified
+            allPosPairs = true
+        } else if (numAs == 1 && params.count == 3) { // all projectors, position pairs specified
+            allProj = true
+        } else if !(numAs == 0 && params.count == 4) {
+            print(usage)
+            break
         }
         
-        if allproj, allpos {
-            guard params.count == 0 else {
-                print(usage)
-                break
-            }
-        } else if allproj {
-            guard params.count == 2 else {
-                print(usage)
-                break
-            }
-        } else {
-            guard params.count == 3 else {
-                print(usage)
-                break
-            }
-        }
-        
-        var projs = [Int]()
-        if !allproj {
-            guard let proj = Int(params[curParam]) else {
-                print("disparity: invalid projector \(params[curParam])")
-                break
-            }
-            projs = [proj]
-            curParam += 1
-        } else {
-            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(rectified))
-            projs = getIDs(projDirs, prefix: "proj", suffix: "")
-        }
-        
-        for proj in projs {
-            let positions: [Int]
-            if !allpos {
-                guard let leftpos = Int(params[curParam]), let rightpos = Int(params[curParam+1]) else {
-                    print("disparity: invalid positions \(params[curParam]), \(params[curParam+1])")
-                    break
-                }
-                positions = [leftpos, rightpos]
-            } else {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: rectified))
-                positions = getIDs(positiondirs, prefix: "pos", suffix: "").sorted()
-            }
-            
-            for (leftpos, rightpos) in zip(positions, positions[1...]) {
-                disparityMatch(proj: proj, leftpos: leftpos, rightpos: rightpos, rectified: rectified)
-            }
-        }
-        
-    case .rectify, .rect:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var allproj = false
-        var allpos = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                if !allproj {
-                    allproj = true
-                } else {
-                    allpos = true
-                }
-            default:
-                print("rectify: invalid flag \(flag)")
-                break cmdSwitch
-            }
-        }
-        
-        var curTok = 0
-        let projIDs: [Int]
-        if allproj {
-            let projDirs = try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(false))
-            projIDs = getIDs(projDirs, prefix: "proj", suffix: "")
-        } else {
-            guard params.count >= curTok+1 else {
-                print(usage)
-                break
-            }
-            guard let proj = Int(params[curTok]) else {
-                print("rectify: unrecognized projector ID \(params[curTok])")
-                break
-            }
-            projIDs = [proj]
-            curTok += 1
-        }
-        
-        let singlePosPair: (Int,Int)?
-        if allpos {
-            singlePosPair = nil
-        } else {
-            guard params.count == curTok + 2 else {
-                print(usage)
-                break
-            }
-            guard let left = Int(params[curTok]), let right = Int(params[curTok+1]) else {
-                print("rectify: unrecognized positions \(params[curTok]), \(params[curTok+1])")
-                break
-            }
-            singlePosPair = (left, right)
-        }
-        for proj in projIDs {
-            let posIDpairs: [(Int,Int)]
-            if allpos {
-                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(proj: proj, rectified: false)), prefix: "pos", suffix: "")
-                guard posIDs.count > 1 else {
-                    print("rectify: skipping projectory \(proj), not enough positions.")
-                    continue
-                }
-                posIDs.sort()
-                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
-            } else {
-                posIDpairs = [singlePosPair!]
-            }
-            for (left, right) in posIDpairs {
-                rectifyDec(left: left, right: right, proj: proj)
-            }
-        }
-        
-    // rectify ambient images of all positions and exposures
-    case .rectifyamb, .ra:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var ball = false
-        for flag in flags {
-            switch flag {
-            case "-b":
-                print("rectifying ball images...")
-                ball = true
-            default:
-                print("flag \(flag) not recognized.")
-            }
-        }
-        
-        let modes: [String] = ["normal", "flash", "torch"]
-        
-        // loop though all modes & rectify them
-        for mode in modes {
-            let dirNames = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos)).map {
-                return "\(dirStruc.ambientPhotos)/\($0)"
-            }
-            var prefix: String
-            switch mode {
-            case "flash":
-                prefix = "F"
-                break
-            case "torch":
-                prefix = "T"
-                break
-            default:
-                prefix = "L"
-            }
-            let lightings = getIDs(dirNames, prefix: prefix, suffix: "")
-            for lighting in lightings {
-                print("\nrectifying directory: \(prefix)\(lighting)");
-                
-                //assign the correct position pairs to posIDpairs
-                let posIDpairs: [(Int,Int)]
-                var posIDs = getIDs(try! FileManager.default.contentsOfDirectory(atPath: dirStruc.ambientPhotos(ball: ball, mode: mode, lighting: lighting)), prefix: "pos", suffix: "")
-                guard posIDs.count > 1 else {
-                    print("rectifyamb: not enough positions.")
-                    break
-                }
-                posIDs.sort()
-                posIDpairs = [(Int,Int)](zip(posIDs, posIDs[1...]))
-                
-                // loop through all pos pairs and rectify them
-                for (left, right) in posIDpairs {
-                    print("rectifying position pair: \(left) (left) and \(right) (right)");
-                    // set numExp to zero if in flash mode
-                    let numExp: Int = (mode == "flash") ? ( 1 ) : (sceneSettings.ambientExposureDurations!.count)
-                    // loop through all exposures
-                    for exp in 0..<numExp {
-                        print("rectifying exposure: \(exp)");
-                        rectifyAmb(ball: ball, left: left, right: right, mode: mode, exp: exp, lighting: lighting)
-                    }
-                }
-            }
-        }
+        runDisparity(allProj: allProj, allPosPairs: allPosPairs, params: params)
         
     case .merge, .m:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var rectified = false, allpos = false
-        for flag in flags {
-            switch flag {
-            case "-r":
-                rectified = true
-            case "-a":
-                allpos = true
-            default:
-                print("merge: unrecognized flag \(flag)")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos { nparams = 0 }
-        else { nparams = 2 }
-        guard params.count == nparams else {
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
             print(usage)
             break
         }
         
-        let positions: [Int]
-        if !allpos {
-            guard let leftpos = Int(params[0]), let rightpos = Int(params[1]) else {
-                print(usage)
-                break
-            }
-            positions = [leftpos, rightpos]
-        } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.disparity(rectified)))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.disparity(proj: $0, rectified: rectified)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
-        }
-        
-        for (left, right) in zip(positions, positions[1...]) {
-            merge(left: left, right: right, rectified: rectified)
-        }
+        runMerge(allPosPairs: allPosPairs, params: params)
         
     case .reproject, .rp:
-        // implement -a functionality
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var allpos = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                allpos = true
-            default:
-                print("reproject: unrecognized flag \(flag)")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos {
-            nparams = 0
-        } else {
-            nparams = 2
-        }
-        guard params.count == nparams else {
+        // check input format
+        let (params, flags) = partitionTokens(tokens)
+        let numAs = countAFlags(flags: flags)
+
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
             print(usage)
             break
         }
         
-        let positions: [Int]
-        if !allpos {
-            guard let left = Int(params[0]), let right = Int(params[1]) else {
-                print("reproject: invalid stereo position pair provided.")
-                break
-            }
-            positions = [left, right]
-        } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.decoded(true)))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.decoded(proj: $0, rectified: true)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
-        }
-        
-        for (left, right) in zip(positions, positions[1...]) {
-            reproject(left: left, right: right)
-        }
+        runReproject(allPosPairs: allPosPairs, params: params)
         
     case .merge2, .m2:
-        let (params, flags) = partitionTokens([String](tokens[1...]))
-        
-        var allpos = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                allpos = true
-            default:
-                print("merge2: unrecognized flag \(flag).")
-                break
-            }
-        }
-        
-        let nparams: Int
-        if allpos { nparams = 0 }
-        else { nparams = 2 }
-        
-        guard params.count == nparams else {
-            print(usage)
-            break
-        }
-        
-        let positions: [Int]
-        if !allpos {
-            guard let left = Int(params[0]), let right = Int(params[1]) else {
-                print("reproject: invalid stereo position pair provided.")
-                break
-            }
-            positions = [left, right]
-        } else {
-            var projdirs = (try! FileManager.default.contentsOfDirectory(atPath: dirStruc.reprojected))
-            let projs = getIDs(projdirs, prefix: "proj", suffix: "")
-            projdirs = projs.map {
-                return dirStruc.reprojected(proj: $0)
-            }
-            
-            let positions2D: [[Int]] = projdirs.map {
-                let positiondirs = try! FileManager.default.contentsOfDirectory(atPath: $0)
-                let positions = getIDs(positiondirs, prefix: "pos", suffix: "")
-                return positions
-            }
-            let posset = positions2D.reduce(Set<Int>(positions2D.first!)) { (set: Set<Int>, list: [Int]) in
-                return set.intersection(list)
-            }
-            positions = [Int](posset).sorted()
-        }
-        
-        for (left, right) in zip(positions, positions[1...]) {
-            mergeReprojected(left: left, right: right)
-        }
-        
-        // calculates camera's intrinsics using chessboard calibration photos in orig/calibration/chessboard
-        // TO-DO: TEMPLATE PATHS SHOULD BE COPIED TO SAME DIRECTORY AS MAC EXECUTABLE SO
-    // ABSOLUTE PATHS NOT REQUIRED
-    // Not currently implemented!
-    case .getintrinsics, .gi:
-        guard tokens.count <= 2 else {
-            print(usage)
-            break
-        }
-        
-        var path: [CChar]
-        do {
-            try path = safePath("\(dirStruc.tracks)/intrinsics-track.json")
-        } catch let err {
-            print(err.localizedDescription)
-            break
-        }
-        var outputDir = *"\(dirStruc.calibComputed)"
-
-        DispatchQueue.main.async {
-            ComputeIntrinsics(&path, &outputDir)
-        }
-        break
-        
-    // do stereo calibration
-    case .getextrinsics, .ge:
+        // check input format
         let (params, flags) = partitionTokens(tokens)
-        
-        var all = false
-        for flag in flags {
-            switch flag {
-            case "-a":
-                all = true
-                print("getextrinsics: computing extrinsics for all positions.")
-            default:
-                print("getextrinsics: unrecognized flag \(flag).")
-            }
-        }
-        
-        let positionPairs: [(Int, Int)]
-        var curParam: Int
-        if all { // Pairs all adjacent viewpoints, e.g. (1,2), (2,3), etc..
-            guard [1,2].contains(params.count) else { // make sure we have one or two parameters
-                print(usage)
-                break
-            }
-            let posIDs = [Int](0..<nPositions)
-            positionPairs = [(Int,Int)](zip(posIDs, [Int](posIDs[1...])))
-            curParam = 1
-        } else {
-            guard [3,4].contains(params.count), let pos0 = Int(params[1]), let pos1 = Int(params[2]) else {
-                print(usage)
-                break
-            }
-            positionPairs = [(pos0, pos1)]
-            curParam = 3
-        }
+        let numAs = countAFlags(flags: flags)
 
-        for (leftpos, rightpos) in positionPairs {
-            var track1: [CChar]
-            var track2: [CChar]
-            var intrinsicsFile: [CChar]
-            do {
-                try track1 = safePath("\(dirStruc.tracks)/pos\(leftpos)-track.json")
-                try track2 = safePath("\(dirStruc.tracks)/pos\(rightpos)-track.json")
-                try intrinsicsFile = safePath("\(dirStruc.calibComputed)/intrinsics.json")
-            } catch let err {
-                print(err.localizedDescription)
-                break
-            }
-            var outputDir = *"\(dirStruc.calibComputed)"
-            
-            ComputeExtrinsics(Int32(leftpos), Int32(rightpos), &track1, &track2, &intrinsicsFile, &outputDir)
+        var allPosPairs = false
+        if (numAs == 1 && params.count == 1) { // all projectors and position pairs
+            allPosPairs = true
+        } else if !(numAs == 0 && params.count == 3) {
+            print(usage)
+            break
         }
+        
+        runMerge2(allPosPairs: allPosPairs, params: params)
         
         
     /*=====================================================================================
-     Debugging
+     MARK: debugging
      ======================================================================================*/
 
     // creates png files meshing images from different projectors to help determine projector placement

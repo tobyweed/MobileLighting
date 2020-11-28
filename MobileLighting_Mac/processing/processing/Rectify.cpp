@@ -27,12 +27,10 @@ using namespace cv;
 
 Mat mapx0, mapy0;
 Mat mapx1, mapy1;
-int resizing_factor;
+int resizing_factor = 1;
 
-void computemaps(int width, int height, char *intrinsics, char *extrinsics, char *settings)
+void computemaps(int width, int height, char *intrinsics, char *extrinsics)
 {
-    FileStorage calibSettings(settings, FileStorage::READ);
-    calibSettings["Settings"]["Resizing_Factor"] >> resizing_factor;
     cv::Size ims(width, height);
     std::cout << "computing maps " << ims << std::endl;
     FileStorage fintr(intrinsics, FileStorage::READ);
@@ -63,7 +61,6 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     
     mapx = (camera == 0) ? mapx0 : mapx1;
     mapy = (camera == 0) ? mapy0 : mapy1;
-    
     ReadFilePFM(image, string(impath));
     cv::Size ims = image.size() * resizing_factor;
     
@@ -72,7 +69,6 @@ extern "C" void rectifyDecoded(int camera, char *impath, char *outpath)
     im_nearest = Mat(ims, imtype, 1);
     remap(image, im_linear, mapx, mapy, INTER_LINEAR, BORDER_CONSTANT, INFINITY);
     remap(image, im_nearest, mapx, mapy, INTER_NEAREST, BORDER_CONSTANT, INFINITY);
-    
     for (int j = 0; j < ims.height; ++j) {
         for (int i = 0; i < ims.width; ++i) {
             float val_linear = im_linear.at<float>(j,i);
@@ -106,3 +102,4 @@ extern "C" void rectifyAmbient(int camera, char *impath, char *outpath) {
     resize(image2, image2, image.size());
     imwrite(outpath, image2);
 }
+ // end

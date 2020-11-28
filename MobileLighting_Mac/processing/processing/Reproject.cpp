@@ -138,6 +138,8 @@ void SolveProjectionCV(CFloatImage disp, CFloatImage codeu, CFloatImage codev, C
 
     if (verbose)
 	printf("unknown d: %.2f%%, unknown code: %.2f%%\n", 100.0*cntd/cnt, 100.0*cntc/cnt);
+    
+    printf("cntd: %d, cnt: %d", cntd, cnt);
     if (/* DISABLES CODE */ (0) && verbose) printf("solving matrix\n");
 
     cv::Mat b(bvec);
@@ -568,3 +570,4 @@ CFloatImage reproject(CFloatImage dispflo, CFloatImage codeflo, char* errFile, c
     fclose(log);
     return ndisp;
 }
+ // end

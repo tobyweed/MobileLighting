@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <opencv2/core/mat.hpp>
 #include "TransformPFM.hpp"
-#include <imageLib.h>
+#include "imageLib.h"
 #include "pfmLib/ImageIOpfm.h"
 
 void rotate90CW( Mat &inIm, Mat &outIm );
@@ -79,3 +79,4 @@ void rotate90CW( Mat &inIm, Mat &outIm ) {
     
     outIm = rotatedIm;
 }
+ // end

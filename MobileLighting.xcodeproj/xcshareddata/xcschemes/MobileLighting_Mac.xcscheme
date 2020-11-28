@@ -61,15 +61,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/tobyweed/workspace/iceskates/settings/sceneSettings.yml"
+            argument = "init"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Volumes/My\ Passport/iceskates/settings/sceneSettings.yml"
+            argument = " /Users/vision/workspace/scenes/final_scenes/curuleseats/settings/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "init"
+            argument = "/Users/vision/workspace/scenes/sandbox/settings/sceneSettings.yml"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
