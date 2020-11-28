@@ -66,7 +66,7 @@ It also has a number of associated, but standalone, applications:
 
 ## Setup and Installation
 ### Compatibility
-MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Mac has only been tested on macOS versions High Sierra (10.13) through Mojave (10.14.5).
+MobileLighting Mac is only compatible with macOS. Furthermore, Xcode must be installed on this Mac (it is a free download from the Mac App Store). This is partly because Xcode, the IDE used to develop, compile, and install MobileLighting, is only available on macOS. ML Mac has only been tested on macOS versions High Sierra (10.13) through Catalina (10.15.7).
 
 MobileLighting iOS is compatible with all devices that run iOS 11+ and have a rear-facing camera and flashlight.
 
