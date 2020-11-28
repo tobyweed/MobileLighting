@@ -1,6 +1,6 @@
 #  MobileLighting System
 * Nicholas Mosier, 07/2018
-* Toby Weed, 08/2020
+* Toby Weed, 11/2020
 
 
 ## Table of Contents
