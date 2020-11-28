@@ -65,7 +65,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/vision/workspace/scenes/chess/settings/sceneSettings.yml"
+            argument = " /Users/vision/workspace/scenes/final_scenes/curuleseats/settings/sceneSettings.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
